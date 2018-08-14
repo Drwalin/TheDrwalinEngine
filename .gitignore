@@ -1,0 +1,7 @@
+./*.o
+./main
+./bin/*.o
+./bin
+./bin/
+./bin/*
+

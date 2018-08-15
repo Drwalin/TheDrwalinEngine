@@ -28,13 +28,11 @@ public:
 	
 	
 	void Tick( btScalar deltaTime, int count = 0 );
-	void Draw();
 	
+	bool AddBody( std::string name, btRigidBody * body );
 	
-	void DeleteObject( std::string name );
-	void DeleteObjects();
-	
-	bool AddObject( std::string name, btCollisionShape * shape, btTransform transofrm, bool isDynamic = false, btScalar mass = 0, btVector3 inertia = btVector3(0,0,0) );		// return true if wasn't overrided
+	void RemoveBody( std::string name );
+	void RemoveBodys();
 	
 	void Init();
 	void Destroy();

@@ -23,34 +23,25 @@ void World::Init()
 	dynamicsWorld->setGravity( btVector3(0, -9.81, 0) );
 }
 
-bool World::AddObject( std::string name, btCollisionShape * shape, btTransform transofrm, bool isDynamic, btScalar mass, btVector3 inertia )
+bool World::AddBody( std::string name, btRigidBody * body )
 {
-	bool ret = true;
-	if( object.find(name) != object.end() )
+	if( body )
 	{
-		DeleteObject( name );
-		ret = false;
+		if( object.find(name) != object.end() )
+		{
+			//DeleteObject( name );			////////////////////////////////////////////////////////////////////////
+		}
+		else
+		{
+			dynamicsWorld->addRigidBody( body );
+			object[name] = body;
+			return true;
+		}
 	}
-	
-	if( isDynamic && mass > 0 )
-	{
-		shape->calculateLocalInertia( mass, inertia );
-	}
-	else
-	{
-		mass = 0;
-	}
-	
-	btDefaultMotionState* motionState = new btDefaultMotionState( transofrm );
-	btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, shape, inertia );
-	btRigidBody* rigidBody = new btRigidBody( rigidBodyCI );
-	dynamicsWorld->addRigidBody( rigidBody );
-	object[name] = rigidBody;
-	
-	return ret;
+	return false;
 }
 
-void World::DeleteObject( std::string name )
+void World::RemoveBody( std::string name )
 {
 	auto it = object.find(name);
 	if( it != object.end() )
@@ -58,28 +49,32 @@ void World::DeleteObject( std::string name )
 		if( it->second )
 		{
 			dynamicsWorld->removeRigidBody( it->second );
+			/*
 			if( it->second->getMotionState() )
 				delete it->second->getMotionState();
 			if( it->second->getCollisionShape() )
 				delete it->second->getCollisionShape();
 			delete it->second;
+			*/
 		}
 		object.erase( it );
 	}
 }
 
-void World::DeleteObjects()
+void World::RemoveBodys()
 {
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
 		{
 			dynamicsWorld->removeRigidBody( it->second );
+			/*
 			if( it->second->getMotionState() )
 				delete it->second->getMotionState();
 			if( it->second->getCollisionShape() )
 				delete it->second->getCollisionShape();
 			delete it->second;
+			*/
 		}
 	}
 	object.clear();
@@ -119,9 +114,6 @@ World::~World()
 {
 	Destroy();
 }
-
-
-
 
 #endif
 

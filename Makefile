@@ -1,13 +1,12 @@
 
 
-
 HEADERPATH = ./src/css
 SOURCEPATH = ./src/mtd
 LIBRARYPATH = ./src/lib
 BINARYPATH = ./bin
 BULLETINCLUDEPATH = /usr/local/include/bullet
 
-SOURCES_ = BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Engine.cpp
+SOURCES_ = BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Engine.cpp Texture.cpp VBO.cpp Model.cpp Object.cpp
 OBJECTS_ = $(SOURCES_:.cpp=.o)
 SOURCES = $(addprefix $(SOURCEPATH)/,$(SOURCES_))
 OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))

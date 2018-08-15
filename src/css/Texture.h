@@ -7,7 +7,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 
-#include <iostream>
+#include <Debug.h>
 
 class Texture
 {
@@ -23,6 +23,8 @@ public:
 	const static int MIPMAP = 2;
 	
 	bool Load( std::string file, int mode );
+	int GetWidth();
+	int GetHeight();
 	
 	ALLEGRO_BITMAP * GetBitmapPtr();
 	void Use();		// unused

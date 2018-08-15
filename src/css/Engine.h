@@ -7,16 +7,18 @@
 #include <LinearMath/btQuaternion.h>
 #include <btBulletDynamicsCommon.h>
 
+#include <map>
+#include <vector>
+#include <string>
+
+#include <Debug.h>
+
 #include <Event.h>
 #include <World.h>
 #include <Window.h>
 #include <Texture.h>
 #include <Model.h>
 #include <Object.h>
-
-#include <map>
-#include <vector>
-#include <string>
 
 class Engine
 {

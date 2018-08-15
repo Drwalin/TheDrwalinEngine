@@ -19,6 +19,7 @@
 #include <cstring>
 #include <cstdio>
 
+#include <Debug.h>
 #include <AR.hpp>
 
 #include <VBO.h>

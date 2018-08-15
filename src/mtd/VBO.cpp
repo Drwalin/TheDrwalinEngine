@@ -6,15 +6,20 @@
 
 void VBO::Draw()
 {
-//	if( vertices.size() && indices.size() )
-//		al_draw_indexed_prim( &vertices.fron(), NULL, texture ? texture->GetBitmapPtr() : NULL, &indices.front(), indices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
-	if( vertices.size() >= 3 )
-		al_draw_prim( &vertices.front(), NULL, texture ? texture->GetBitmapPtr() : NULL, 0, vertices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
+	if( vertices.size() && indices.size() )
+		al_draw_indexed_prim( &vertices.front(), NULL, texture ? texture->GetBitmapPtr() : NULL, &indices.front(), indices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
+}
+
+Texture * VBO::GetTexture()
+{
+	return texture;
 }
 
 void VBO::Generate()
 {
-	std::cerr << "\n VBO::Generate() is not in use";
+	indices.resize( vertices.size() );
+	for( int i = 0; i < indices.size(); ++i )
+		indices[i] = i;
 }
 
 void VBO::AddTriangle( ALLEGRO_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c )
@@ -29,9 +34,9 @@ void VBO::Destroy()
 {
 	texture = NULL;
 	vertices.clear();
-//	indices.clear();
+	indices.clear();
 	vertices.shrink_to_fit();
-//	indices.shrink_to_fit();
+	indices.shrink_to_fit();
 }
 
 void VBO::SetTexture( Texture * texture )

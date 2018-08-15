@@ -18,7 +18,7 @@ void Engine::Tick( const float deltaTime )
 {
 	if( !pausePhysics )
 	{
-		world->Tick( deltaTime, 10 );		/////////////////////////////////////////////////////////////////////////
+		world->Tick( deltaTime, 100 );		/////////////////////////////////////////////////////////////////////////
 	}
 }
 
@@ -305,17 +305,21 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	window->LockMouse();
 	
 	
+	Model * mdl = GetModel( "./media/testmap.obj" );
+	Object * map = AddCustom( "TestMap", mdl->MakeStaticTriangleCollisionShape(), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,-20) ), false );
+	map->SetModel( mdl );
 	
-	
+	/*
 	AddBox( "Surface0", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,-20) ), false );
 	AddBox( "Surface1", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,20) ), false );
 	AddBox( "Surface2", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,-10,20) ), false );
 	AddBox( "Surface3", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,-10,-20) ), false );
-	//AddBox( "Box", btVector3(3,1,5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(1,60,0) ), true );
-	//AddBall( "Ball", 1.5, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,50,0) ), true );
+	AddBox( "Box", btVector3(3,1,5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(1,60,0) ), true );
+	AddBall( "Ball", 1.5, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,50,0) ), true );
+	*/
 	for( int i = 0; i < 125; ++i )
 	{
-		AddBox( std::string("Box")+std::to_string(i), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,60,0) + btVector3(i/25,(i/5)%5,i%5) - btVector3(2.5,2.5,2.5) ), true );
+		AddBox( std::string("Box")+std::to_string(i), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,5,0) + btVector3(i/25,(i/5)%5,i%5) - btVector3(2.5,2.5,2.5) ), true );
 	}
 }
 

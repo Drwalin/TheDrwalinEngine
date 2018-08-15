@@ -8,7 +8,8 @@
 #include <allegro5/allegro_image.h>
 
 #include <vector>
-#include <iostream>
+
+#include <Debug.h>
 
 #include <Texture.h>
 
@@ -18,7 +19,7 @@ private:
 	
 	Texture * texture;
 	std::vector < ALLEGRO_VERTEX > vertices;
-	//std::vector < int > indices;
+	std::vector < int > indices;
 	
 	friend class Model;
 	
@@ -30,6 +31,7 @@ public:
 	void Generate();
 	void Destroy();
 	void SetTexture( Texture * texture );
+	Texture * GetTexture();
 	
 	VBO();
 	~VBO();

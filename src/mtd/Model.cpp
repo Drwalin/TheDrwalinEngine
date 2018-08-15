@@ -8,12 +8,23 @@
 void Model::Draw()
 {
 	for( int i = 0; i < vbo.size(); ++i )
+	{
 		vbo[i].Draw();
+	}
 }
 
 bool Model::LoadFromObj( Engine * engine, std::string fileName )
 {
 	std::ifstream mtl, obj;
+	std::string path = fileName;
+	for( int i = path.size(); i > 0; --i )
+	{
+		if( path[i] == '/' )
+		{
+			path.resize( i+1 );
+			break;
+		}
+	}
 	
 	{
 		std::string fileMtlName = fileName;
@@ -34,12 +45,41 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 	char sign;
 	std::string line, text, currentMaterial;
 	VBO * currentVBO = NULL;
-	std::stringstream sstream;
 	
+	if( mtl.good() )
+	{
+		while( !mtl.eof() )
+		{
+			std::stringstream sstream;
+			line = "";
+			std::getline( mtl, line );
+			text = "";
+			sstream << line;
+			sstream.flush();
+			sstream >> text;
+			if( text == "newmtl" )
+			{
+				currentMaterial = "";
+				sstream >> currentMaterial;
+			}
+			else if( text == "map_Kd" )
+			{
+				text = "";
+				sstream >> text;
+				vbos[currentMaterial].SetTexture( engine->GetTexture( path+text ) );
+			}
+		}
+	}
+	
+	float currentTextureWidth, currentTextureHeight;
 	while( !obj.eof() )
 	{
+		std::stringstream sstream;
+		line = "";
 		std::getline( obj, line );
-		sstream.clear();
+		text = "";
+		sstream << line;
+		sstream.flush();
 		sstream >> text;
 		
 		if( text == "v" )
@@ -71,6 +111,9 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 					sstream >> temp.back()[1];
 					sstream >> sign;
 					sstream >> temp.back()[2];
+					temp.back()[0]--;
+					temp.back()[1]--;
+					temp.back()[2]--;
 					if( temp.back()[0] == -1 || temp.back()[1] == -1 || temp.back()[2] == -1 )
 						temp.resize( temp.size() - 1 );
 				}
@@ -91,9 +134,9 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 						const static ALLEGRO_COLOR c = al_map_rgb(255,255,255);
 						currentVBO->AddTriangle
 										(
-											(ALLEGRO_VERTEX){ v[f[0][0]][0], v[f[0][0]][1], v[f[0][0]][2], vt[f[0][1]][0], vt[f[0][1]][1], c },
-											(ALLEGRO_VERTEX){ v[f[1][0]][0], v[f[1][0]][1], v[f[1][0]][2], vt[f[1][1]][0], vt[f[2][1]][1], c },
-											(ALLEGRO_VERTEX){ v[f[2][0]][0], v[f[2][0]][1], v[f[2][0]][2], vt[f[2][1]][0], vt[f[1][1]][1], c }
+											(ALLEGRO_VERTEX){ v[f[0][0]][0], v[f[0][0]][1], v[f[0][0]][2], vt[f[0][1]][0]*currentTextureWidth, (-vt[f[0][1]][1])*currentTextureHeight, c },
+											(ALLEGRO_VERTEX){ v[f[1][0]][0], v[f[1][0]][1], v[f[1][0]][2], vt[f[1][1]][0]*currentTextureWidth, (-vt[f[2][1]][1])*currentTextureHeight, c },
+											(ALLEGRO_VERTEX){ v[f[2][0]][0], v[f[2][0]][1], v[f[2][0]][2], vt[f[2][1]][0]*currentTextureWidth, (-vt[f[1][1]][1])*currentTextureHeight, c }
 										);
 					}
 				}
@@ -101,29 +144,11 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 		}
 		else if( text == "usemtl" )
 		{
+			currentMaterial = "";
 			sstream >> currentMaterial;
-			vbos[currentMaterial] = VBO();
 			currentVBO = &(vbos[currentMaterial]);
-		}
-	}
-	
-	if( mtl.good() )
-	{
-		while( !mtl.eof() )
-		{
-			std::getline( mtl, line );
-			sstream.clear();
-			sstream >> text;
-			
-			if( text == "newmtl" )
-			{
-				sstream >> currentMaterial;
-			}
-			else if( text == "map_Kd" )
-			{
-				sstream >> text;
-				vbos["currentMaterial"].SetTexture( engine->GetTexture( text ) );
-			}
+			currentTextureWidth = currentVBO->GetTexture()->GetWidth();
+			currentTextureHeight = currentVBO->GetTexture()->GetHeight();
 		}
 	}
 	
@@ -168,25 +193,25 @@ btCollisionShape * Model::MakeConvexCollisionShape()
 
 btCollisionShape * Model::MakeStaticTriangleCollisionShape()
 {
-	std::vector < btVector3 > vertices;		// does it shouldn't be destroyed
+	std::vector < btVector3 > * vertices = new std::vector < btVector3 >;		// does it shouldn't be destroyed
 	
 	for( int i = 0; i < vbo.size(); ++i )
 	{
 		for( int j = 0; j < vbo[i].vertices.size(); ++j )
 		{
-			vertices.resize( vertices.size() + 1 );
-			vertices.back() = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+			vertices->resize( vertices->size() + 1 );
+			vertices->back() = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
 		}
 	}
 	
-	std::vector < int > indices;
-	indices.resize( vertices.size() );
-	for( int i = 0; i < indices.size(); ++i )
+	std::vector < int > * indices = new std::vector < int >;
+	indices->resize( vertices->size() );
+	for( int i = 0; i < indices->size(); ++i )
 	{
-		indices[i] = i;
+		indices->operator[](i) = i;
 	}
 	
-	btTriangleIndexVertexArray * triangles = new btTriangleIndexVertexArray( indices.size() / 3, &(indices.front()), sizeof(int) * 3, vertices.size(), vertices.front().m_floats, sizeof(btVector3) );		// it should be destroyed after btCollisionShape
+	auto * triangles = new btTriangleIndexVertexArray( indices->size() / 3, &(indices->front()), sizeof(int) * 3, vertices->size(), vertices->front().m_floats, sizeof(btVector3) );		// it should be destroyed after btCollisionShape
 	btCollisionShape * shape = new btBvhTriangleMeshShape( triangles, true, true );
 	//delete triangles;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	return shape;

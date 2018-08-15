@@ -11,6 +11,8 @@
 #include <map>
 #include <iostream>
 
+#include <Debug.h>
+
 #include <Model.h>
 #include <Camera.h>
 
@@ -29,13 +31,14 @@ private:
 	
 	std::vector < float > debugData;
 	int objectType;
+	
+public:
+	
 	const static int BOX = 1;
 	const static int BALL = 2;
 	const static int CAPSULE = 3;
 	const static int CYLINDER = 4;
 	const static int CUSTOM = 5;
-	
-public:
 	
 	btTransform GetTransform();
 	

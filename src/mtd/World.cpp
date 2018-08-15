@@ -49,13 +49,6 @@ void World::RemoveBody( std::string name )
 		if( it->second )
 		{
 			dynamicsWorld->removeRigidBody( it->second );
-			/*
-			if( it->second->getMotionState() )
-				delete it->second->getMotionState();
-			if( it->second->getCollisionShape() )
-				delete it->second->getCollisionShape();
-			delete it->second;
-			*/
 		}
 		object.erase( it );
 	}
@@ -68,13 +61,6 @@ void World::RemoveBodys()
 		if( it->second )
 		{
 			dynamicsWorld->removeRigidBody( it->second );
-			/*
-			if( it->second->getMotionState() )
-				delete it->second->getMotionState();
-			if( it->second->getCollisionShape() )
-				delete it->second->getCollisionShape();
-			delete it->second;
-			*/
 		}
 	}
 	object.clear();
@@ -82,7 +68,7 @@ void World::RemoveBodys()
 
 void World::Destroy()
 {
-	DeleteObjects();
+	RemoveBodys();
 	
 	if( dynamicsWorld )
 		delete dynamicsWorld;

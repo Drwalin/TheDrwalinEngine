@@ -327,7 +327,6 @@ EventResponser * BasicWindow::GetEventResponser()
 
 BasicWindow::BasicWindow()
 {
-	DEBUG("BasicWindow::BasicWindow()");
 	quitWhenPossible = false;
 	
 	ALLEGRO_TRANSFORM projection2DTransform;
@@ -348,7 +347,6 @@ BasicWindow::BasicWindow()
 
 BasicWindow::~BasicWindow()
 {
-	DEBUG("BasicWindow::~BasicWindow()");
 	Destroy();
 	delete stringToEnter;
 }

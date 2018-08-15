@@ -4,12 +4,12 @@
 
 #include <Engine.h>
 
-void PauseSimulation()
+void Engine::PauseSimulation()
 {
 	pausePhysics = true;
 }
 
-void ResumeSimulation()
+void Engine::ResumeSimulation()
 {
 	pausePhysics = false;
 }
@@ -40,12 +40,14 @@ Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransf
 			mass = 0;
 		}
 		
-		btDefaultMotionState* motionState = new btDefaultMotionState( transofrm );
+		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, shape, inertia );
 		btRigidBody* rigidBody = new btRigidBody( rigidBodyCI );
-		AddBody( name, rigidBody );
+		world->AddBody( name, rigidBody );
 		
-		object[name] = new Object( this, name, rigidBody, collisionBinary );
+		Object * obj = new Object( this, name, rigidBody, collisionBinaryInfo, type );
+		object[name] = obj;
+		return obj;
 	}
 	return NULL;
 }
@@ -64,7 +66,7 @@ Object * Engine::AddBox( std::string name, btVector3 size, btTransform transform
 		collisionShape[collisionBinaryInfo] = shape;
 	}
 	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::BOX, dynamic, mass, btVector(0,0,0) );
+	return AddObject( name, shape, transform, collisionBinaryInfo, Object::BOX, dynamic, mass, btVector3(0,0,0) );
 }
 
 Object * Engine::AddBall( std::string name, btScalar radius, btTransform transform, bool dynamic, btScalar mass )
@@ -75,11 +77,11 @@ Object * Engine::AddBall( std::string name, btScalar radius, btTransform transfo
 	btCollisionShape * shape = collisionShape[collisionBinaryInfo];
 	if( shape == NULL )
 	{
-		shape = new btBallShape( radius );
+		shape = new btSphereShape( radius );
 		collisionShape[collisionBinaryInfo] = shape;
 	}
 	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::BALL, dynamic, mass, btVector(0,0,0) );
+	return AddObject( name, shape, transform, collisionBinaryInfo, Object::BALL, dynamic, mass, btVector3(0,0,0) );
 }
 
 Object * Engine::AddCapsule( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic, btScalar mass )
@@ -96,7 +98,7 @@ Object * Engine::AddCapsule( std::string name, btScalar radius, btScalar height,
 		collisionShape[collisionBinaryInfo] = shape;
 	}
 	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::CAPSULE, dynamic, mass, btVector(0,0,0) );
+	return AddObject( name, shape, transform, collisionBinaryInfo, Object::CAPSULE, dynamic, mass, btVector3(0,0,0) );
 }
 
 Object * Engine::AddCylinder( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic, btScalar mass )
@@ -114,13 +116,13 @@ Object * Engine::AddCylinder( std::string name, btScalar radius, btScalar height
 		collisionShape[collisionBinaryInfo] = shape;
 	}
 	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::CYLINDER, dynamic, mass, btVector(0,0,0) );
+	return AddObject( name, shape, transform, collisionBinaryInfo, Object::CYLINDER, dynamic, mass, btVector3(0,0,0) );
 }
 
 Object * Engine::AddCustom( std::string name, btCollisionShape * collisionShape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
 {
 	customCollisionShape.push_back( collisionShape );
-	return AddObject( name, collisionShape, transform, std::vector<btScalar>(), CUSTOM, dynamic, mass, inertia );
+	return AddObject( name, collisionShape, transform, std::vector<btScalar>(), Object::CUSTOM, dynamic, mass, inertia );
 }
 
 void Engine::Draw2D()
@@ -176,7 +178,8 @@ void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size
 	};
 	
 	window->camera->SetWorldTransform( transform );
-	al_draw_indexed_prim( vtx, NULL, GetTexture("media/DebugTexturte.png"), indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
+	Texture * tex = GetTexture("media/DebugTexturte.png");
+	al_draw_indexed_prim( vtx, NULL, tex ? tex->GetBitmapPtr() : NULL, indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
 void Engine::DrawBall( ALLEGRO_COLOR color, btTransform transform, float radian )
@@ -200,7 +203,7 @@ void Engine::DrawBall( ALLEGRO_COLOR color, btTransform transform, float radian 
 
 Texture * Engine::GetTexture( std::string name )
 {
-	auto it = texture.find( std );
+	auto it = texture.find( name );
 	if( it != texture.end() )
 	{
 		if( it->second )
@@ -227,7 +230,7 @@ Texture * Engine::GetTexture( std::string name )
 
 Model * Engine::GetModel( std::string name )
 {
-	auto it = model.find( std );
+	auto it = model.find( name );
 	if( it != model.end() )
 	{
 		if( it->second )
@@ -238,7 +241,7 @@ Model * Engine::GetModel( std::string name )
 	else
 	{
 		Model * mdl = new Model;
-		if( mdl->Load( this, name ) == false )
+		if( mdl->LoadFromObj( this, name ) == false )
 		{
 			delete mdl;
 			return NULL;
@@ -273,45 +276,11 @@ void Engine::Draw3D()
 {
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
-		if( it->secod )
+		if( it->second )
 		{
 			it->second->Draw();
 		}
 	}
-	
-	/*
-	
-	static ALLEGRO_BITMAP * tex = LoadTexture( "./media/bkg.png" );
-	
-	
-	btTransform transform;
-	world->object["box"]->getMotionState()->getWorldTransform(transform);
-	DrawBox( tex, al_map_rgb(255,255,255), transform, btVector3(5,1,3) );
-	
-	world->object["ball"]->getMotionState()->getWorldTransform(transform);
-	DrawBall( tex, al_map_rgb(255,255,255), transform, 1 );
-	
-	
-	
-	{
-		ALLEGRO_COLOR c = al_map_rgb_f(1, 1, 1);
-		ALLEGRO_VERTEX vtx[4] = {
-			//   x   y   z   u   v  c
-			{-1000, 0, -1000,       0,       0, c },
-			{ 1000, 0, -1000, 64*1024,       0, c },
-			{ 1000, 0,  1000, 64*1024, 64*1024, c },
-			{-1000, 0,  1000,       0, 64*1024, c },
-		};
-		
-		int indices[6] = {
-			0, 1, 3,
-			1, 2, 3,
-		};
-		
-		window->camera->SetWorldTransform( btTransform( btQuaternion( btVector3(1,1,1), 0 ), btVector3(0,1,0) ) );
-		al_draw_indexed_prim( vtx, NULL, tex, indices, 6, ALLEGRO_PRIM_TRIANGLE_LIST );
-	}
-	*/
 }
 
 void Engine::BeginLoop()
@@ -338,9 +307,16 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	
 	
-	world->AddObject( "ball", new btSphereShape(1.0), btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 50, 0 ) ), true, 1.0, btVector3(0,0,0) );
-	world->AddObject( "box", new btBoxShape( btVector3( 5, 1, 3 ) ), btTransform( btQuaternion( 0, 0, 0 ), btVector3( 1, 60, 0 ) ), true, 1.0, btVector3(0,0,0) );
-	world->AddObject( "plane", new btStaticPlaneShape( btVector3(0, 1, 0), 1 ), btTransform( btQuaternion( 0, 0, 0 ), btVector3( 0, 0, 0 ) ) );
+	AddBox( "Surface0", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,-20) ), false );
+	AddBox( "Surface1", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,20) ), false );
+	AddBox( "Surface2", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,-10,20) ), false );
+	AddBox( "Surface3", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,-10,-20) ), false );
+	//AddBox( "Box", btVector3(3,1,5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(1,60,0) ), true );
+	//AddBall( "Ball", 1.5, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,50,0) ), true );
+	for( int i = 0; i < 125; ++i )
+	{
+		AddBox( std::string("Box")+std::to_string(i), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,60,0) + btVector3(i/25,(i/5)%5,i%5) - btVector3(2.5,2.5,2.5) ), true );
+	}
 }
 
 void Engine::Destroy()

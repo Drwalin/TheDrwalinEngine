@@ -3,12 +3,13 @@
 #define OBJECT_CPP
 
 #include <Object.h>
+#include <Engine.h>
 
 btTransform Object::GetTransform()
 {
 	btTransform transform;
 	if( body )
-		return body->getMotionState()->getWorldTransform( transform );
+		body->getMotionState()->getWorldTransform( transform );
 	return transform;
 }
 
@@ -50,6 +51,7 @@ void Object::SetModel( Model * model )
 
 Object::Object( Engine * engine, std::string name, btRigidBody * body, std::vector < float > debugData, int type )
 {
+	objectType = type;
 	this->debugData = debugData;
 	this->engine = engine;
 	this->name = name;

@@ -24,7 +24,7 @@ private:
 	
 public:
 	
-	void AddTriangle( ALLEGR_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c );
+	void AddTriangle( ALLEGRO_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c );
 	
 	void Draw();
 	void Generate();

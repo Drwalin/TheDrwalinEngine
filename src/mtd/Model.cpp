@@ -7,7 +7,7 @@
 
 void Model::Draw()
 {
-	for( int i = 0; i < vbo.size() )
+	for( int i = 0; i < vbo.size(); ++i )
 		vbo[i].Draw();
 }
 
@@ -28,8 +28,8 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 	}
 	
 	std::map < std::string, VBO > vbos;
-	std::vector < float[3] > v;
-	std::vector < float[2] > vt;
+	std::vector < AR<float,3> > v;
+	std::vector < AR<float,2> > vt;
 	
 	char sign;
 	std::string line, text, currentMaterial;
@@ -59,16 +59,18 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 		{
 			if( currentVBO )
 			{
-				std::vector < int[3] > temp;
+				std::vector < AR<int,3> > temp;
 				while( !sstream.eof() )
 				{
-					temp.resize( ids.size() + 1 );
+					temp.resize( temp.size() + 1 );
 					temp.back()[0] = -1;
 					temp.back()[1] = -1;
 					temp.back()[2] = -1;
-					sstream >> temp[0] >> sign;
-					sstream >> temp[1] >> sign;
-					sstream >> temp[2];
+					sstream >> temp.back()[0];
+					sstream >> sign;
+					sstream >> temp.back()[1];
+					sstream >> sign;
+					sstream >> temp.back()[2];
 					if( temp.back()[0] == -1 || temp.back()[1] == -1 || temp.back()[2] == -1 )
 						temp.resize( temp.size() - 1 );
 				}
@@ -120,14 +122,14 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 			else if( text == "map_Kd" )
 			{
 				sstream >> text;
-				vbos["currentMaterial"].SetTexture( enigne->GetTexture( text ) );
+				vbos["currentMaterial"].SetTexture( engine->GetTexture( text ) );
 			}
 		}
 	}
 	
-	int i;
+	int i = 0;
 	vbo.resize( vbos.size() );
-	for( auto it = vbos.begin(), i = 0; it != vbos.end(); ++it, ++i )
+	for( auto it = vbos.begin(); it != vbos.end(); ++it, ++i )
 	{
 		vbo[i] = it->second;
 		it->second.Destroy();
@@ -153,14 +155,14 @@ btCollisionShape * Model::MakeConvexCollisionShape()
 	}
 	
 	points.resize( pointsMap.size() );
-	int i;
-	for( auto it = pointsMap.begin(), i = 0; it != pointsMap.end(); ++it, ++i )
+	int i = 0;
+	for( auto it = pointsMap.begin(); it != pointsMap.end(); ++it, ++i )
 	{
 		points[i] = it->first;
 	}
 	
 	if( points.size() > 0 )
-		return new btConvexHullShape( &points.front(), points.size(), sizeof(btVector3) );
+		return new btConvexHullShape( &points.front().x(), points.size(), sizeof(btVector3) );
 	return NULL;
 }
 
@@ -172,10 +174,8 @@ btCollisionShape * Model::MakeStaticTriangleCollisionShape()
 	{
 		for( int j = 0; j < vbo[i].vertices.size(); ++j )
 		{
-			vertices.resize( vertices.size() + 3 );
-			vertices.push_back( vbo[i].vertices[j].x );
-			vertices.push_back( vbo[i].vertices[j].y );
-			vertices.push_back( vbo[i].vertices[j].z );
+			vertices.resize( vertices.size() + 1 );
+			vertices.back() = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
 		}
 	}
 	
@@ -186,10 +186,10 @@ btCollisionShape * Model::MakeStaticTriangleCollisionShape()
 		indices[i] = i;
 	}
 	
-	btTriangleIndexVertexArray * triangles = new btTriangleIndexVertexArray( indices.size() / 3, &(indices.front()), sizeof(int) * 3, vertices.size(), &(vertices.front()), sizeof(btVector3) );		// it should be destroyed
+	btTriangleIndexVertexArray * triangles = new btTriangleIndexVertexArray( indices.size() / 3, &(indices.front()), sizeof(int) * 3, vertices.size(), vertices.front().m_floats, sizeof(btVector3) );		// it should be destroyed after btCollisionShape
 	btCollisionShape * shape = new btBvhTriangleMeshShape( triangles, true, true );
-	//delete triangles;
-	return mesh;
+	//delete triangles;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	return shape;
 	
 	/*	
 	s32 * indices;

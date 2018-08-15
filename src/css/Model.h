@@ -7,6 +7,9 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 
+#include <LinearMath/btVector3.h>
+#include <btBulletDynamicsCommon.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -16,12 +19,11 @@
 #include <cstring>
 #include <cstdio>
 
-#include <LinearMath/btVector3.h>
-#include <LinearMath/btTransform.h>
-#include <LinearMath/btQuaternion.h>
-#include <btBulletDynamicsCommon.h>
+#include <AR.hpp>
 
 #include <VBO.h>
+
+class Engine;
 
 class Model
 {

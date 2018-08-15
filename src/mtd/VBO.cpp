@@ -9,7 +9,7 @@ void VBO::Draw()
 //	if( vertices.size() && indices.size() )
 //		al_draw_indexed_prim( &vertices.fron(), NULL, texture ? texture->GetBitmapPtr() : NULL, &indices.front(), indices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
 	if( vertices.size() >= 3 )
-		al_draw_prim( &vertices.front(), NULL, exture ? texture->GetBitmapPtr() : NULL, 0, vertices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
+		al_draw_prim( &vertices.front(), NULL, texture ? texture->GetBitmapPtr() : NULL, 0, vertices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
 void VBO::Generate()
@@ -17,7 +17,7 @@ void VBO::Generate()
 	std::cerr << "\n VBO::Generate() is not in use";
 }
 
-void VBO::AddTriangle( ALLEGR_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c )
+void VBO::AddTriangle( ALLEGRO_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c )
 {
 	vertices.resize( vertices.size() + 3 );
 	vertices[vertices.size()-3] = a;

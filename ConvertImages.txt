@@ -1,0 +1,3 @@
+command:
+	mogrify -format png *.jpg
+convert all *.jpg to *.png"

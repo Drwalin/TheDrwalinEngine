@@ -42,6 +42,8 @@ public:
 	
 	btTransform GetTransform();
 	
+	btRigidBody * GetBody();
+	
 	void Draw();
 	void DrawDebug();
 	

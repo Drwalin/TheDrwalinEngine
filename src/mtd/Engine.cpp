@@ -14,17 +14,43 @@ void Engine::ResumeSimulation()
 	pausePhysics = false;
 }
 
+int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
+{
+	float fps = 1.0 / deltaTime;
+	if( fps >= 57.0 )
+		return 100;
+	if( fps >= 50.0 )
+		return 90;
+	if( fps >= 40.0 )
+		return 60;
+	if( fps >= 30.0 )
+		return 30;
+	if( fps >= 20.0 )
+		return 5;
+	return 1;
+}
+
 void Engine::Tick( const float deltaTime )
 {
 	if( !pausePhysics )
 	{
-		world->Tick( deltaTime, 100 );		/////////////////////////////////////////////////////////////////////////
+		world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
 	}
 }
 
 Camera * Engine::GetCamera()
 {
 	return window->camera;
+}
+
+std::string Engine::GetAvailableObjectName( std::string name )
+{
+	if( object.find( name ) == object.end() )
+		return name;
+	for( int i = 0;; ++i )
+		if( object.find( name+std::to_string(i) ) == object.end() )
+			return name+std::to_string(i);
+	return name;
 }
 
 Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransform transform, std::vector < btScalar > collisionBinaryInfo, int type, bool dynamic, btScalar mass, btVector3 inertia )
@@ -125,22 +151,25 @@ Object * Engine::AddCustom( std::string name, btCollisionShape * collisionShape,
 	return AddObject( name, collisionShape, transform, std::vector<btScalar>(), Object::CUSTOM, dynamic, mass, inertia );
 }
 
-void Engine::Draw2D()
+Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
 {
-	/*
-	output.SetColor( al_map_rgb( 255, 255, 255 ) );
-	output.SetWorkSpace( 20, 20, this->GetMaxBorderWidth()-20, this->GetMaxBorderHeight()-20 );
-	output.Goto( 1, 1 );
-	output.Print( this->GetCurrentStringToEnter().c_str() );
-	*/
-	
-	window->output->SetWorkSpace( 5, 5, 20, 20 );
-	window->output->Goto( 5, 5 );
-	window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
-	window->output->Print( "FPS: " );
-	window->output->Print( window->GetSmoothFps() );
-	window->output->Print( "\n" );
-	window->output->Print( (int)al_get_time() );
+	Object * ret =  AddCapsule( name, width, height, transform, true, mass );
+	if( ret )
+	{
+		ret->GetBody()->setAngularFactor( btVector3( 0, 1, 0 ) );
+	}
+	return ret;
+}
+
+void Engine::AttachCameraToObject( std::string name, btVector3 location )
+{
+	auto it = object.find( name );
+	if( it != object.end() )
+	{
+		cameraParent = it->second;
+	}
+	cameraParent = NULL;
+	GetCamera()->SetPos( location );
 }
 
 void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size )
@@ -272,8 +301,55 @@ Object * Engine::GetObject( std::string name )
 	return NULL;
 }
 
+void Engine::DeleteObject( std::string name )
+{
+	auto it = object.find( name );
+	if( it != object.end() )
+	{
+		if( it->second == cameraParent )
+			cameraParent = NULL;
+		if( it->second )
+		{
+			world->RemoveBody( name );
+			delete it->second;
+		}
+		object.erase( it );
+	}
+}
+
+void Engine::Draw2D()
+{
+	/*
+	output.SetColor( al_map_rgb( 255, 255, 255 ) );
+	output.SetWorkSpace( 20, 20, this->GetMaxBorderWidth()-20, this->GetMaxBorderHeight()-20 );
+	output.Goto( 1, 1 );
+	output.Print( this->GetCurrentStringToEnter().c_str() );
+	*/
+	
+	window->output->SetWorkSpace( 5, 5, 80, 80 );
+	window->output->Goto( 5, 5 );
+	window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
+	window->output->Print( "FPS: " );
+	window->output->Print( window->GetSmoothFps() );
+	window->output->Print( "\n" );
+	window->output->Print( (int)al_get_time() );
+	
+	window->output->Print( "\n\nCamera position: " );
+	window->output->Print( window->camera->GetPos().x() );
+	window->output->Print( " : " );
+	window->output->Print( window->camera->GetPos().y() );
+	window->output->Print( " : " );
+	window->output->Print( window->camera->GetPos().z() );
+	
+	window->output->Print( "\nObjects: " );
+	window->output->Print( int(object.size()) );
+}
+
 void Engine::Draw3D()
 {
+//	if( cameraParent )
+//		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
+	
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
@@ -303,28 +379,12 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	window->HideMouse();
 	window->LockMouse();
-	
-	
-	Model * mdl = GetModel( "./media/testmap.obj" );
-	Object * map = AddCustom( "TestMap", mdl->MakeStaticTriangleCollisionShape(), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,-20) ), false );
-	map->SetModel( mdl );
-	
-	/*
-	AddBox( "Surface0", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,-20) ), false );
-	AddBox( "Surface1", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-10,20) ), false );
-	AddBox( "Surface2", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,-10,20) ), false );
-	AddBox( "Surface3", btVector3(20,10,20), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,-10,-20) ), false );
-	AddBox( "Box", btVector3(3,1,5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(1,60,0) ), true );
-	AddBall( "Ball", 1.5, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,50,0) ), true );
-	*/
-	for( int i = 0; i < 125; ++i )
-	{
-		AddBox( std::string("Box")+std::to_string(i), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,5,0) + btVector3(i/25,(i/5)%5,i%5) - btVector3(2.5,2.5,2.5) ), true );
-	}
 }
 
 void Engine::Destroy()
 {
+	cameraParent = NULL;
+	
 	if( window )
 	{
 		window->Destroy();
@@ -362,6 +422,7 @@ Engine::Engine()
 	world = NULL;
 	window = NULL;
 	pausePhysics = true;
+	cameraParent = NULL;
 }
 
 Engine::~Engine()

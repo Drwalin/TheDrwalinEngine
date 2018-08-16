@@ -100,6 +100,7 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 			if( currentVBO )
 			{
 				std::vector < AR<int,3> > temp;
+				temp.resize( 0 );
 				while( !sstream.eof() )
 				{
 					temp.resize( temp.size() + 1 );
@@ -114,31 +115,63 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName )
 					temp.back()[0]--;
 					temp.back()[1]--;
 					temp.back()[2]--;
-					if( temp.back()[0] == -1 || temp.back()[1] == -1 || temp.back()[2] == -1 )
+					if( temp.back()[0] < 0 || temp.back()[1] < 0 || temp.back()[2] < 0 )
 						temp.resize( temp.size() - 1 );
 				}
-				
-				if( temp.size() )
-				{
-					
-					int f[3][2];
-					f[0][0] = temp[0][0];
-					f[0][1] = temp[0][1];
-					for( int i = 2; i < temp.size(); ++i )
-					{
-						f[1][0] = temp[i-1][0];
-						f[1][1] = temp[i-1][1];
-						f[2][0] = temp[i][0];
-						f[2][1] = temp[i][1];
-						
-						const static ALLEGRO_COLOR c = al_map_rgb(255,255,255);
-						currentVBO->AddTriangle
-										(
-											(ALLEGRO_VERTEX){ v[f[0][0]][0], v[f[0][0]][1], v[f[0][0]][2], vt[f[0][1]][0]*currentTextureWidth, (-vt[f[0][1]][1])*currentTextureHeight, c },
-											(ALLEGRO_VERTEX){ v[f[1][0]][0], v[f[1][0]][1], v[f[1][0]][2], vt[f[1][1]][0]*currentTextureWidth, (-vt[f[2][1]][1])*currentTextureHeight, c },
-											(ALLEGRO_VERTEX){ v[f[2][0]][0], v[f[2][0]][1], v[f[2][0]][2], vt[f[2][1]][0]*currentTextureWidth, (-vt[f[1][1]][1])*currentTextureHeight, c }
+
+#define ADDTRIANGLE \
+						currentVBO->AddTriangle\
+										(\
+											(ALLEGRO_VERTEX){ v[f[0][0]][0]*0.02f, v[f[0][0]][1]*0.02f, v[f[0][0]][2]*0.02f, vt[f[0][1]][0]*currentTextureWidth, (0.0f+vt[f[0][1]][1])*currentTextureHeight, c },\
+											(ALLEGRO_VERTEX){ v[f[1][0]][0]*0.02f, v[f[1][0]][1]*0.02f, v[f[1][0]][2]*0.02f, vt[f[1][1]][0]*currentTextureWidth, (0.0f+vt[f[2][1]][1])*currentTextureHeight, c },\
+											(ALLEGRO_VERTEX){ v[f[2][0]][0]*0.02f, v[f[2][0]][1]*0.02f, v[f[2][0]][2]*0.02f, vt[f[2][1]][0]*currentTextureWidth, (0.0f+vt[f[1][1]][1])*currentTextureHeight, c }\
 										);
+				if( temp.size() >= 3 )
+				{
+					int f[3][2];
+					int i;
+					const static ALLEGRO_COLOR c = al_map_rgb(255,255,255);
+					switch( temp.size() )
+					{
+					case 3:
+						f[0][0] = temp[0][0];
+						f[0][1] = temp[0][1];
+						f[1][0] = temp[1][0];
+						f[1][1] = temp[1][1];
+						f[2][0] = temp[2][0];
+						f[2][1] = temp[2][1];
+						ADDTRIANGLE
+						break;
+						
+					case 4:
+						f[0][0] = temp[0][0];
+						f[0][1] = temp[0][1];
+						f[1][0] = temp[1][0];
+						f[1][1] = temp[1][1];
+						f[2][0] = temp[2][0];
+						f[2][1] = temp[2][1];
+						ADDTRIANGLE
+						f[1][0] = temp[3][0];
+						f[1][1] = temp[3][1];
+						ADDTRIANGLE
+						break;
+						
+					default:
+						for( i = 2; i < temp.size(); ++i )
+						{
+							f[0][0] = temp[i-2][0];
+							f[0][1] = temp[i-2][1];
+							f[1][0] = temp[i-1][0];
+							f[1][1] = temp[i-1][1];
+							f[2][0] = temp[i][0];
+							f[2][1] = temp[i][1];
+							
+							ADDTRIANGLE
+						}
 					}
+#undef ADDTRIANGLE					
+					
+					
 				}
 			}
 		}

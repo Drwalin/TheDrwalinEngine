@@ -5,17 +5,6 @@
 #include <BasicWindow.h>
 #include <Debug.h>
 
-ALLEGRO_BITMAP * LoadTexture( const char * fileName )
-{
-	al_set_new_bitmap_flags( /*ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR |*/ ALLEGRO_MIPMAP );
-	return al_load_bitmap( fileName );
-}
-
-void DestroyBitmap( ALLEGRO_BITMAP * ptr )
-{
-	al_destroy_bitmap( ptr );
-}
-
 void BasicWindow::LockMouse()
 {
 	lockMouse = true;
@@ -56,6 +45,11 @@ int BasicWindow::GetFontHeight()
 	return 9;
 }
 
+ALLEGRO_BITMAP * BasicWindow::GetDisplayBitmap()
+{
+	return al_get_backbuffer( display );
+}
+
 ALLEGRO_DISPLAY * BasicWindow::GetDisplay()
 {
 	return display;
@@ -90,7 +84,7 @@ void BasicWindow::LoadIconFromFile( const char * iconFile )
 {
 	if( iconFile )
 	{
-		icon = LoadTexture( iconFile );
+		icon = al_load_bitmap( iconFile );
 		al_set_display_icon( display, icon );
 	}
 	else
@@ -127,7 +121,7 @@ bool BasicWindow::InitFont()
 	font = al_create_builtin_font();
 	if( font == NULL )
 	{
-		printf( "\n Error: faild to create builtin font in Window::Init " );
+		std::cerr << "\n Error: faild to create builtin font in Window::Init ";
 		return false;
 	}
 	return true;
@@ -140,14 +134,14 @@ void BasicWindow::InitTransforms()
 	
 	al_copy_transform( &projection2DTransform, al_get_current_projection_transform() );
 	
-	CreatePerspectiveTransform( 0.1, 1000.0 );
+	CreatePerspectiveTransform( 0.1, 100000.0 );
 }
 
 bool BasicWindow::InitAllegro()
 {
 	if( !al_init() || !al_init_image_addon() || !al_init_primitives_addon() || !al_init_font_addon() || !al_install_keyboard() || !al_install_mouse() )
 	{
-		printf( "\n Error: one of al_init* failed in Window::Init " );
+		std::cerr << "\n Error: one of al_init* failed in Window::Init ";
 		return false;
 	}
 	return true;
@@ -175,10 +169,10 @@ bool BasicWindow::Init( const char * windowName, const char * iconFile, int widt
 
 void BasicWindow::Destroy()
 {
-	if( font )
-		al_destroy_font( font );
 	if( display )
 		al_destroy_display( display );
+	if( font )
+		al_destroy_font( font );
 	if( icon )
 		al_destroy_bitmap( icon );
 	
@@ -254,7 +248,6 @@ void BasicWindow::AlDraw()
 
 
 extern "C" ALLEGRO_MOUSE_STATE mouseLastFrame;
-
 void BasicWindow::AlTick()
 {
 	UpdateKeyboard();

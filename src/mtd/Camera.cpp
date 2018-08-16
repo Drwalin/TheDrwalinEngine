@@ -49,6 +49,16 @@ btVector3 Camera::GetForwardVector()
 	return dst;
 }
 
+btVector3 Camera::GetPos()
+{
+	return pos;
+}
+
+btVector3 Camera::GetRot()
+{
+	return rot;
+}
+
 void Camera::SetPos( btVector3 src )
 {
 	pos = src;
@@ -99,34 +109,58 @@ void Camera::Rotate( btVector3 src )
 
 void Camera::SetWorldTransform( btTransform transform )
 {
-	btVector3 origin = transform.getOrigin();
-	btQuaternion rotation = transform.getRotation();
-	btVector3 axis = rotation.getAxis();
-	btScalar angle = rotation.getAngle();
-	
 	ALLEGRO_TRANSFORM dst;
 	al_identity_transform( &dst );
-	al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
-	al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
 	
+	{
+		btVector3 origin = transform.getOrigin();
+		btQuaternion rotation = transform.getRotation();
+		btVector3 axis = rotation.getAxis();
+		btScalar angle = rotation.getAngle();
+		
+		al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
+		al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
+	}
+	
+	
+	
+	{
+		btVector3 origin = parentTransformation.getOrigin();
+		btQuaternion rotation = parentTransformation.getRotation();
+		btVector3 axis = rotation.getAxis();
+		btScalar angle = rotation.getAngle();
+		
+		al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
+		al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
+	}
+		
 	al_translate_transform_3d( &dst, -pos.getX(), -pos.getY(), -pos.getZ() );
 	al_rotate_transform_3d( &dst, 0, 1, 0, rot.getY() );
 	al_rotate_transform_3d( &dst, 1, 0, 0, rot.getX() );
 	al_rotate_transform_3d( &dst, 0, 0, 1, rot.getZ() );
 	
+	
+	
 	al_use_transform( &dst );
+}
+
+void Camera::SetCameraTransform( btTransform transform )
+{
+	parentTransformation = transform;
 }
 
 Camera::Camera()
 {
 	pos = btVector3(0,0,0);
 	rot = btVector3(0,0,0);
+	parentTransformation = btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) );
 }
 
 Camera::~Camera()
 {
 	pos = btVector3(0,0,0);
 	rot = btVector3(0,0,0);
+	parentTransformation = btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) );
 }
 
 #endif

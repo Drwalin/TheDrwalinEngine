@@ -13,6 +13,7 @@ private:
 	
 	btVector3 pos;
 	btVector3 rot;
+	btTransform parentTransformation;
 	
 public:
 	
@@ -20,11 +21,14 @@ public:
 	btVector3 GetRightVector();
 	btVector3 GetFlatForwardVector();
 	btVector3 GetForwardVector();
+	btVector3 GetPos();
+	btVector3 GetRot();
 	void SetPos( btVector3 src );
 	void SetRotation( btVector3 src );
 	void Move( btVector3 src );
 	void Rotate( btVector3 src );
 	void SetWorldTransform( btTransform transform );
+	void SetCameraTransform( btTransform transform );
 	
 	Camera();
 	~Camera();

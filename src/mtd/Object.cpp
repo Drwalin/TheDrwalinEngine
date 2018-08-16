@@ -13,6 +13,11 @@ btTransform Object::GetTransform()
 	return transform;
 }
 
+btRigidBody * Object::GetBody()
+{
+	return body;
+}
+
 void Object::Draw()
 {
 	if( model )

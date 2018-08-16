@@ -34,7 +34,7 @@ private:
 	std::map < std::vector < btScalar >, btCollisionShape* > collisionShape;
 	std::vector < btCollisionShape* > customCollisionShape;
 	
-	Object * player;
+	Object * cameraParent;
 	
 	bool pausePhysics;
 	
@@ -54,13 +54,18 @@ public:
 	Object * AddCapsule( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic = false, btScalar mass = 1.0f );
 	Object * AddCylinder( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic = false, btScalar mass = 1.0f );
 	Object * AddCustom( std::string name, btCollisionShape * collisionShape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );		// engine take full control of instance of btCollisionShape * collisionShape
+	Object * AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
+	void AttachCameraToObject( std::string name, btVector3 location );
 	
 	Texture * GetTexture( std::string name );
 	Model * GetModel( std::string name );
 	Object * GetObject( std::string name );
 	
+	std::string GetAvailableObjectName( std::string name );
+	
 	void DeleteObject( std::string name );
 	
+	int CalculateNumberOfSimulationsPerFrame( const float deltaTime );
 	void Tick( const float deltaTime );
 	
 	void Draw2D();

@@ -20,9 +20,6 @@
 		-o test -lm -lpthread -lSM -lICE -lX11 -lXext -lXcursor -lXpm -lXi -lXinerama -lXrandr -lGL -lGLU -lpng -lz -lpulse-simple -lpulse -lasound -lopenal -lfreetype -lallegro_monolith-static
 */
 
-ALLEGRO_BITMAP * LoadTexture( const char * fileName );
-void DestroyBitmap( ALLEGRO_BITMAP * ptr );
-
 #include <Keyboard.h>
 #include <EventResponser.h>
 #include <Camera.h>
@@ -61,6 +58,7 @@ public:
 	void SetEventResponser( EventResponser * eventResponser );
 	
 	ALLEGRO_DISPLAY * GetDisplay();
+	ALLEGRO_BITMAP * GetDisplayBitmap();
 	
 	void LockMouse();
 	void UnlockMouse();

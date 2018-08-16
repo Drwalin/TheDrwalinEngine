@@ -7,6 +7,8 @@
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btQuaternion.h>
 
+#include <Debug.h>
+
 class Camera
 {
 private:
@@ -21,8 +23,12 @@ public:
 	btVector3 GetRightVector();
 	btVector3 GetFlatForwardVector();
 	btVector3 GetForwardVector();
+	
+	btVector3 GetLocation();
+	
 	btVector3 GetPos();
 	btVector3 GetRot();
+	
 	void SetPos( btVector3 src );
 	void SetRotation( btVector3 src );
 	void Move( btVector3 src );

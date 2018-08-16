@@ -26,6 +26,7 @@ public:
 	
 	std::map < std::string, btRigidBody* > object;
 	
+	btVector3 GetGravity();
 	
 	void Tick( btScalar deltaTime, int count = 0 );
 	

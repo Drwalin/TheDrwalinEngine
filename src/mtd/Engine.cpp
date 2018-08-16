@@ -16,6 +16,7 @@ void Engine::ResumeSimulation()
 
 int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
 {
+	return 0;
 	float fps = 1.0 / deltaTime;
 	if( fps >= 57.0 )
 		return 100;
@@ -58,13 +59,9 @@ Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransf
 	if( shape && object.find(name) == object.end() )
 	{
 		if( dynamic && mass > 0 )
-		{
 			shape->calculateLocalInertia( mass, inertia );
-		}
 		else
-		{
 			mass = 0;
-		}
 		
 		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, shape, inertia );
@@ -153,12 +150,15 @@ Object * Engine::AddCustom( std::string name, btCollisionShape * collisionShape,
 
 Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
 {
-	Object * ret =  AddCapsule( name, width, height, transform, true, mass );
-	if( ret )
+	Object * obj =  AddCapsule( name, width/2.0, height, transform, true, mass );
+	if( obj )
 	{
-		ret->GetBody()->setAngularFactor( btVector3( 0, 1, 0 ) );
+		obj->GetBody()->setAngularFactor( btVector3( 0, 0.05, 0 ) );
+		obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
+		obj->GetBody()->setDamping( 0.99, 0.7 );
+		obj->GetBody()->setGravity( world->GetGravity() * 5.0 );
 	}
-	return ret;
+	return obj;
 }
 
 void Engine::AttachCameraToObject( std::string name, btVector3 location )
@@ -168,7 +168,10 @@ void Engine::AttachCameraToObject( std::string name, btVector3 location )
 	{
 		cameraParent = it->second;
 	}
-	cameraParent = NULL;
+	else
+	{
+		cameraParent = NULL;
+	}
 	GetCamera()->SetPos( location );
 }
 
@@ -207,7 +210,7 @@ void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size
 	};
 	
 	window->camera->SetWorldTransform( transform );
-	Texture * tex = GetTexture("media/DebugTexturte.png");
+	Texture * tex = GetTexture("media/Textures/DebugTexturte.png");
 	al_draw_indexed_prim( vtx, NULL, tex ? tex->GetBitmapPtr() : NULL, indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
@@ -228,6 +231,44 @@ void Engine::DrawBall( ALLEGRO_COLOR color, btTransform transform, float radian 
 	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3(-1, 0, 1), 30 ), btVector3(0,0,0) ), size );
 	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 1, 0,-1), 30 ), btVector3(0,0,0) ), size );
 	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3(-1, 0,-1), 30 ), btVector3(0,0,0) ), size );
+}
+
+bool Engine::SetCustomModel( std::string name, Model * mdl )
+{
+	auto it = model.find( name );
+	if( it == model.end() )
+	{
+		model[name] = mdl;
+		return true;
+	}
+	return false;
+}
+
+Model * Engine::LoadModel( std::string name, int flags, btVector3 arg1, btVector3 origin )
+{
+	auto it = model.find( name );
+	if( it != model.end() )
+	{
+		if( it->second )
+			return it->second;
+		else
+			model.erase( it );
+	}
+	else
+	{
+		Model * mdl = new Model;
+		if( mdl->LoadFromObj( this, name, flags, arg1, origin ) == false )
+		{
+			delete mdl;
+			return NULL;
+		}
+		else
+		{
+			model[name] = mdl;
+			return mdl;
+		}
+	}
+	return NULL;
 }
 
 Texture * Engine::GetTexture( std::string name )
@@ -347,8 +388,8 @@ void Engine::Draw2D()
 
 void Engine::Draw3D()
 {
-//	if( cameraParent )
-//		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
+	if( cameraParent )
+		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
 	
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{

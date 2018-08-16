@@ -12,6 +12,11 @@ void World::Tick( btScalar deltaTime, int count )
 		dynamicsWorld->stepSimulation( deltaTime );
 }
 
+btVector3 World::GetGravity()
+{
+	return dynamicsWorld->getGravity();
+}
+
 void World::Init()
 {
 	Destroy();

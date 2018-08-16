@@ -33,15 +33,27 @@ void Object::Draw()
 
 void Object::DrawDebug()
 {
+	Model * mdl;
 	switch( objectType )
 	{
 	case BOX:
 		engine->DrawBox( al_map_rgb(255,255,255), GetTransform(), btVector3(debugData[0],debugData[1],debugData[2]) );
 		break;
 	case BALL:
-		engine->DrawBall( al_map_rgb(255,255,255), GetTransform(), debugData[0] );
+		mdl = engine->GetModel( "Sphere" );
+		if( mdl )
+		{
+			engine->GetCamera()->SetWorldTransform( GetTransform() );
+			mdl->Draw();
+		}
+		else
+		{
+			engine->DrawBall( al_map_rgb(255,255,255), GetTransform(), debugData[0] );
+		}
 		break;
 	case CAPSULE:
+		engine->DrawBox( al_map_rgb(255,255,255), GetTransform(), btVector3(debugData[0],debugData[1],debugData[0])*0.3 );
+		break;
 	case CYLINDER:
 	case CUSTOM:
 		std::cerr << "\n Can not yet draw different debug objects tha boxes and balls\n this->name = " << name;

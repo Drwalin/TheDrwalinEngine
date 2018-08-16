@@ -9,6 +9,12 @@ btVector3 Camera::GetFlatRightVector()
 	btVector3 dst(-1,0,0);
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform( &transform );
+	
+	btQuaternion rotation = parentTransformation.getRotation();
+	btVector3 axis = rotation.getAxis();
+	btScalar angle = rotation.getAngle();
+	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	
 	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
@@ -19,6 +25,12 @@ btVector3 Camera::GetRightVector()
 	btVector3 dst(-1,0,0);
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform( &transform );
+	
+	btQuaternion rotation = parentTransformation.getRotation();
+	btVector3 axis = rotation.getAxis();
+	btScalar angle = rotation.getAngle();
+	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	
 	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
 	al_rotate_transform_3d( &transform, 1, 0, 0, -rot.getX() );
 	al_rotate_transform_3d( &transform, 0, 0, 1, rot.getZ() );
@@ -31,6 +43,12 @@ btVector3 Camera::GetFlatForwardVector()
 	btVector3 dst(0,0,1);
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform( &transform );
+	
+	btQuaternion rotation = parentTransformation.getRotation();
+	btVector3 axis = rotation.getAxis();
+	btScalar angle = rotation.getAngle();
+	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	
 	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
@@ -43,6 +61,12 @@ btVector3 Camera::GetForwardVector()
 	ALLEGRO_TRANSFORM transform;
 	al_identity_transform( &transform );
 	a = GetFlatRightVector();
+	
+	btQuaternion rotation = parentTransformation.getRotation();
+	btVector3 axis = rotation.getAxis();
+	btScalar angle = rotation.getAngle();
+	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	
 	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
 	al_rotate_transform_3d( &transform, a.getX(), a.getY(), a.getZ(), -rot.getX() );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
@@ -57,6 +81,23 @@ btVector3 Camera::GetPos()
 btVector3 Camera::GetRot()
 {
 	return rot;
+}
+
+btVector3 Camera::GetLocation()
+{
+	ALLEGRO_TRANSFORM transform;
+	al_identity_transform( &transform );
+	
+	btVector3 origin = parentTransformation.getOrigin();
+	
+	al_translate_transform_3d( &transform, pos.getX(), pos.getY(), pos.getZ() );
+	al_translate_transform_3d( &transform, origin.getX(), origin.getY(), origin.getZ() );
+	
+	btVector3 dst(0,0,0);
+	
+	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
+	
+	return dst;
 }
 
 void Camera::SetPos( btVector3 src )
@@ -124,17 +165,15 @@ void Camera::SetWorldTransform( btTransform transform )
 	
 	
 	
-	{
-		btVector3 origin = parentTransformation.getOrigin();
+		btVector3 origin = -parentTransformation.getOrigin();
 		btQuaternion rotation = parentTransformation.getRotation();
 		btVector3 axis = rotation.getAxis();
-		btScalar angle = rotation.getAngle();
+		btScalar angle = -rotation.getAngle();
 		
-		al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
-		al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
-	}
 		
 	al_translate_transform_3d( &dst, -pos.getX(), -pos.getY(), -pos.getZ() );
+	al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
+	al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
 	al_rotate_transform_3d( &dst, 0, 1, 0, rot.getY() );
 	al_rotate_transform_3d( &dst, 1, 0, 0, rot.getX() );
 	al_rotate_transform_3d( &dst, 0, 0, 1, rot.getZ() );

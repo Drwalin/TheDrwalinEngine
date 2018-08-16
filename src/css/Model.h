@@ -34,9 +34,15 @@ private:
 	
 public:
 	
+	const static int CENTER_NONE = 0;
+	const static int CENTER_BARYCENTER = 1;
+	const static int CENTER_AABB_MID = 2;
+	const static int RESCALE_TO_SIZE = 4;
+	const static int RESCALE_WITH_SCALE = 8;
+	
 	void Draw();
 	
-	bool LoadFromObj( Engine * engine, std::string fileName );
+	bool LoadFromObj( Engine * engine, std::string fileName, int flags = Model::CENTER_NONE, btVector3 arg1 = btVector3(0,0,0), btVector3 origin = btVector3(0,0,0) );
 	//bool loadFromCompressedFile( Engine * engine, std::string fileName );
 	
 	btCollisionShape * MakeConvexCollisionShape();

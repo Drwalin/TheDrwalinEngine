@@ -57,6 +57,9 @@ public:
 	Object * AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
 	void AttachCameraToObject( std::string name, btVector3 location );
 	
+	bool SetCustomModel( std::string name, Model * mdl );
+	
+	Model * LoadModel( std::string name, int flags = Model::CENTER_NONE, btVector3 arg1 = btVector3(0,0,0), btVector3 origin = btVector3(0,0,0) );
 	Texture * GetTexture( std::string name );
 	Model * GetModel( std::string name );
 	Object * GetObject( std::string name );

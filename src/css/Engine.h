@@ -40,6 +40,8 @@ private:
 	
 public:
 	
+	World * GetWorld();
+	
 	void PauseSimulation();
 	void ResumeSimulation();
 	

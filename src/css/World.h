@@ -24,6 +24,8 @@ private:
 	
 public:
 	
+	void UpdateColliderForObject( btRigidBody * body );
+	
 	std::map < std::string, btRigidBody* > object;
 	
 	btVector3 GetGravity();

@@ -12,6 +12,11 @@ void World::Tick( btScalar deltaTime, int count )
 		dynamicsWorld->stepSimulation( deltaTime );
 }
 
+void World::UpdateColliderForObject( btRigidBody * body )
+{
+	dynamicsWorld->getCollisionWorld()->updateSingleAabb( body );
+}
+
 btVector3 World::GetGravity()
 {
 	return dynamicsWorld->getGravity();

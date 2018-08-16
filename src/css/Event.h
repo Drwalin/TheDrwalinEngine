@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include <ctime>
+
 class Event : public EventResponser
 {
 private:

@@ -4,6 +4,11 @@
 
 #include <Engine.h>
 
+World * Engine::GetWorld()
+{
+	return world;
+}
+
 void Engine::PauseSimulation()
 {
 	pausePhysics = true;
@@ -67,6 +72,7 @@ Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransf
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, shape, inertia );
 		btRigidBody* rigidBody = new btRigidBody( rigidBodyCI );
 		world->AddBody( name, rigidBody );
+		rigidBody->setDamping( 0.1, 0.1 );
 		
 		Object * obj = new Object( this, name, rigidBody, collisionBinaryInfo, type );
 		object[name] = obj;
@@ -109,7 +115,6 @@ Object * Engine::AddBall( std::string name, btScalar radius, btTransform transfo
 
 Object * Engine::AddCapsule( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic, btScalar mass )
 {
-	height;
 	std::vector < btScalar > collisionBinaryInfo;
 	collisionBinaryInfo.resize( 2 );
 	collisionBinaryInfo[0] = radius;
@@ -150,13 +155,15 @@ Object * Engine::AddCustom( std::string name, btCollisionShape * collisionShape,
 
 Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
 {
-	Object * obj =  AddCapsule( name, width/2.0, height, transform, true, mass );
+	btCollisionShape * shape = new btCapsuleShape( width/2.0, height/2.0 );
+	customCollisionShape.push_back( shape );
+	Object * obj = AddObject( name, shape, transform, std::vector<btScalar>(), Object::CUSTOM, true, mass, btVector3(0,0,0) );
 	if( obj )
 	{
 		obj->GetBody()->setAngularFactor( btVector3( 0, 0.05, 0 ) );
 		obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
 		obj->GetBody()->setDamping( 0.99, 0.7 );
-		obj->GetBody()->setGravity( world->GetGravity() * 5.0 );
+		obj->GetBody()->setGravity( world->GetGravity() * 7.0 );
 	}
 	return obj;
 }
@@ -209,7 +216,7 @@ void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size
 		3, 5, 7
 	};
 	
-	window->camera->SetWorldTransform( transform );
+	window->camera->SetWorldTransform( transform, btVector3(1,1,1) );
 	Texture * tex = GetTexture("media/Textures/DebugTexturte.png");
 	al_draw_indexed_prim( vtx, NULL, tex ? tex->GetBitmapPtr() : NULL, indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
 }
@@ -376,11 +383,11 @@ void Engine::Draw2D()
 	window->output->Print( (int)al_get_time() );
 	
 	window->output->Print( "\n\nCamera position: " );
-	window->output->Print( window->camera->GetPos().x() );
+	window->output->Print( window->camera->GetLocation().x() );
 	window->output->Print( " : " );
-	window->output->Print( window->camera->GetPos().y() );
+	window->output->Print( window->camera->GetLocation().y() );
 	window->output->Print( " : " );
-	window->output->Print( window->camera->GetPos().z() );
+	window->output->Print( window->camera->GetLocation().z() );
 	
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );

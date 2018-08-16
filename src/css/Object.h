@@ -28,6 +28,7 @@ private:
 	
 	btRigidBody * body;
 	Model * model;
+	btVector3 scale;
 	
 	std::vector < float > debugData;
 	int objectType;
@@ -39,6 +40,9 @@ public:
 	const static int CAPSULE = 3;
 	const static int CYLINDER = 4;
 	const static int CUSTOM = 5;
+	
+	void SetScale( btVector3 scale );
+	btVector3 GetScale();
 	
 	btTransform GetTransform();
 	

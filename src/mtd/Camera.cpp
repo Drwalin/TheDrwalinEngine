@@ -4,6 +4,16 @@
 
 #include <Camera.h>
 
+void Camera::SetLocationScale( btVector3 scale )
+{
+	locationScale = scale;
+}
+
+btVector3 Camera::GetLocationScale()
+{
+	return locationScale;
+}
+
 btVector3 Camera::GetFlatRightVector()
 {
 	btVector3 dst(-1,0,0);
@@ -13,9 +23,9 @@ btVector3 Camera::GetFlatRightVector()
 	btQuaternion rotation = parentTransformation.getRotation();
 	btVector3 axis = rotation.getAxis();
 	btScalar angle = rotation.getAngle();
-	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	al_rotate_transform_3d( &transform, axis.x(), axis.y(), axis.z(), angle );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.y() + ALLEGRO_PI );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
 }
@@ -29,11 +39,11 @@ btVector3 Camera::GetRightVector()
 	btQuaternion rotation = parentTransformation.getRotation();
 	btVector3 axis = rotation.getAxis();
 	btScalar angle = rotation.getAngle();
-	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	al_rotate_transform_3d( &transform, axis.x(), axis.y(), axis.z(), angle );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
-	al_rotate_transform_3d( &transform, 1, 0, 0, -rot.getX() );
-	al_rotate_transform_3d( &transform, 0, 0, 1, rot.getZ() );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.y() + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 1, 0, 0, -rot.x() );
+	al_rotate_transform_3d( &transform, 0, 0, 1, rot.z() );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
 }
@@ -47,9 +57,9 @@ btVector3 Camera::GetFlatForwardVector()
 	btQuaternion rotation = parentTransformation.getRotation();
 	btVector3 axis = rotation.getAxis();
 	btScalar angle = rotation.getAngle();
-	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	al_rotate_transform_3d( &transform, axis.x(), axis.y(), axis.z(), angle );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.y() + ALLEGRO_PI );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
 }
@@ -65,10 +75,10 @@ btVector3 Camera::GetForwardVector()
 	btQuaternion rotation = parentTransformation.getRotation();
 	btVector3 axis = rotation.getAxis();
 	btScalar angle = rotation.getAngle();
-	al_rotate_transform_3d( &transform, axis.getX(), axis.getY(), axis.getZ(), angle );
+	al_rotate_transform_3d( &transform, axis.x(), axis.y(), axis.z(), angle );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.getY() + ALLEGRO_PI );
-	al_rotate_transform_3d( &transform, a.getX(), a.getY(), a.getZ(), -rot.getX() );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -rot.y() + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, a.x(), a.y(), a.z(), -rot.x() );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
 }
@@ -90,8 +100,8 @@ btVector3 Camera::GetLocation()
 	
 	btVector3 origin = parentTransformation.getOrigin();
 	
-	al_translate_transform_3d( &transform, pos.getX(), pos.getY(), pos.getZ() );
-	al_translate_transform_3d( &transform, origin.getX(), origin.getY(), origin.getZ() );
+	al_translate_transform_3d( &transform, pos.x()*locationScale.x(), pos.y()*locationScale.y(), pos.z()*locationScale.z() );
+	al_translate_transform_3d( &transform, origin.x(), origin.y(), origin.z() );
 	
 	btVector3 dst(0,0,0);
 	
@@ -108,19 +118,19 @@ void Camera::SetPos( btVector3 src )
 void Camera::SetRotation( btVector3 src )
 {
 	rot = src;
-	if( rot.getX() > ALLEGRO_PI / 2.0 )
+	if( rot.x() > ALLEGRO_PI / 2.0 )
 		rot.m_floats[0] = ALLEGRO_PI / 2.0;
-	else if( rot.getX() < -ALLEGRO_PI / 2.0 )
+	else if( rot.x() < -ALLEGRO_PI / 2.0 )
 		rot.m_floats[0] = -ALLEGRO_PI / 2.0;
 	
-	if( rot.getY() > ALLEGRO_PI * 2.0 )
+	if( rot.y() > ALLEGRO_PI * 2.0 )
 		rot.m_floats[1] -= ALLEGRO_PI * 2.0;
-	else if( rot.getY() < -ALLEGRO_PI * 2.0 )
+	else if( rot.y() < -ALLEGRO_PI * 2.0 )
 		rot.m_floats[1] += ALLEGRO_PI * 2.0;
 	
-	if( rot.getZ() > ALLEGRO_PI * 2.0 )
+	if( rot.z() > ALLEGRO_PI * 2.0 )
 		rot.m_floats[2] -= ALLEGRO_PI * 2.0;
-	else if( rot.getZ() < -ALLEGRO_PI * 2.0 )
+	else if( rot.z() < -ALLEGRO_PI * 2.0 )
 		rot.m_floats[2] += ALLEGRO_PI * 2.0;
 }
 
@@ -132,26 +142,28 @@ void Camera::Move( btVector3 src )
 void Camera::Rotate( btVector3 src )
 {
 	rot += src;
-	if( rot.getX() > ALLEGRO_PI / 2.0 )
+	if( rot.x() > ALLEGRO_PI / 2.0 )
 		rot.m_floats[0] = ALLEGRO_PI / 2.0;
-	else if( rot.getX() < -ALLEGRO_PI / 2.0 )
+	else if( rot.x() < -ALLEGRO_PI / 2.0 )
 		rot.m_floats[0] = -ALLEGRO_PI / 2.0;
 	
-	if( rot.getY() > ALLEGRO_PI * 2.0 )
+	if( rot.y() > ALLEGRO_PI * 2.0 )
 		rot.m_floats[1] -= ALLEGRO_PI * 2.0;
-	else if( rot.getY() < -ALLEGRO_PI * 2.0 )
+	else if( rot.y() < -ALLEGRO_PI * 2.0 )
 		rot.m_floats[1] += ALLEGRO_PI * 2.0;
 	
-	if( rot.getZ() > ALLEGRO_PI * 2.0 )
+	if( rot.z() > ALLEGRO_PI * 2.0 )
 		rot.m_floats[2] -= ALLEGRO_PI * 2.0;
-	else if( rot.getZ() < -ALLEGRO_PI * 2.0 )
+	else if( rot.z() < -ALLEGRO_PI * 2.0 )
 		rot.m_floats[2] += ALLEGRO_PI * 2.0;
 }
 
-void Camera::SetWorldTransform( btTransform transform )
+void Camera::SetWorldTransform( btTransform transform, btVector3 scale )
 {
 	ALLEGRO_TRANSFORM dst;
 	al_identity_transform( &dst );
+	
+	al_scale_transform_3d( &dst, scale.x(), scale.y(), scale.z() );
 	
 	{
 		btVector3 origin = transform.getOrigin();
@@ -159,26 +171,21 @@ void Camera::SetWorldTransform( btTransform transform )
 		btVector3 axis = rotation.getAxis();
 		btScalar angle = rotation.getAngle();
 		
-		al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
-		al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
+		al_rotate_transform_3d( &dst, axis.x(), axis.y(), axis.z(), angle );
+		al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
 	}
 	
-	
-	
-		btVector3 origin = -parentTransformation.getOrigin();
-		btQuaternion rotation = parentTransformation.getRotation();
-		btVector3 axis = rotation.getAxis();
-		btScalar angle = -rotation.getAngle();
+	btVector3 origin = -parentTransformation.getOrigin();
+	btQuaternion rotation = parentTransformation.getRotation();
+	btVector3 axis = rotation.getAxis();
+	btScalar angle = -rotation.getAngle();
 		
-		
-	al_translate_transform_3d( &dst, -pos.getX(), -pos.getY(), -pos.getZ() );
-	al_translate_transform_3d( &dst, origin.getX(), origin.getY(), origin.getZ() );
-	al_rotate_transform_3d( &dst, axis.getX(), axis.getY(), axis.getZ(), angle );
-	al_rotate_transform_3d( &dst, 0, 1, 0, rot.getY() );
-	al_rotate_transform_3d( &dst, 1, 0, 0, rot.getX() );
-	al_rotate_transform_3d( &dst, 0, 0, 1, rot.getZ() );
-	
-	
+	al_translate_transform_3d( &dst, -pos.x()*locationScale.x(), -pos.y()*locationScale.y(), -pos.z()*locationScale.z() );
+	al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
+	al_rotate_transform_3d( &dst, axis.x(), axis.y(), axis.z(), angle );
+	al_rotate_transform_3d( &dst, 0, 1, 0, rot.y() );
+	al_rotate_transform_3d( &dst, 1, 0, 0, rot.x() );
+	al_rotate_transform_3d( &dst, 0, 0, 1, rot.z() );
 	
 	al_use_transform( &dst );
 }
@@ -192,6 +199,7 @@ Camera::Camera()
 {
 	pos = btVector3(0,0,0);
 	rot = btVector3(0,0,0);
+	locationScale = btVector3(1,1,1);
 	parentTransformation = btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) );
 }
 
@@ -199,6 +207,7 @@ Camera::~Camera()
 {
 	pos = btVector3(0,0,0);
 	rot = btVector3(0,0,0);
+	locationScale = btVector3(0,0,0);
 	parentTransformation = btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) );
 }
 

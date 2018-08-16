@@ -5,6 +5,21 @@
 #include <Object.h>
 #include <Engine.h>
 
+void Object::SetScale( btVector3 scale )
+{
+	this->scale = scale;
+	if( body )
+	{
+		body->getCollisionShape()->setLocalScaling( scale );
+		engine->GetWorld()->UpdateColliderForObject( body );
+	}
+}
+
+btVector3 Object::GetScale()
+{
+	return scale;
+}
+
 btTransform Object::GetTransform()
 {
 	btTransform transform;
@@ -22,7 +37,7 @@ void Object::Draw()
 {
 	if( model )
 	{
-		engine->GetCamera()->SetWorldTransform( GetTransform() );
+		engine->GetCamera()->SetWorldTransform( GetTransform(), scale );
 		model->Draw();
 	}
 	else
@@ -37,26 +52,24 @@ void Object::DrawDebug()
 	switch( objectType )
 	{
 	case BOX:
-		engine->DrawBox( al_map_rgb(255,255,255), GetTransform(), btVector3(debugData[0],debugData[1],debugData[2]) );
+		engine->DrawBox( al_map_rgb(255,255,255), GetTransform(), btVector3(debugData[0],debugData[1],debugData[2])*scale );
 		break;
 	case BALL:
 		mdl = engine->GetModel( "Sphere" );
 		if( mdl )
 		{
-			engine->GetCamera()->SetWorldTransform( GetTransform() );
+			engine->GetCamera()->SetWorldTransform( GetTransform(), scale );
 			mdl->Draw();
 		}
 		else
 		{
-			engine->DrawBall( al_map_rgb(255,255,255), GetTransform(), debugData[0] );
+			engine->DrawBall( al_map_rgb(255,255,255), GetTransform(), debugData[0]*scale.length() );
 		}
 		break;
 	case CAPSULE:
-		engine->DrawBox( al_map_rgb(255,255,255), GetTransform(), btVector3(debugData[0],debugData[1],debugData[0])*0.3 );
-		break;
 	case CYLINDER:
 	case CUSTOM:
-		std::cerr << "\n Can not yet draw different debug objects tha boxes and balls\n this->name = " << name;
+		//std::cerr << "\n Can not yet draw different debug objects than boxes and balls\n this->name = " << name;
 		break;
 	}
 }
@@ -74,6 +87,7 @@ Object::Object( Engine * engine, std::string name, btRigidBody * body, std::vect
 	this->name = name;
 	this->body = body;
 	model = NULL;
+	scale = btVector3(1,1,1);
 }
 
 Object::Object()
@@ -83,6 +97,7 @@ Object::Object()
 	body = NULL;
 	model = NULL;
 	objectType = CUSTOM;
+	scale = btVector3(1,1,1);
 }
 
 Object::~Object()
@@ -92,6 +107,7 @@ Object::~Object()
 	body = NULL;
 	model = NULL;
 	objectType = 0;
+	scale = btVector3(0,0,0);
 }
 
 #endif

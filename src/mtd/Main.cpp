@@ -32,14 +32,14 @@ DEBUG(4)
 	Object * player = engine->AddCharacter( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(20,1,0) ), 75.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	
-DEBUG(14)
+DEBUG(5)
 	engine->BeginLoop();
-DEBUG(15)
+DEBUG(6)
 	
 	engine->Destroy();
-DEBUG(16)
+DEBUG(7)
 	delete engine;
-DEBUG(17)
+DEBUG(8)
 	
 	return 0;
 }

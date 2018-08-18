@@ -37,15 +37,6 @@ void Event::KeyPressedEvent( int keyCode )
 	case ALLEGRO_KEY_ESCAPE:
 		window->QueueQuit();
 		break;
-	case MOUSE_LEFT:
-		temp = engine->AddBox( engine->GetAvailableObjectName("Box"), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		temp->SetModel( engine->GetModel( "Crate01" ) );
-		break;
-	case MOUSE_RIGHT:
-		temp = engine->AddBall( engine->GetAvailableObjectName("Ball"), 0.5, btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		break;
 	case ALLEGRO_KEY_SPACE:
 		if( player == NULL )
 			break;
@@ -56,6 +47,17 @@ void Event::KeyPressedEvent( int keyCode )
 			break;
 		player->SetScale( btVector3( 1.0, 0.25, 1.0 ) );
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 0.25, 1.0 ) );
+		player->GetBody()->applyCentralImpulse( btVector3( 0, -velocity * 0.15, 0 ) );
+		break;
+		
+	case MOUSE_LEFT:
+		temp = engine->AddBox( engine->GetAvailableObjectName("Box"), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		temp->SetModel( engine->GetModel( "Crate01" ) );
+		break;
+	case MOUSE_RIGHT:
+		temp = engine->AddBall( engine->GetAvailableObjectName("Ball"), 0.5, btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 		break;
 	}
 }
@@ -74,6 +76,7 @@ void Event::KeyReleasedEvent( int keyCode )
 			break;
 		player->SetScale( btVector3( 1.0, 1.0, 1.0 ) );
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 1.0, 1.0 ) );
+		player->GetBody()->applyCentralImpulse( btVector3( 0, velocity * 0.15, 0 ) );
 		break;
 	}
 }
@@ -81,8 +84,10 @@ void Event::KeyReleasedEvent( int keyCode )
 void Event::KeyHoldedEvent( int keyCode )
 {
 	Object * player = engine->GetObject( "Player" );
+	Object * temp;
 	
 	btVector3 vector;
+	
 	switch( keyCode )
 	{
 	case ALLEGRO_KEY_ESCAPE:

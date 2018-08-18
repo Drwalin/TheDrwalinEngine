@@ -31,6 +31,7 @@ class Model
 private:
 	
 	std::vector < VBO > vbo;
+	Engine * engine;
 	
 public:
 	

@@ -29,6 +29,7 @@ private:
 	btRigidBody * body;
 	Model * model;
 	btVector3 scale;
+	float fullsphereRadius;
 	
 	std::vector < float > debugData;
 	int objectType;
@@ -41,12 +42,17 @@ public:
 	const static int CYLINDER = 4;
 	const static int CUSTOM = 5;
 	
+	float GetRadius();
+	void CalculateRadius();
+	
 	void SetScale( btVector3 scale );
 	btVector3 GetScale();
 	
 	btTransform GetTransform();
+	btVector3 GetLocation();
 	
 	btRigidBody * GetBody();
+	void SetBody( btRigidBody * body );
 	
 	void Draw();
 	void DrawDebug();

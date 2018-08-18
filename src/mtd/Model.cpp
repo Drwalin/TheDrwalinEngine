@@ -15,6 +15,7 @@ void Model::Draw()
 
 bool Model::LoadFromObj( Engine * engine, std::string fileName, int flags, btVector3 arg1, btVector3 origin )
 {
+	this->engine = engine;
 	std::ifstream mtl, obj;
 	std::string path = fileName;
 	for( int i = path.size(); i > 0; --i )
@@ -321,6 +322,7 @@ void Model::Destroy()
 
 Model::Model()
 {
+	engine = NULL;
 }
 
 Model::~Model()

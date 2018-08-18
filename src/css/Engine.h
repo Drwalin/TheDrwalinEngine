@@ -34,6 +34,8 @@ private:
 	std::map < std::vector < btScalar >, btCollisionShape* > collisionShape;
 	std::vector < btCollisionShape* > customCollisionShape;
 	
+	float guiDrawTime, sceneDrawTime, physicsSimulationTime;
+	
 	Object * cameraParent;
 	
 	bool pausePhysics;

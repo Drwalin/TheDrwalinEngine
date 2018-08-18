@@ -196,7 +196,7 @@ void BasicWindow::CreatePerspectiveTransform( float zNear, float zFar )
 	this->zFar = zFar;
 	float aspect_ratio = (float)al_get_bitmap_height( al_get_backbuffer( display ) ) / (float)al_get_bitmap_width( al_get_backbuffer( display ) );
 	al_identity_transform( &projection3DTransform );
-	al_perspective_transform( &projection3DTransform, -0.1, aspect_ratio*0.1, zNear, 0.1, -aspect_ratio*0.1, zFar );
+	al_perspective_transform( &projection3DTransform, -zNear, aspect_ratio * zNear, zNear, zNear, -aspect_ratio * zNear, zFar );
 }
 
 void BasicWindow::OneLoopFullTick()
@@ -244,6 +244,7 @@ void BasicWindow::AlDraw()
 	Draw2D();
 	
 	al_flip_display();
+	
 }
 
 

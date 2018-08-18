@@ -12,6 +12,7 @@ void Object::SetScale( btVector3 scale )
 	{
 		body->getCollisionShape()->setLocalScaling( scale );
 		engine->GetWorld()->UpdateColliderForObject( body );
+		CalculateRadius();
 	}
 }
 
@@ -31,6 +32,12 @@ btTransform Object::GetTransform()
 btRigidBody * Object::GetBody()
 {
 	return body;
+}
+
+void Object::SetBody( btRigidBody * body )
+{
+	this->body = body;
+	CalculateRadius();
 }
 
 void Object::Draw()
@@ -79,6 +86,44 @@ void Object::SetModel( Model * model )
 	this->model = model;
 }
 
+btVector3 Object::GetLocation()
+{
+	if( body )
+	{
+		btTransform transform;
+		body->getMotionState()->getWorldTransform( transform );
+		return transform.getOrigin();
+	}
+	return btVector3();
+}
+
+float Object::GetRadius()
+{
+	return fullsphereRadius;
+}
+
+void Object::CalculateRadius()
+{
+	if( body )
+	{
+		btVector3 min, max, origin;
+		body->getAabb( min, max );
+		origin = GetLocation();
+		min = (min-origin).absolute();
+		max = (max-origin).absolute();
+		
+		for(int i = 0; i < 3; ++i )
+			if( min.m_floats[0]> max.m_floats[0] )
+				max.m_floats[0] = min.m_floats[0];
+		
+		fullsphereRadius = max.length();
+	}
+	else
+	{
+		fullsphereRadius = 0.01f;
+	}
+}
+
 Object::Object( Engine * engine, std::string name, btRigidBody * body, std::vector < float > debugData, int type )
 {
 	objectType = type;
@@ -88,6 +133,7 @@ Object::Object( Engine * engine, std::string name, btRigidBody * body, std::vect
 	this->body = body;
 	model = NULL;
 	scale = btVector3(1,1,1);
+	CalculateRadius();
 }
 
 Object::Object()
@@ -98,6 +144,7 @@ Object::Object()
 	model = NULL;
 	objectType = CUSTOM;
 	scale = btVector3(1,1,1);
+	fullsphereRadius = 1.0f;
 }
 
 Object::~Object()
@@ -108,6 +155,7 @@ Object::~Object()
 	model = NULL;
 	objectType = 0;
 	scale = btVector3(0,0,0);
+	fullsphereRadius = 0.0f;
 }
 
 #endif

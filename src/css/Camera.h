@@ -18,15 +18,26 @@ private:
 	btTransform parentTransformation;
 	btVector3 locationScale;
 	
+	btVector3 normal[5];		// view side planes normals
+	btVector3 currentLocation;
+	
 public:
+	
+	void DrawPlanes();
+	
+	bool IsObjectInView( class Object * object );
+	void UpdateViewPlanes();
 	
 	void SetLocationScale( btVector3 scale );
 	btVector3 GetLocationScale();
+	
+	btTransform GetTransform();
 	
 	btVector3 GetFlatRightVector();
 	btVector3 GetRightVector();
 	btVector3 GetFlatForwardVector();
 	btVector3 GetForwardVector();
+	btVector3 GetUpVector();
 	
 	btVector3 GetLocation();
 	

@@ -38,10 +38,14 @@ int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
 
 void Engine::Tick( const float deltaTime )
 {
+	float time = al_get_time();
+	
 	if( !pausePhysics )
 	{
 		world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
 	}
+	
+	physicsSimulationTime = al_get_time() - time;
 }
 
 Camera * Engine::GetCamera()
@@ -367,6 +371,8 @@ void Engine::DeleteObject( std::string name )
 
 void Engine::Draw2D()
 {
+	float time = al_get_time();
+	
 	/*
 	output.SetColor( al_map_rgb( 255, 255, 255 ) );
 	output.SetWorkSpace( 20, 20, this->GetMaxBorderWidth()-20, this->GetMaxBorderHeight()-20 );
@@ -374,8 +380,8 @@ void Engine::Draw2D()
 	output.Print( this->GetCurrentStringToEnter().c_str() );
 	*/
 	
-	window->output->SetWorkSpace( 5, 5, 80, 80 );
-	window->output->Goto( 5, 5 );
+	window->output->SetWorkSpace( 5, 10, 80, 80 );
+	window->output->Goto( 5, 10 );
 	window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
 	window->output->Print( "FPS: " );
 	window->output->Print( window->GetSmoothFps() );
@@ -391,20 +397,69 @@ void Engine::Draw2D()
 	
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
+	
+	window->output->Print( "\nCollision shapes: " );
+	window->output->Print( int(collisionShape.size()+customCollisionShape.size()) );
+	
+	{
+		window->output->SetWorkSpace( 5, 2, 80, 80 );
+		
+		float sumTime = guiDrawTime + sceneDrawTime + physicsSimulationTime;
+		float step = sumTime / 40;
+		float t;
+		
+		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
+		window->output->Goto( 5, 2 );
+		for( t = 0.0f; t < guiDrawTime; t += step )
+			window->output->Print( "#" );
+		
+		window->output->SetColor( al_map_rgb( 0, 255, 0 ) );
+		for( t = 0.0f; t < sceneDrawTime; t += step )
+			window->output->Print( "#" );
+		
+		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
+		for( t = 0.0f; t < physicsSimulationTime; t += step )
+			window->output->Print( "#" );
+		
+		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
+		window->output->Print( "\n guiDrawTime: " );
+		window->output->Print( guiDrawTime );
+		window->output->SetColor( al_map_rgb( 0, 255, 0 ) );
+		window->output->Print( "\n sceneDrawTime: " );
+		window->output->Print( sceneDrawTime );
+		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
+		window->output->Print( "\n physicsSimulationTime: " );
+		window->output->Print( physicsSimulationTime );
+	}
+	
+	guiDrawTime = al_get_time() - time;
 }
+
+
 
 void Engine::Draw3D()
 {
+	float time = al_get_time();
+	
 	if( cameraParent )
 		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
+	
+	GetCamera()->UpdateViewPlanes();
 	
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
 		{
-			it->second->Draw();
+			if( GetCamera()->IsObjectInView( it->second ) )
+			{
+				it->second->Draw();
+			}
 		}
 	}
+	
+	GetCamera()->DrawPlanes();
+	
+	sceneDrawTime = al_get_time() - time;
 }
 
 void Engine::BeginLoop()
@@ -432,6 +487,38 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 void Engine::Destroy()
 {
 	cameraParent = NULL;
+	
+	for( auto it = object.begin(); it != object.end(); ++it )
+	{
+		if( it->second )
+		{
+			world->RemoveBody( it->first );
+			delete it->second;
+		}
+	}
+	object.clear();
+	
+	std::map < Model*, bool > destroyed;
+	for( auto it = model.begin(); it != model.end(); ++it )
+	{
+		if( it->second && destroyed[it->second] == false )
+		{
+			it->second->Destroy();
+			delete it->second;
+			destroyed[it->second] = true;
+		}
+	}
+	model.clear();
+	
+	for( auto it = texture.begin(); it != texture.end(); ++it )
+	{
+		if( it->second )
+		{
+			it->second->Destroy();
+			delete it->second;
+		}
+	}
+	texture.clear();
 	
 	if( window )
 	{
@@ -471,6 +558,10 @@ Engine::Engine()
 	window = NULL;
 	pausePhysics = true;
 	cameraParent = NULL;
+	
+	guiDrawTime = 0.01;
+	sceneDrawTime = 0.01;
+	physicsSimulationTime = 0.01;
 }
 
 Engine::~Engine()

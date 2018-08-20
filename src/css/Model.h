@@ -23,6 +23,7 @@
 #include <AR.hpp>
 
 #include <VBO.h>
+#include <CustomCollisionData.h>
 
 class Engine;
 
@@ -32,6 +33,8 @@ private:
 	
 	std::vector < VBO > vbo;
 	Engine * engine;
+	
+	CustomCollisionShapeData * collisionShapeData;
 	
 public:
 	
@@ -46,8 +49,8 @@ public:
 	bool LoadFromObj( Engine * engine, std::string fileName, int flags = Model::CENTER_NONE, btVector3 arg1 = btVector3(0,0,0), btVector3 origin = btVector3(0,0,0) );
 	//bool loadFromCompressedFile( Engine * engine, std::string fileName );
 	
-	btCollisionShape * MakeConvexCollisionShape();
-	btCollisionShape * MakeStaticTriangleCollisionShape();
+	CustomCollisionShapeData * GetCustomCollisionShapeData( btScalar acceptableDistanceToJoinVertices = 0.0311 );
+	void NullCustomCollisionShape();
 	
 	void Destroy();
 	

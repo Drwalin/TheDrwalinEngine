@@ -47,38 +47,6 @@ void Object::Draw()
 		engine->GetCamera()->SetWorldTransform( GetTransform(), scale );
 		model->Draw();
 	}
-	else
-	{
-		DrawDebug();
-	}
-}
-
-void Object::DrawDebug()
-{
-	Model * mdl;
-	switch( objectType )
-	{
-	case BOX:
-		engine->DrawBox( al_map_rgb(255,255,255), GetTransform(), btVector3(debugData[0],debugData[1],debugData[2])*scale );
-		break;
-	case BALL:
-		mdl = engine->GetModel( "Sphere" );
-		if( mdl )
-		{
-			engine->GetCamera()->SetWorldTransform( GetTransform(), scale );
-			mdl->Draw();
-		}
-		else
-		{
-			engine->DrawBall( al_map_rgb(255,255,255), GetTransform(), debugData[0]*scale.length() );
-		}
-		break;
-	case CAPSULE:
-	case CYLINDER:
-	case CUSTOM:
-		//std::cerr << "\n Can not yet draw different debug objects than boxes and balls\n this->name = " << name;
-		break;
-	}
 }
 
 void Object::SetModel( Model * model )
@@ -99,7 +67,7 @@ btVector3 Object::GetLocation()
 
 float Object::GetRadius()
 {
-	return fullsphereRadius;
+	return boundingSphereRadius;
 }
 
 void Object::CalculateRadius()
@@ -116,18 +84,16 @@ void Object::CalculateRadius()
 			if( min.m_floats[0]> max.m_floats[0] )
 				max.m_floats[0] = min.m_floats[0];
 		
-		fullsphereRadius = max.length();
+		boundingSphereRadius = max.length();
 	}
 	else
 	{
-		fullsphereRadius = 0.01f;
+		boundingSphereRadius = 0.01f;
 	}
 }
 
-Object::Object( Engine * engine, std::string name, btRigidBody * body, std::vector < float > debugData, int type )
+Object::Object( Engine * engine, std::string name, btRigidBody * body )
 {
-	objectType = type;
-	this->debugData = debugData;
 	this->engine = engine;
 	this->name = name;
 	this->body = body;
@@ -142,20 +108,26 @@ Object::Object()
 	name = "";
 	body = NULL;
 	model = NULL;
-	objectType = CUSTOM;
 	scale = btVector3(1,1,1);
-	fullsphereRadius = 1.0f;
+	boundingSphereRadius = 1.0f;
 }
 
 Object::~Object()
 {
-	engine = NULL;
+	if( body )
+	{
+		if( body->getMotionState() )
+			delete body->getMotionState();
+		if( body->getCollisionShape() )
+			engine->GetCollisionShapeManager()->RemoveShape( body->getCollisionShape() );
+		delete body;
+		body = NULL;
+	}
 	name = "";
-	body = NULL;
+	engine = NULL;
 	model = NULL;
-	objectType = 0;
 	scale = btVector3(0,0,0);
-	fullsphereRadius = 0.0f;
+	boundingSphereRadius = 0.0f;
 }
 
 #endif

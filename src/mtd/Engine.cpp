@@ -4,9 +4,19 @@
 
 #include <Engine.h>
 
+CollisionShapeManager * Engine::GetCollisionShapeManager()
+{
+	return collisionShapeManager;
+}
+
 World * Engine::GetWorld()
 {
 	return world;
+}
+
+Window * Engine::GetWindow()
+{
+	return window;
 }
 
 void Engine::PauseSimulation()
@@ -63,7 +73,7 @@ std::string Engine::GetAvailableObjectName( std::string name )
 	return name;
 }
 
-Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransform transform, std::vector < btScalar > collisionBinaryInfo, int type, bool dynamic, btScalar mass, btVector3 inertia )
+Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
 {
 	if( shape && object.find(name) == object.end() )
 	{
@@ -78,98 +88,36 @@ Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransf
 		world->AddBody( name, rigidBody );
 		rigidBody->setDamping( 0.1, 0.1 );
 		
-		Object * obj = new Object( this, name, rigidBody, collisionBinaryInfo, type );
+		Object * obj = new Object( this, name, rigidBody );
 		object[name] = obj;
 		return obj;
 	}
 	return NULL;
 }
 
-Object * Engine::AddBox( std::string name, btVector3 size, btTransform transform, bool dynamic, btScalar mass )
-{
-	std::vector < btScalar > collisionBinaryInfo;
-	collisionBinaryInfo.resize( 3 );
-	collisionBinaryInfo[0] = size.x();
-	collisionBinaryInfo[1] = size.y();
-	collisionBinaryInfo[2] = size.z();
-	btCollisionShape * shape = collisionShape[collisionBinaryInfo];
-	if( shape == NULL )
-	{
-		shape = new btBoxShape( size );
-		collisionShape[collisionBinaryInfo] = shape;
-	}
-	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::BOX, dynamic, mass, btVector3(0,0,0) );
-}
-
-Object * Engine::AddBall( std::string name, btScalar radius, btTransform transform, bool dynamic, btScalar mass )
-{
-	std::vector < btScalar > collisionBinaryInfo;
-	collisionBinaryInfo.resize( 1 );
-	collisionBinaryInfo[0] = radius;
-	btCollisionShape * shape = collisionShape[collisionBinaryInfo];
-	if( shape == NULL )
-	{
-		shape = new btSphereShape( radius );
-		collisionShape[collisionBinaryInfo] = shape;
-	}
-	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::BALL, dynamic, mass, btVector3(0,0,0) );
-}
-
-Object * Engine::AddCapsule( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic, btScalar mass )
-{
-	std::vector < btScalar > collisionBinaryInfo;
-	collisionBinaryInfo.resize( 2 );
-	collisionBinaryInfo[0] = radius;
-	collisionBinaryInfo[1] = height;
-	btCollisionShape * shape = collisionShape[collisionBinaryInfo];
-	if( shape == NULL )
-	{
-		shape = new btCapsuleShape( radius, height/2.0 );
-		collisionShape[collisionBinaryInfo] = shape;
-	}
-	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::CAPSULE, dynamic, mass, btVector3(0,0,0) );
-}
-
-Object * Engine::AddCylinder( std::string name, btScalar radius, btScalar height, btTransform transform, bool dynamic, btScalar mass )
-{
-	std::vector < btScalar > collisionBinaryInfo;
-	collisionBinaryInfo.resize( 4 );
-	collisionBinaryInfo[0] = radius;
-	collisionBinaryInfo[1] = height;
-	collisionBinaryInfo[2] = radius;
-	collisionBinaryInfo[3] = height;
-	btCollisionShape * shape = collisionShape[collisionBinaryInfo];
-	if( shape == NULL )
-	{
-		shape = new btCylinderShape( btVector3(radius,height/2.0,radius) );
-		collisionShape[collisionBinaryInfo] = shape;
-	}
-	
-	return AddObject( name, shape, transform, collisionBinaryInfo, Object::CYLINDER, dynamic, mass, btVector3(0,0,0) );
-}
-
-Object * Engine::AddCustom( std::string name, btCollisionShape * collisionShape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
-{
-	customCollisionShape.push_back( collisionShape );
-	return AddObject( name, collisionShape, transform, std::vector<btScalar>(), Object::CUSTOM, dynamic, mass, inertia );
-}
-
 Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
 {
-	btCollisionShape * shape = new btCapsuleShape( width/2.0, height/2.0 );
-	customCollisionShape.push_back( shape );
-	Object * obj = AddObject( name, shape, transform, std::vector<btScalar>(), Object::CUSTOM, true, mass, btVector3(0,0,0) );
-	if( obj )
+	if( object.find(name) == object.end() )
 	{
-		obj->GetBody()->setAngularFactor( btVector3( 0, 0.05, 0 ) );
-		obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
-		obj->GetBody()->setDamping( 0.99, 0.7 );
-		obj->GetBody()->setGravity( world->GetGravity() * 7.0 );
+		std::string shapeName = collisionShapeManager->GetFirstAvailableName( name );
+		btCollisionShape * shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
+		Object * obj = AddObject( name, shape, transform, true, mass, btVector3(0,0,0) );
+		if( obj )
+		{
+			obj->GetBody()->setAngularFactor( btVector3( 0, 0.02, 0 ) );
+			obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
+			obj->GetBody()->setDamping( 0.99, 0.8 );
+			obj->GetBody()->setGravity( world->GetGravity() * 5.6 );
+			obj->GetBody()->setFriction( 0.8 );
+			DEBUG( std::string("Object Friction: ") + std::to_string( obj->GetBody()->getFriction() ) );
+		}
+		else
+		{
+			collisionShapeManager->RemoveCustomShape( shapeName );
+		}
+		return obj;
 	}
-	return obj;
+	return NULL;
 }
 
 void Engine::AttachCameraToObject( std::string name, btVector3 location )
@@ -225,26 +173,7 @@ void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size
 	al_draw_indexed_prim( vtx, NULL, tex ? tex->GetBitmapPtr() : NULL, indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
-void Engine::DrawBall( ALLEGRO_COLOR color, btTransform transform, float radian )
-{
-	radian = sqrt( radian * radian / 3 );
-	btVector3 size( radian, radian, radian );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 0, 1, 1),  0 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 0, 1, 1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 0,-1, 1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 0, 1,-1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 0,-1,-1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 1, 1, 0), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 1,-1, 0), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3(-1, 1, 0), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3(-1,-1, 0), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 1, 0, 1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3(-1, 0, 1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3( 1, 0,-1), 30 ), btVector3(0,0,0) ), size );
-	DrawBox( al_map_rgb(255,255,255), transform*btTransform( btQuaternion( btVector3(-1, 0,-1), 30 ), btVector3(0,0,0) ), size );
-}
-
-bool Engine::SetCustomModel( std::string name, Model * mdl )
+bool Engine::SetCustomModelName( std::string name, Model * mdl )
 {
 	auto it = model.find( name );
 	if( it == model.end() )
@@ -398,8 +327,8 @@ void Engine::Draw2D()
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
-	window->output->Print( "\nCollision shapes: " );
-	window->output->Print( int(collisionShape.size()+customCollisionShape.size()) );
+//	window->output->Print( "\nCollision shapes: " );
+//	window->output->Print( int(collisionShape.size()+customCollisionShape.size()) );
 	
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
@@ -434,8 +363,6 @@ void Engine::Draw2D()
 	
 	guiDrawTime = al_get_time() - time;
 }
-
-
 
 void Engine::Draw3D()
 {
@@ -482,6 +409,8 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	window->HideMouse();
 	window->LockMouse();
+	
+	collisionShapeManager = new CollisionShapeManager;
 }
 
 void Engine::Destroy()
@@ -540,13 +469,12 @@ void Engine::Destroy()
 		event = NULL;
 	}
 	
-	for( auto it = collisionShape.begin(); it != collisionShape.end(); ++it )
-		delete it->second;
-	collisionShape.clear();
-	
-	for( int i = 0; i < customCollisionShape.size(); ++i )
-		delete customCollisionShape[i];
-	customCollisionShape.clear();
+	if( collisionShapeManager )
+	{
+		collisionShapeManager->Destroy();
+		delete collisionShapeManager;
+		collisionShapeManager = NULL;
+	}
 	
 	pausePhysics = false;
 }
@@ -558,6 +486,7 @@ Engine::Engine()
 	window = NULL;
 	pausePhysics = true;
 	cameraParent = NULL;
+	collisionShapeManager = NULL;
 	
 	guiDrawTime = 0.01;
 	sceneDrawTime = 0.01;

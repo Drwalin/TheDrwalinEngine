@@ -145,8 +145,8 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName, int flags, btVec
 						currentVBO->AddTriangle\
 										(\
 											(ALLEGRO_VERTEX){ v[f[0][0]][0], v[f[0][0]][1], v[f[0][0]][2], vt[f[0][1]][0]*currentTextureWidth, (0.0f+vt[f[0][1]][1])*currentTextureHeight, c },\
-											(ALLEGRO_VERTEX){ v[f[1][0]][0], v[f[1][0]][1], v[f[1][0]][2], vt[f[1][1]][0]*currentTextureWidth, (0.0f+vt[f[2][1]][1])*currentTextureHeight, c },\
-											(ALLEGRO_VERTEX){ v[f[2][0]][0], v[f[2][0]][1], v[f[2][0]][2], vt[f[2][1]][0]*currentTextureWidth, (0.0f+vt[f[1][1]][1])*currentTextureHeight, c }\
+											(ALLEGRO_VERTEX){ v[f[1][0]][0], v[f[1][0]][1], v[f[1][0]][2], vt[f[1][1]][0]*currentTextureWidth, (0.0f+vt[f[1][1]][1])*currentTextureHeight, c },\
+											(ALLEGRO_VERTEX){ v[f[2][0]][0], v[f[2][0]][1], v[f[2][0]][2], vt[f[2][1]][0]*currentTextureWidth, (0.0f+vt[f[2][1]][1])*currentTextureHeight, c }\
 										);
 				if( temp.size() >= 3 )
 				{
@@ -191,9 +191,7 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName, int flags, btVec
 							ADDTRIANGLE
 						}
 					}
-#undef ADDTRIANGLE					
-					
-					
+#undef ADDTRIANGLE
 				}
 			}
 		}
@@ -254,62 +252,44 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName, int flags, btVec
 
 //bool Model::loadFromCompressedFile( std::stringfileName );
 
-btCollisionShape * Model::MakeConvexCollisionShape()
+CustomCollisionShapeData * Model::GetCustomCollisionShapeData( btScalar acceptableDistanceToJoinVertices )
 {
-	std::map < btVector3, int > pointsMap;
-	std::vector < btVector3 > points;		// does it shouldn't be destroyed
-	
-	for( int i = 0; i < vbo.size(); ++i )
+	btScalar squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
+	if( collisionShapeData == NULL )
 	{
-		for( int j = 0; j < vbo[i].vertices.size(); ++j )
+		collisionShapeData = new CustomCollisionShapeData;
+		
+		int currentIndex = 0;
+		
+		for( int i = 0; i < vbo.size(); ++i )
 		{
-			pointsMap[ btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z ) ] += 1;
+			for( int j = 0; j < vbo[i].vertices.size(); ++j, ++currentIndex )
+			{
+				int k;
+				for( k = 0; k < collisionShapeData->vertices.size(); ++k )
+				{
+					if( btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z ).distance2( collisionShapeData->vertices[k] ) < squareAcceptableDistance )
+					{
+						break;
+					}
+				}
+				
+				collisionShapeData->indices.resize( collisionShapeData->indices.size() + 1 );
+				collisionShapeData->indices.back() = k;
+				if( k >= collisionShapeData->vertices.size() )
+				{
+					collisionShapeData->vertices.resize( collisionShapeData->vertices.size() + 1 );
+					collisionShapeData->vertices.back() = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+				}
+			}
 		}
 	}
-	
-	points.resize( pointsMap.size() );
-	int i = 0;
-	for( auto it = pointsMap.begin(); it != pointsMap.end(); ++it, ++i )
-	{
-		points[i] = it->first;
-	}
-	
-	if( points.size() > 0 )
-		return new btConvexHullShape( &points.front().x(), points.size(), sizeof(btVector3) );
-	return NULL;
+	return collisionShapeData;
 }
 
-btCollisionShape * Model::MakeStaticTriangleCollisionShape()
+void Model::NullCustomCollisionShape()
 {
-	std::vector < btVector3 > * vertices = new std::vector < btVector3 >;		// does it shouldn't be destroyed
-	
-	for( int i = 0; i < vbo.size(); ++i )
-	{
-		for( int j = 0; j < vbo[i].vertices.size(); ++j )
-		{
-			vertices->resize( vertices->size() + 1 );
-			vertices->back() = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
-		}
-	}
-	
-	std::vector < int > * indices = new std::vector < int >;
-	indices->resize( vertices->size() );
-	for( int i = 0; i < indices->size(); ++i )
-	{
-		indices->operator[](i) = i;
-	}
-	
-	auto * triangles = new btTriangleIndexVertexArray( indices->size() / 3, &(indices->front()), sizeof(int) * 3, vertices->size(), vertices->front().m_floats, sizeof(btVector3) );		// it should be destroyed after btCollisionShape
-	btCollisionShape * shape = new btBvhTriangleMeshShape( triangles, true, true );
-	//delete triangles;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	return shape;
-	
-	/*	
-	s32 * indices;
-	btScalar * vertices;
-	physicsMesh = new btTriangleIndexVertexArray(mesh->indices.size() / 3, indices, sizeof(s32) * 3, mesh->vertices.size(), vertices, sizeof(btScalar) * 3);
-	physicsShape = new btBvhTriangleMeshShape(physicsMesh, true, true);
-	*/
+	collisionShapeData = NULL;
 }
 
 void Model::Destroy()
@@ -318,11 +298,13 @@ void Model::Destroy()
 		vbo[i].Destroy();
 	vbo.clear();
 	vbo.shrink_to_fit();
+	collisionShapeData = NULL;
 }
 
 Model::Model()
 {
 	engine = NULL;
+	collisionShapeData = NULL;
 }
 
 Model::~Model()

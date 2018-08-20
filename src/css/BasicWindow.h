@@ -60,6 +60,7 @@ public:
 	ALLEGRO_DISPLAY * GetDisplay();
 	ALLEGRO_BITMAP * GetDisplayBitmap();
 	
+	bool IsMouseLocked();
 	void LockMouse();
 	void UnlockMouse();
 	void HideMouse();

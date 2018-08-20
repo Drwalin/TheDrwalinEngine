@@ -7,7 +7,7 @@ BINARYPATH = ./bin
 BULLETINCLUDEPATH = /usr/local/include/bullet
 LIBPNGPATH = ./lib
 
-SOURCES_ = Engine.cpp Model.cpp BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp Texture.cpp VBO.cpp
+SOURCES_ = Engine.cpp Model.cpp BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp Texture.cpp VBO.cpp CustomCollisionData.cpp CollisionShapeManager.cpp
 OBJECTS_ = $(SOURCES_:.cpp=.o)
 SOURCES = $(addprefix $(SOURCEPATH)/,$(SOURCES_))
 OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))

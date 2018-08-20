@@ -29,18 +29,9 @@ private:
 	btRigidBody * body;
 	Model * model;
 	btVector3 scale;
-	float fullsphereRadius;
-	
-	std::vector < float > debugData;
-	int objectType;
+	float boundingSphereRadius;
 	
 public:
-	
-	const static int BOX = 1;
-	const static int BALL = 2;
-	const static int CAPSULE = 3;
-	const static int CYLINDER = 4;
-	const static int CUSTOM = 5;
 	
 	float GetRadius();
 	void CalculateRadius();
@@ -55,11 +46,10 @@ public:
 	void SetBody( btRigidBody * body );
 	
 	void Draw();
-	void DrawDebug();
 	
 	void SetModel( Model * model );
 	
-	Object( Engine * engine, std::string name, btRigidBody * body, std::vector < float > debugData, int type );
+	Object( Engine * engine, std::string name, btRigidBody * body );
 	Object();
 	~Object();
 };

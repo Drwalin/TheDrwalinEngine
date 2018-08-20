@@ -17,6 +17,7 @@ void Event::Init()
 }
 
 float velocity = 1600.0f;
+bool running = false;
 
 void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 {
@@ -37,6 +38,18 @@ void Event::KeyPressedEvent( int keyCode )
 	case ALLEGRO_KEY_ESCAPE:
 		window->QueueQuit();
 		break;
+		
+	case ALLEGRO_KEY_P:
+		if( engine->GetWindow()->IsMouseLocked() )
+			engine->GetWindow()->UnlockMouse();
+		else
+			engine->GetWindow()->LockMouse();
+		break;
+		
+	case ALLEGRO_KEY_LSHIFT:
+		running = true;
+		break;
+		
 	case ALLEGRO_KEY_SPACE:
 		if( player == NULL )
 			break;
@@ -51,13 +64,13 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case MOUSE_LEFT:
-		temp = engine->AddBox( engine->GetAvailableObjectName("Box"), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		temp->SetModel( engine->GetModel( "Crate01" ) );
+//		temp = engine->AddBox( engine->GetAvailableObjectName("Box"), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+//		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+//		temp->SetModel( engine->GetModel( "Crate01" ) );
 		break;
 	case MOUSE_RIGHT:
-		temp = engine->AddBall( engine->GetAvailableObjectName("Ball"), 0.5, btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+//		temp = engine->AddBall( engine->GetAvailableObjectName("Ball"), 0.5, btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+//		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 		break;
 	}
 }
@@ -78,7 +91,16 @@ void Event::KeyReleasedEvent( int keyCode )
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 1.0, 1.0 ) );
 		player->GetBody()->applyCentralImpulse( btVector3( 0, velocity * 0.15, 0 ) );
 		break;
+		
+	case ALLEGRO_KEY_LSHIFT:
+		running = false;
+		break;
 	}
+}
+
+float GetMaxVelocity()
+{
+	return 6.0f + ( running ? 3.0f : 0.0f );
 }
 
 void Event::KeyHoldedEvent( int keyCode )
@@ -104,33 +126,33 @@ void Event::KeyHoldedEvent( int keyCode )
 	case ALLEGRO_KEY_W:
 		if( player == NULL )
 			break;
-		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatForwardVector() ) < 6.0 )
+		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatForwardVector() ) < GetMaxVelocity()  )
 		{
-			player->GetBody()->applyCentralImpulse( window->camera->GetFlatForwardVector() * window->GetDeltaTime() * velocity * 7.0 );
+			player->GetBody()->applyCentralImpulse( window->camera->GetFlatForwardVector() * window->GetDeltaTime() * velocity * 9.0 );
 		}
 		break;
 	case ALLEGRO_KEY_A:
 		if( player == NULL )
 			break;
-		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatRightVector() ) < 5.5 )
+		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatRightVector() ) < GetMaxVelocity() - 0.5f )
 		{
-			player->GetBody()->applyCentralImpulse( -window->camera->GetFlatRightVector() * window->GetDeltaTime() * velocity * 7.0 );
+			player->GetBody()->applyCentralImpulse( -window->camera->GetFlatRightVector() * window->GetDeltaTime() * velocity * 9.0 );
 		}
 		break;
 	case ALLEGRO_KEY_S:
 		if( player == NULL )
 			break;
-		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatForwardVector() ) < 5.0 )
+		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatForwardVector() ) < GetMaxVelocity() - 1.0f )
 		{
-			player->GetBody()->applyCentralImpulse( -window->camera->GetFlatForwardVector() * window->GetDeltaTime() * velocity * 7.0 );
+			player->GetBody()->applyCentralImpulse( -window->camera->GetFlatForwardVector() * window->GetDeltaTime() * velocity * 9.0 );
 		}
 		break;
 	case ALLEGRO_KEY_D:
 		if( player == NULL )
 			break;
-		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatRightVector() ) < 5.5 )
+		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatRightVector() ) < GetMaxVelocity() - 0.5f )
 		{
-			player->GetBody()->applyCentralImpulse( window->camera->GetFlatRightVector() * window->GetDeltaTime() * velocity * 7.0 );
+			player->GetBody()->applyCentralImpulse( window->camera->GetFlatRightVector() * window->GetDeltaTime() * velocity * 9.0 );
 		}
 		break;
 	}

@@ -5,6 +5,11 @@
 #include <BasicWindow.h>
 #include <Debug.h>
 
+bool BasicWindow::IsMouseLocked()
+{
+	return lockMouse;
+}
+
 void BasicWindow::LockMouse()
 {
 	lockMouse = true;

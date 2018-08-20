@@ -120,7 +120,7 @@ btVector3 Camera::GetUpVector()
 	btScalar x, y, z;
 	parentTransformation.getRotation().getEulerZYX( z, y, x );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()+y) + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()-y) + ALLEGRO_PI );
 	al_rotate_transform_3d( &transform, right.x(), right.y(), right.z(), -(rot.x()+x) );
 	al_rotate_transform_3d( &transform, forward.x(), forward.y(), forward.z(), -(rot.z()+z) );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
@@ -136,7 +136,7 @@ btVector3 Camera::GetFlatRightVector()
 	btScalar x, y, z;
 	parentTransformation.getRotation().getEulerZYX( z, y, x );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()+y) + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()-y) + ALLEGRO_PI );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
 }
@@ -151,7 +151,7 @@ btVector3 Camera::GetRightVector()
 	btScalar x, y, z;
 	parentTransformation.getRotation().getEulerZYX( z, y, x );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()+y) + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()-y) + ALLEGRO_PI );
 	al_rotate_transform_3d( &transform, forward.x(), forward.y(), forward.z(), -(rot.z()+z) );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
@@ -166,7 +166,7 @@ btVector3 Camera::GetFlatForwardVector()
 	btScalar x, y, z;
 	parentTransformation.getRotation().getEulerZYX( z, y, x );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()+y) + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()-y) + ALLEGRO_PI );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
 }
@@ -181,7 +181,7 @@ btVector3 Camera::GetForwardVector()
 	btScalar x, y, z;
 	parentTransformation.getRotation().getEulerZYX( z, y, x );
 	
-	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()+y) + ALLEGRO_PI );
+	al_rotate_transform_3d( &transform, 0, 1, 0, -(rot.y()-y) + ALLEGRO_PI );
 	al_rotate_transform_3d( &transform, right.x(), right.y(), right.z(), -(rot.x()+x) );
 	al_transform_coordinates_3d( &transform, dst.m_floats, dst.m_floats+1, dst.m_floats+2 );
 	return dst;
@@ -286,7 +286,7 @@ void Camera::SetWorldTransform( btTransform transform, btVector3 scale )
 		
 	al_translate_transform_3d( &dst, -pos.x()*locationScale.x(), -pos.y()*locationScale.y(), -pos.z()*locationScale.z() );
 	al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
-	al_rotate_transform_3d( &dst, 0, 1, 0, rot.y()+y );
+	al_rotate_transform_3d( &dst, 0, 1, 0, rot.y()-y );
 	al_rotate_transform_3d( &dst, 1, 0, 0, rot.x()+x );
 	al_rotate_transform_3d( &dst, 0, 0, 1, rot.z()+z );
 	

@@ -46,8 +46,10 @@ public:
 	
 	void Draw();
 	
+	
 	bool LoadFromObj( Engine * engine, std::string fileName, int flags = Model::CENTER_NONE, btVector3 arg1 = btVector3(0,0,0), btVector3 origin = btVector3(0,0,0) );
 	//bool loadFromCompressedFile( Engine * engine, std::string fileName );
+	//bool SaveToCompressedFile( std::string fileName );
 	
 	CustomCollisionShapeData * GetCustomCollisionShapeData( btScalar acceptableDistanceToJoinVertices = 0.0311 );
 	void NullCustomCollisionShape();

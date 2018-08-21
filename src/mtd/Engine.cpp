@@ -109,7 +109,6 @@ Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height
 			obj->GetBody()->setDamping( 0.99, 0.8 );
 			obj->GetBody()->setGravity( world->GetGravity() * 5.6 );
 			obj->GetBody()->setFriction( 0.8 );
-			DEBUG( std::string("Object Friction: ") + std::to_string( obj->GetBody()->getFriction() ) );
 		}
 		else
 		{
@@ -200,6 +199,7 @@ Model * Engine::LoadModel( std::string name, int flags, btVector3 arg1, btVector
 		if( mdl->LoadFromObj( this, name, flags, arg1, origin ) == false )
 		{
 			delete mdl;
+			mdl = NULL;
 			return NULL;
 		}
 		else
@@ -227,6 +227,7 @@ Texture * Engine::GetTexture( std::string name )
 		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP ) == false )
 		{
 			delete tex;
+			tex = NULL;
 			return NULL;
 		}
 		else
@@ -254,6 +255,7 @@ Model * Engine::GetModel( std::string name )
 		if( mdl->LoadFromObj( this, name ) == false )
 		{
 			delete mdl;
+			mdl = NULL;
 			return NULL;
 		}
 		else
@@ -293,10 +295,14 @@ void Engine::DeleteObject( std::string name )
 		{
 			world->RemoveBody( name );
 			delete it->second;
+			it->second = NULL;
 		}
 		object.erase( it );
 	}
 }
+
+
+
 
 void Engine::Draw2D()
 {
@@ -327,8 +333,25 @@ void Engine::Draw2D()
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
-//	window->output->Print( "\nCollision shapes: " );
-//	window->output->Print( int(collisionShape.size()+customCollisionShape.size()) );
+	{
+		window->output->Print( "\ncollisionShape: " );
+		window->output->Print( int(collisionShapeManager->collisionShape.size()) );
+		window->output->Print( "\ncollisionShapeRev: " );
+		window->output->Print( int(collisionShapeManager->collisionShapeRev.size()) );
+		window->output->Print( "\nnumberOfReferencesToShape: " );
+		window->output->Print( int(collisionShapeManager->numberOfReferencesToShape.size()) );
+		
+		window->output->Print( "\n\nmodelPointerCustomCollisionData: " );
+		window->output->Print( int(collisionShapeManager->modelPointerCustomCollisionData.size()) );
+		window->output->Print( "\nmodelCustomCollisionData: " );
+		window->output->Print( int(collisionShapeManager->modelCustomCollisionData.size()) );
+		window->output->Print( "\ncustomCollisionShapeData: " );
+		window->output->Print( int(collisionShapeManager->customCollisionShapeData.size()) );
+		window->output->Print( "\ncustomCollisionShape: " );
+		window->output->Print( int(collisionShapeManager->customCollisionShape.size()) );
+		window->output->Print( "\ncustomCollisionShapeName: " );
+		window->output->Print( int(collisionShapeManager->customCollisionShapeName.size()) );
+	}
 	
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
@@ -421,8 +444,10 @@ void Engine::Destroy()
 	{
 		if( it->second )
 		{
+			assert( it->second != NULL );
 			world->RemoveBody( it->first );
 			delete it->second;
+			it->second = NULL;
 		}
 	}
 	object.clear();
@@ -432,9 +457,11 @@ void Engine::Destroy()
 	{
 		if( it->second && destroyed[it->second] == false )
 		{
+			assert( it->second != NULL );
+			destroyed[it->second] = true;
 			it->second->Destroy();
 			delete it->second;
-			destroyed[it->second] = true;
+			it->second = NULL;
 		}
 	}
 	model.clear();
@@ -443,14 +470,17 @@ void Engine::Destroy()
 	{
 		if( it->second )
 		{
+			assert( it->second != NULL );
 			it->second->Destroy();
 			delete it->second;
+			it->second = NULL;
 		}
 	}
 	texture.clear();
 	
 	if( window )
 	{
+		assert( window != NULL );
 		window->Destroy();
 		delete window;
 		window = NULL;
@@ -458,6 +488,7 @@ void Engine::Destroy()
 	
 	if( world )
 	{
+		assert( world != NULL );
 		world->Destroy();
 		delete world;
 		world = NULL;
@@ -465,12 +496,14 @@ void Engine::Destroy()
 	
 	if( event )
 	{
+		assert( event != NULL );
 		delete event;
 		event = NULL;
 	}
 	
 	if( collisionShapeManager )
 	{
+		assert( collisionShapeManager != NULL );
 		collisionShapeManager->Destroy();
 		delete collisionShapeManager;
 		collisionShapeManager = NULL;

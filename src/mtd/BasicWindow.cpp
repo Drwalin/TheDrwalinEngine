@@ -348,6 +348,7 @@ BasicWindow::~BasicWindow()
 {
 	Destroy();
 	delete stringToEnter;
+	stringToEnter = NULL;
 }
 
 #endif

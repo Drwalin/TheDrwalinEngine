@@ -75,7 +75,6 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName, int flags, btVec
 	btVector3 barycenter(0,0,0);
 	btVector3 aabbMin(0,0,0);
 	btVector3 aabbMax(0,0,0);
-	
 	float currentTextureWidth, currentTextureHeight;
 	while( !obj.eof() )
 	{
@@ -200,8 +199,16 @@ bool Model::LoadFromObj( Engine * engine, std::string fileName, int flags, btVec
 			currentMaterial = "";
 			sstream >> currentMaterial;
 			currentVBO = &(vbos[currentMaterial]);
-			currentTextureWidth = currentVBO->GetTexture()->GetWidth();
-			currentTextureHeight = currentVBO->GetTexture()->GetHeight();
+			if( currentVBO->GetTexture() )
+			{
+				currentTextureWidth = currentVBO->GetTexture()->GetWidth();
+				currentTextureHeight = currentVBO->GetTexture()->GetHeight();
+			}
+			else
+			{
+				currentTextureWidth = 1.0f;
+				currentTextureHeight = 1.0f;
+			}
 		}
 	}
 	

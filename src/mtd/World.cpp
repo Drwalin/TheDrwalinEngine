@@ -82,19 +82,19 @@ void World::Destroy()
 	
 	if( dynamicsWorld )
 		delete dynamicsWorld;
+	dynamicsWorld = NULL;
 	if( solver )
 		delete solver;
+	solver = NULL;
 	if( collisionConfiguration )
 		delete collisionConfiguration;
+	collisionConfiguration = NULL;
 	if( dispatcher )
 		delete dispatcher;
+	dispatcher = NULL;
 	if( broadphase )
 		delete broadphase;
 	broadphase = NULL;
-	collisionConfiguration = NULL;
-	dispatcher = NULL;
-	solver = NULL;
-	dynamicsWorld = NULL;
 }
 
 World::World()

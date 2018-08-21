@@ -31,6 +31,8 @@ private:
 	btCollisionShape * GetShape( std::vector < btScalar > constructionData, bool independent );
 	btCollisionShape * AddShape( std::vector < btScalar > constructionData, std::string name );
 	
+	friend class Engine;
+	
 public:
 	
 	static const int SHAPE_TYPE_CONVEX = 0;

@@ -26,14 +26,17 @@ void CustomCollisionShapeData::DestroyTriangleShape()
 {
 	if( triangleShape )
 		delete triangleShape;
+	triangleShape = NULL;
 	if( triangleData )
 		delete triangleData;
+	triangleData = NULL;
 }
 
 void CustomCollisionShapeData::DestroyConvexShape()
 {
 	if( convexShape )
 		delete convexShape;
+	convexShape = NULL;
 }
 
 CustomCollisionShapeData::CustomCollisionShapeData()

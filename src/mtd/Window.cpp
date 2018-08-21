@@ -68,7 +68,9 @@ Window::~Window()
 {
 	Destroy();
 	delete camera;
+	camera = NULL;
 	delete output;
+	output = NULL;
 	
 }
 

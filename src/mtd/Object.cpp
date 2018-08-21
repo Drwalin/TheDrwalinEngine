@@ -117,9 +117,17 @@ Object::~Object()
 	if( body )
 	{
 		if( body->getMotionState() )
+		{
+			assert( body->getMotionState() != NULL );
 			delete body->getMotionState();
+			body->setMotionState( NULL );/////////////////////////////////////////////////////////////////////////////////
+		}
 		if( body->getCollisionShape() )
+		{
 			engine->GetCollisionShapeManager()->RemoveShape( body->getCollisionShape() );
+			body->setCollisionShape( NULL );/////////////////////////////////////////////////////////////////////////////////
+		}
+		assert( body != NULL );
 		delete body;
 		body = NULL;
 	}

@@ -212,7 +212,7 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 	return false;
 }
 
-bool Model::SaveMeshFile( std::string meshFileName, float friction, float restitution, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, std::map < std::string, std::string > & materialTexture )
+bool Model::SaveMeshFile( std::string meshFileName, bool containPhysicsBool, float friction, float restitution, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, std::map < std::string, std::string > & materialTexture )
 {
 	std::ofstream file( meshFileName, std::ofstream::binary );
 	
@@ -241,49 +241,59 @@ bool Model::SaveMeshFile( std::string meshFileName, float friction, float restit
 			}
 		}
 		
-		CustomCollisionShapeData collisionShapeData;
+		char containPhysics = containPhysicsBool ? 'A' : 0;
+		file.write( &containPhysics, sizeof(char) );
+		
+		if( containPhysicsBool )
 		{
-			float acceptableDistanceToJoinVertices = 0.0311 * 1.5;
-			float squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
-			int currentIndex = 0;
-			
-			for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it )
+			CustomCollisionShapeData collisionShapeData;
 			{
-				for( int j = 0; j < it->second.size(); ++j, ++currentIndex )
+				float acceptableDistanceToJoinVertices = 0.0311 * 1.5;
+				float squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
+				int currentIndex = 0;
+				
+				for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it )
 				{
-					int k;
-					for( k = 0; k < collisionShapeData.vertices.size(); ++k )
+					for( int j = 0; j < it->second.size(); ++j, ++currentIndex )
 					{
-						if( btVector3( it->second[j].x, it->second[j].y, it->second[j].z ).distance2( collisionShapeData.vertices[k] ) < squareAcceptableDistance )
+						int k;
+						for( k = 0; k < collisionShapeData.vertices.size(); ++k )
 						{
-							break;
+							if( btVector3( it->second[j].x, it->second[j].y, it->second[j].z ).distance2( collisionShapeData.vertices[k] ) < squareAcceptableDistance )
+							{
+								break;
+							}
 						}
-					}
-					
-					collisionShapeData.indices.resize( collisionShapeData.indices.size() + 1 );
-					collisionShapeData.indices.back() = k;
-					if( k >= collisionShapeData.vertices.size() )
-					{
-						collisionShapeData.vertices.resize( collisionShapeData.vertices.size() + 1 );
-						collisionShapeData.vertices.back() = btVector3( it->second[j].x, it->second[j].y, it->second[j].z );
+						
+						collisionShapeData.indices.resize( collisionShapeData.indices.size() + 1 );
+						collisionShapeData.indices.back() = k;
+						if( k >= collisionShapeData.vertices.size() )
+						{
+							collisionShapeData.vertices.resize( collisionShapeData.vertices.size() + 1 );
+							collisionShapeData.vertices.back() = btVector3( it->second[j].x, it->second[j].y, it->second[j].z );
+						}
 					}
 				}
 			}
+			
+			{
+				int numberOfVertices = collisionShapeData.vertices.size();
+				int numberOfIndices = collisionShapeData.indices.size();
+				
+				file.write( (const char*)&friction, sizeof(float) );
+				file.write( (const char*)&restitution, sizeof(float) );
+				file.write( (const char*)&numberOfVertices, sizeof(int) );
+				file.write( (const char*)&numberOfIndices, sizeof(int) );
+				
+				for( int i = 0; i < numberOfVertices; ++i )
+					file.write( (const char*)&(collisionShapeData.vertices[i]), sizeof(float) * 3 );
+				
+				file.write( (const char*)&(collisionShapeData.indices.front()), sizeof(int) * numberOfIndices );
+			}
 		}
-		
+		else
 		{
-			int numberOfVertices = collisionShapeData.vertices.size();
-			int numberOfIndices = collisionShapeData.indices.size();
 			
-			file.write( (const char*)&friction, sizeof(float) );
-			file.write( (const char*)&restitution, sizeof(float) );
-			file.write( (const char*)&numberOfVertices, sizeof(int) );
-			file.write( (const char*)&numberOfIndices, sizeof(int) );
-			
-			for( int i = 0; i < numberOfVertices; ++i )
-				file.write( (const char*)&(collisionShapeData.vertices[i]), sizeof(float) * 3 );
-			
-			file.write( (const char*)&(collisionShapeData.indices.front()), sizeof(int) * numberOfIndices );
 		}
 		
 		return true;
@@ -291,7 +301,7 @@ bool Model::SaveMeshFile( std::string meshFileName, float friction, float restit
 	return false;
 }
 
-bool Model::ConvertObjToMesh( std::string objFileName, float friction, float restitution, bool scaleToSize, btVector3 size )
+bool Model::ConvertObjToMesh( std::string objFileName, bool containPhysicsBool, float friction, float restitution, bool scaleToSize, btVector3 size )
 {
 	if( objFileName.size() < 5 )
 		return false;
@@ -315,7 +325,7 @@ bool Model::ConvertObjToMesh( std::string objFileName, float friction, float res
 	
 	Model::RescaleAndMove( trianglesMaterial, min, max, scaleToSize, size );
 	
-	return Model::SaveMeshFile( meshFileName, friction, restitution, trianglesMaterial, materialTexture );
+	return Model::SaveMeshFile( meshFileName, containPhysicsBool, friction, restitution, trianglesMaterial, materialTexture );
 }
 
 bool Model::LoadFromObj( Engine * engine, std::string objFileName )
@@ -428,9 +438,19 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			vbo[i].Generate();
 		}
 		
-		collisionShapeData = new CustomCollisionShapeData;
-		
+		if( !file )
 		{
+			Destroy();
+			return false;
+		}
+		
+		char containPhysics = 0;
+		file.read( &containPhysics, sizeof(char) );
+		
+		if( containPhysics != 0 )
+		{
+			collisionShapeData = new CustomCollisionShapeData;
+			
 			float friction = 0.5f;
 			float restitution = 0.0f;
 			int numberOfVertices = 0;
@@ -440,6 +460,13 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			file.read( (char*)&restitution, sizeof(float) );
 			file.read( (char*)&numberOfVertices, sizeof(int) );
 			file.read( (char*)&numberOfIndices, sizeof(int) );
+			
+			if( !file )
+			{
+				delete collisionShapeData;
+				collisionShapeData = NULL;
+				return true;
+			}
 			
 			collisionShapeData->friction = friction;
 			collisionShapeData->restitution = restitution;
@@ -465,6 +492,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 				return true;
 			}
 		}
+		
 		return true;
 	}
 	

@@ -183,11 +183,6 @@ bool Engine::SetCustomModelName( std::string name, Model * mdl )
 	return false;
 }
 
-bool Engine::ConvertObjToPhmesh( std::string name, float friction, float restitution, bool scaleToSize, btVector3 size )
-{
-	return Model::ConvertObjToMesh( name, friction, restitution, scaleToSize, size );
-}
-
 Model * Engine::LoadModel( std::string name )
 {
 	auto it = model.find( name );

@@ -14,7 +14,7 @@ int main()
 	
 	if( !std::ifstream("./media/Models/Sphere.phmesh").good() )
 	{
-		if( Model::ConvertObjToMesh( "./media/Models/Sphere.obj", 0.5, 0.0, true, btVector3(1,1,1) ) == false )
+		if( Model::ConvertObjToMesh( "./media/Models/Sphere.obj", true, 0.5, 0.0, true, btVector3(1,1,1) ) == false )
 			DEBUG( "Unable to convert" );
 	}
 	Model * sphere = engine->LoadModel( "./media/Models/Sphere.phmesh" );
@@ -23,7 +23,7 @@ int main()
 	
 	if( !std::ifstream("./media/Models/Crate01.phmesh").good() )
 	{
-		if( Model::ConvertObjToMesh( "./media/Models/Crate01.obj", 0.5, 0.0, true, btVector3(1,1,1) ) == false )
+		if( Model::ConvertObjToMesh( "./media/Models/Crate01.obj", true, 0.5, 0.0, true, btVector3(1,1,1) ) == false )
 			DEBUG( "Unable to convert" );
 	}
 	Model * crate01 = engine->LoadModel( "./media/Models/Crate01.phmesh" );
@@ -32,7 +32,7 @@ int main()
 	
 	if( !std::ifstream("./media/AmadeusMap/as_oilrig.phmesh").good() )
 	{
-		if( Model::ConvertObjToMesh( "./media/AmadeusMap/as_oilrig.obj", 0.5, 0.0, false ) == false )
+		if( Model::ConvertObjToMesh( "./media/AmadeusMap/as_oilrig.obj", true, 0.5, 0.0, false ) == false )
 			DEBUG( "Unable to convert" );
 	}
 	Model * mapModel = engine->LoadModel( "./media/AmadeusMap/as_oilrig.phmesh" );

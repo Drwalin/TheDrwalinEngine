@@ -61,8 +61,6 @@ public:
 	void AttachCameraToObject( std::string name, btVector3 location );
 	bool SetCustomModelName( std::string name, Model * mdl );
 	
-	bool ConvertObjToPhmesh( std::string name, float friction = 0.5f, float restitution = 0.0f, bool scaleToSize = false, btVector3 size = btVector3(1,1,1) );
-	
 	Model * LoadModel( std::string name );
 	Texture * GetTexture( std::string name );
 	Model * GetModel( std::string name );

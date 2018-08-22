@@ -25,19 +25,24 @@ file *.phmesh
 	
 	data physicsData		// already optimised vertices
 	{
-		float friction;
-		float restitution;
-		int numberOfVertices;
-		int numberOfIndeices;
+		char containPhysics;		// 0 - do not contain physics, !0 - conatin physics
 		
-		data vertex[numberOfVertices]
+		condition ( containPhysics != 0 )
 		{
-			float x;
-			float y;
-			float z;
-		};
-		
-		int index[numberOfIndeices];
+			float friction;
+			float restitution;
+			int numberOfVertices;
+			int numberOfIndeices;
+			
+			data vertex[numberOfVertices]
+			{
+				float x;
+				float y;
+				float z;
+			};
+			
+			int index[numberOfIndeices];
+		}
 	};
 };
 

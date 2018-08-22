@@ -19,6 +19,9 @@ private:
 	btTriangleIndexVertexArray * triangleData;
 	btCollisionShape * triangleShape;
 	
+	float friction;
+	float restitution;
+	
 	friend class Model;
 	
 public:

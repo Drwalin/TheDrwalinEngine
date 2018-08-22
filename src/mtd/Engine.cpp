@@ -107,7 +107,7 @@ Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height
 			obj->GetBody()->setAngularFactor( btVector3( 0, 0.02, 0 ) );
 			obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
 			obj->GetBody()->setDamping( 0.99, 0.8 );
-			obj->GetBody()->setGravity( world->GetGravity() * 5.6 );
+			obj->GetBody()->setGravity( world->GetGravity() * 6.0 );
 			obj->GetBody()->setFriction( 0.8 );
 		}
 		else
@@ -183,7 +183,12 @@ bool Engine::SetCustomModelName( std::string name, Model * mdl )
 	return false;
 }
 
-Model * Engine::LoadModel( std::string name, int flags, btVector3 arg1, btVector3 origin )
+bool Engine::ConvertObjToPhmesh( std::string name, float friction, float restitution, bool scaleToSize, btVector3 size )
+{
+	return Model::ConvertObjToMesh( name, friction, restitution, scaleToSize, size );
+}
+
+Model * Engine::LoadModel( std::string name )
 {
 	auto it = model.find( name );
 	if( it != model.end() )
@@ -196,7 +201,7 @@ Model * Engine::LoadModel( std::string name, int flags, btVector3 arg1, btVector
 	else
 	{
 		Model * mdl = new Model;
-		if( mdl->LoadFromObj( this, name, flags, arg1, origin ) == false )
+		if( mdl->LoadFromFile( this, name ) == false )
 		{
 			delete mdl;
 			mdl = NULL;
@@ -217,7 +222,9 @@ Texture * Engine::GetTexture( std::string name )
 	if( it != texture.end() )
 	{
 		if( it->second )
+		{
 			return it->second;
+		}
 		else
 			texture.erase( it );
 	}
@@ -226,6 +233,7 @@ Texture * Engine::GetTexture( std::string name )
 		Texture * tex = new Texture;
 		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP ) == false )
 		{
+			DEBUG( name + ": not done" );
 			delete tex;
 			tex = NULL;
 			return NULL;
@@ -236,6 +244,7 @@ Texture * Engine::GetTexture( std::string name )
 			return tex;
 		}
 	}
+	DEBUG( name + ": not done" );
 	return NULL;
 }
 
@@ -252,7 +261,7 @@ Model * Engine::GetModel( std::string name )
 	else
 	{
 		Model * mdl = new Model;
-		if( mdl->LoadFromObj( this, name ) == false )
+		if( mdl->LoadFromFile( this, name ) == false )
 		{
 			delete mdl;
 			mdl = NULL;

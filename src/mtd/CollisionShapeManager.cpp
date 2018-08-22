@@ -108,10 +108,16 @@ btCollisionShape * CollisionShapeManager::GetCylinder( btScalar radius, btScalar
 
 btCollisionShape * CollisionShapeManager::CreateCustomShape( std::string name, Model * model, int shapeType )
 {
-	if( model == NULL ||IsNameAvailable( name ) == false )
+	if( model == NULL || IsNameAvailable( name ) == false )
 		return NULL;
 	
 	CustomCollisionShapeData * data = model->GetCustomCollisionShapeData();
+	
+	if( data == NULL )
+	{
+		return NULL;
+	}
+	
 	modelPointerCustomCollisionData[ data ] = model;
 	
 	btCollisionShape * shape = NULL;
@@ -213,7 +219,6 @@ void CollisionShapeManager::RemoveShape( btCollisionShape * shape )
 	if( it != customCollisionShapeName.end() )
 	{
 		RemoveCustomShape( it->second );
-//		it->second = NULL;/////////////////////////////////////////////////////////////////////////////
 	}
 }
 
@@ -230,21 +235,18 @@ void CollisionShapeManager::Destroy()
 	{
 		assert( it->first != NULL );
 		delete it->first;
-//		it->first = NULL;/////////////////////////////////////////////////////////////////////////////
 	}
 	
 	for( auto it = customCollisionShape.begin(); it != customCollisionShape.end(); ++it )
 	{
 		assert( it->second != NULL );
 		delete it->second;
-		it->second = NULL;
 	}
 	
 	for( auto it = modelPointerCustomCollisionData.begin(); it != modelPointerCustomCollisionData.end(); ++it )
 	{
 		assert( it->first != NULL );
 		delete it->first;
-//		it->first = NULL;/////////////////////////////////////////////////////////////////////////////
 	}
 	
 	collisionShape.clear();

@@ -11,6 +11,11 @@ private:
 	
 public:
 	
+	inline T * Data()
+	{
+		return data;
+	}
+	
 	inline T&operator[](int id)
 	{
 		return data[id];

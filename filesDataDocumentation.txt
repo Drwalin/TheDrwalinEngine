@@ -1,0 +1,47 @@
+
+
+
+file *.phmesh
+{
+	int numberOfVBOs;
+	
+	data vbo[numberOfVBOs]
+	{
+		int bytesPerTextureName;
+		char textureFileNameWithPath[bytesPerTextureName];
+		
+		int numberOfVertices;
+		
+		data vertex[numberOfVertices]
+		{
+			float x;
+			float y;
+			float z;
+			
+			float u;
+			float v;
+		};
+	};
+	
+	data physicsData		// already optimised vertices
+	{
+		float friction;
+		float restitution;
+		int numberOfVertices;
+		int numberOfIndeices;
+		
+		data vertex[numberOfVertices]
+		{
+			float x;
+			float y;
+			float z;
+		};
+		
+		int index[numberOfIndeices];
+	};
+};
+
+
+
+
+

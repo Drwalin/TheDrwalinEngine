@@ -58,7 +58,7 @@ void Event::KeyPressedEvent( int keyCode )
 	case ALLEGRO_KEY_LCTRL:
 		if( player == NULL )
 			break;
-		player->SetScale( btVector3( 1.0, 0.25, 1.0 ) );
+		player->SetScale( btVector3( 1.0, 0.5, 1.0 ) );
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 0.25, 1.0 ) );
 		player->GetBody()->applyCentralImpulse( btVector3( 0, -velocity * 0.15, 0 ) );
 		break;

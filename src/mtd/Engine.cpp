@@ -193,7 +193,7 @@ Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height
 		Object * obj = AddObject( name, shape, transform, true, mass, btVector3(0,0,0) );
 		if( obj )
 		{
-			obj->GetBody()->setAngularFactor( btVector3( 0, 0.02, 0 ) );
+			obj->GetBody()->setAngularFactor( btVector3( 0, 0, 0 ) );
 			obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
 			obj->GetBody()->setDamping( 0.99, 0.8 );
 			obj->GetBody()->setGravity( world->GetGravity() * 6.0 );
@@ -561,8 +561,6 @@ void Engine::Draw3D()
 			}
 		}
 	}
-	
-	GetCamera()->DrawPlanes();
 	
 	sceneDrawTime = al_get_time() - time;
 }

@@ -23,8 +23,6 @@ private:
 	
 public:
 	
-	void DrawPlanes();
-	
 	bool IsObjectInView( class Object * object );
 	void UpdateViewPlanes();
 	

@@ -5,63 +5,16 @@
 #include <Camera.h>
 #include <Object.h>
 
-
-#include <VBO.h>
-void Camera::DrawPlanes()
-{
-	return;
-	ALLEGRO_TRANSFORM t;
-	al_identity_transform( &t );
-	al_use_transform( &t );
-	//SetWorldTransform( GetTransform() );
-	SetWorldTransform( btTransform( btQuaternion( btVector3(1,1,1), 0 ), btVector3(0,0,0) ) );
-	
-	btVector3 loc = GetLocation() - (GetForwardVector()*0.5);
-	btVector3 vectors[4];
-	vectors[0] = ( GetForwardVector() * 1.02 ) + GetRightVector() + GetUpVector();
-	vectors[1] = ( GetForwardVector() * 1.02 ) + GetRightVector() - GetUpVector();
-	vectors[2] = ( GetForwardVector() * 1.02 ) - GetRightVector() - GetUpVector();
-	vectors[3] = ( GetForwardVector() * 1.02 ) - GetRightVector() + GetUpVector();
-	
-	for( int i = 0; i < 4; ++i )
-	{
-		vectors[i] *= 100.0f;
-		vectors[i] += loc;
-	}
-	
-	VBO vbo;
-	
-	for( int i = 0; i < 4; ++i )
-	{
-		vbo.AddTriangle
-		(
-			(ALLEGRO_VERTEX){ loc.x(), loc.y(), loc.z(), 0, 0, al_map_rgba(128,128,128,128) },
-			(ALLEGRO_VERTEX){ vectors[i].x(), vectors[i].y(), vectors[i].z(), 0, 0, al_map_rgba(128,128,128,128) },
-			(ALLEGRO_VERTEX){ vectors[(i+1)%4].x(), vectors[(i+1)%4].y(), vectors[(i+1)%4].z(), 0, 0, al_map_rgba(128,128,128,128) }
-		);
-	}
-	
-	vbo.Generate();
-	vbo.Draw();
-	vbo.Destroy();
-}
-
 bool Camera::IsObjectInView( Object * object )
 {
 	if( object )
 	{
-		return true;
 		float radius = object->GetRadius();
 		btVector3 location = object->GetLocation();
 		
-//		if( normal[4].dot( currentLocation - location ) + radius < 0 )
-//			return false;
-		
-		for( int i = 4; i >= 0; --i )
-		{
-			if( normal[i].dot( location - currentLocation ) + radius < 0 )
+		for( int i = 0; i < 4; ++i )
+			if( normal[i].dot( currentLocation - location ) + radius < 0 )
 				return false;
-		}
 		return true;
 	}
 	return false;
@@ -69,22 +22,20 @@ bool Camera::IsObjectInView( Object * object )
 
 void Camera::UpdateViewPlanes()		// need to use basicWindow for y/x bitmap size ration
 {
-	btVector3 vectors[4];
+	//btVector3 vectors[4];
 	currentLocation = GetLocation();
 	
-	vectors[0] = GetForwardVector() * 0.5 + GetRightVector() + GetUpVector();
-	vectors[1] = GetForwardVector() * 0.5 + GetRightVector() - GetUpVector();
-	vectors[2] = GetForwardVector() * 0.5 - GetRightVector() - GetUpVector();
-	vectors[3] = GetForwardVector() * 0.5 - GetRightVector() + GetUpVector();
+	normal[4] = -GetForwardVector().normalized();
 	
-	for( int i = 0; i < 4; ++i )
-	{
-		normal[i] = vectors[i].cross( vectors[(i+1)%4] );
-		normal[i].normalize();
-		if( normal[i].dot( btVector3(0,0,1)/*vectors[(i+2)%4]*/ ) < 0 )
-			normal[i] *= -1;
-	}
-	normal[4] = GetForwardVector();
+	normal[0] = GetRightVector().normalized() + normal[4];
+	normal[1] = -GetRightVector().normalized() + normal[4];
+	normal[2] = GetUpVector().normalized() + normal[4];
+	normal[3] = -GetUpVector().normalized() + normal[4];
+	
+	normal[0].normalize();
+	normal[1].normalize();
+	normal[2].normalize();
+	normal[3].normalize();
 }
 
 btTransform Camera::GetTransform()

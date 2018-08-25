@@ -28,6 +28,7 @@ private:
 	std::map < std::string, btCollisionShape* > customCollisionShape;
 	std::map < btCollisionShape*, std::string > customCollisionShapeName;
 	
+	
 	btCollisionShape * GetShape( std::vector < btScalar > constructionData, bool independent );
 	btCollisionShape * AddShape( std::vector < btScalar > constructionData, std::string name );
 	

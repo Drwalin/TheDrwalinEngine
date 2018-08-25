@@ -67,8 +67,19 @@ btCollisionShape * CollisionShapeManager::AddShape( std::vector < btScalar > con
 	if( name == "" )
 	{
 		shape = GetShape( constructionData, false );
+		
 		if( shape )
-			numberOfReferencesToShape[ shape ] += 1;
+		{
+			if( numberOfReferencesToShape.find( shape ) == numberOfReferencesToShape.end() )
+			{
+				numberOfReferencesToShape[shape] = 1;
+			}
+			else
+			{
+				numberOfReferencesToShape[shape] += 1;
+			}
+DEBUG( std::string("shape references: ")+std::to_string(numberOfReferencesToShape[ shape ]) )
+		}
 	}
 	else if( IsNameAvailable( name ) )
 	{
@@ -149,7 +160,12 @@ btCollisionShape * CollisionShapeManager::GetCustomShape( std::string name )
 {
 	auto it = customCollisionShape.find( name );
 	if( it != customCollisionShape.end() )
+	{
+		auto it2 = customCollisionShapeData.find( it->second );
+		modelCustomCollisionData[it2->second] += 1;
+DEBUG( std::string("shape references: ")+std::to_string(modelCustomCollisionData[it2->second]) )
 		return it->second;
+	}
 	return NULL;
 }
 
@@ -165,6 +181,8 @@ void CollisionShapeManager::RemoveCustomShape( std::string name )
 		{
 			it3->second -= 1;
 			
+DEBUG( std::string("shape references: ")+std::to_string(it3->second) )
+			
 			if( it3->second <= 0 )
 			{
 				modelPointerCustomCollisionData[ it2->second ]->NullCustomCollisionShape();
@@ -177,11 +195,7 @@ void CollisionShapeManager::RemoveCustomShape( std::string name )
 			
 			customCollisionShapeName.erase( it->second );
 			customCollisionShapeData.erase( it2 );
-			
-			assert( it->second != NULL );
-			delete it->second;
 			it->second = NULL;
-			
 			customCollisionShape.erase( it );
 		}
 		else
@@ -202,6 +216,8 @@ void CollisionShapeManager::RemoveShape( btCollisionShape * shape )
 		if( it != collisionShapeRev.end() )
 		{
 			numberOfReferencesToShape[ it->first ] -= 1;
+			
+DEBUG( std::string("shape references: ")+std::to_string(numberOfReferencesToShape[ it->first ]) )
 			if( numberOfReferencesToShape[ it->first ] <= 0 )
 			{
 				collisionShape.erase( it->second );
@@ -237,11 +253,13 @@ void CollisionShapeManager::Destroy()
 		delete it->first;
 	}
 	
+	/*
 	for( auto it = customCollisionShape.begin(); it != customCollisionShape.end(); ++it )
 	{
 		assert( it->second != NULL );
 		delete it->second;
 	}
+	*/
 	
 	for( auto it = modelPointerCustomCollisionData.begin(); it != modelPointerCustomCollisionData.end(); ++it )
 	{

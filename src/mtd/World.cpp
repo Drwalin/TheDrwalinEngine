@@ -3,6 +3,7 @@
 #define WORLD_CPP
 
 #include <World.h>
+#include <Debug.h>
 
 btDiscreteDynamicsWorld * World::DynamicsWorld()
 {

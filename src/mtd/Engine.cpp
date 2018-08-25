@@ -384,15 +384,18 @@ void Engine::DeleteObject( std::string name )
 	{
 		if( it->second == cameraParent )
 			cameraParent = NULL;
+		
 		if( it->second )
 		{
 			world->RemoveBody( name );
 			delete it->second;
 			it->second = NULL;
 		}
+		
 		object.erase( it );
 	}
 }
+
 
 
 void Engine::DrawCrosshair()
@@ -443,8 +446,8 @@ void Engine::Draw2D()
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
-	window->output->Print( "\n\nPoint at object: " );
 	{
+		window->output->Print( "\n\nPointing at object: " );
 		Object * player = this->GetObject("Player");
 		btVector3 begin, end, point, normal;
 		
@@ -486,8 +489,9 @@ void Engine::Draw2D()
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
 		
+		float skippedTime = window->GetSkippedTime();
 		float sumTime = /*guiDrawTime + sceneDrawTime + physicsSimulationTime +*/ window->GetDeltaTime();
-		float otherTime = sumTime - ( guiDrawTime + sceneDrawTime + physicsSimulationTime );
+		float otherTime = sumTime - ( guiDrawTime + sceneDrawTime + physicsSimulationTime + skippedTime );
 		float step = sumTime / 40;
 		float t;
 		
@@ -504,6 +508,10 @@ void Engine::Draw2D()
 		for( t = 0.0f; t < physicsSimulationTime; t += step )
 			window->output->Print( "#" );
 		
+		window->output->SetColor( al_map_rgb( 255, 255, 255 ) );
+		for( t = 0.0f; t < skippedTime; t += step )
+			window->output->Print( "#" );
+		
 		window->output->SetColor( al_map_rgb( 128, 128, 128 ) );
 		for( t = 0.0f; t < otherTime; t += step )
 			window->output->Print( "#" );
@@ -511,12 +519,19 @@ void Engine::Draw2D()
 		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
 		window->output->Print( "\n guiDrawTime: " );
 		window->output->Print( guiDrawTime );
+		
 		window->output->SetColor( al_map_rgb( 0, 255, 0 ) );
 		window->output->Print( "\n sceneDrawTime: " );
 		window->output->Print( sceneDrawTime );
+		
 		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
 		window->output->Print( "\n physicsSimulationTime: " );
 		window->output->Print( physicsSimulationTime );
+		
+		window->output->SetColor( al_map_rgb( 255, 255, 255 ) );
+		window->output->Print( "\n skippedTime: " );
+		window->output->Print( skippedTime );
+		
 		window->output->SetColor( al_map_rgb( 128, 128, 128 ) );
 		window->output->Print( "\n otherTime: " );
 		window->output->Print( otherTime );

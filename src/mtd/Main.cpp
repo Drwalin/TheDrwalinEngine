@@ -47,10 +47,10 @@ int main()
 	
 	btCollisionShape * crateShape = engine->GetCollisionShapeManager()->CreateCustomShape( "crate01shape", crate01, CollisionShapeManager::SHAPE_TYPE_CONVEX );
 	engine->AddObject( engine->GetAvailableObjectName("Box"), crateShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) - btVector3(2.5,2.5,2.5) ), true, 500.0 )->SetModel( crate01 );
-	for( int i = 0; i < 5; ++i )
+	for( int i = 0; i < 125; ++i )
 		engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,20,0) + btVector3((i/5)%5,i/25,i%5) - btVector3(2.5,2.5,2.5) ), true, 500.0 )->SetModel( crate01 );
 	
-	Object * player = engine->AddCharacter( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), 75.0 );
+	Object * player = engine->AddCharacter( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 75.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	
 	DEBUG( std::string("Loading cpu time: ") + std::to_string(float(clock())/float(CLOCKS_PER_SEC)) );

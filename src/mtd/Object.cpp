@@ -139,15 +139,18 @@ Object::~Object()
 			delete body->getMotionState();
 			body->setMotionState( NULL );/////////////////////////////////////////////////////////////////////////////////
 		}
+		
 		if( body->getCollisionShape() )
 		{
 			engine->GetCollisionShapeManager()->RemoveShape( body->getCollisionShape() );
 			body->setCollisionShape( NULL );/////////////////////////////////////////////////////////////////////////////////
 		}
+		
 		assert( body != NULL );
 		delete body;
 		body = NULL;
 	}
+	
 	name = "";
 	engine = NULL;
 	model = NULL;

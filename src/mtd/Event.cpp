@@ -32,6 +32,7 @@ void Event::KeyPressedEvent( int keyCode )
 {
 	Object * player = engine->GetObject( "Player" );
 	Object * temp;
+	btVector3 begin, end, point, normal;
 	
 	switch( keyCode )
 	{
@@ -63,13 +64,23 @@ void Event::KeyPressedEvent( int keyCode )
 		player->GetBody()->applyCentralImpulse( btVector3( 0, -velocity * 0.15, 0 ) );
 		break;
 		
+	case ALLEGRO_KEY_DELETE:
+		begin = engine->GetCamera()->GetLocation();
+		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
+		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
+		if( temp )
+		{
+			engine->DeleteObject( temp->GetName() );
+		}
+		break;
+		
 	case MOUSE_LEFT:
-		engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+		temp = engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
 		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 		temp->SetModel( engine->GetModel( "Crate01" ) );
 		break;
 	case MOUSE_RIGHT:
-		engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+		temp = engine->AddObject( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
 		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 		temp->SetModel( engine->GetModel( "Sphere" ) );
 		break;

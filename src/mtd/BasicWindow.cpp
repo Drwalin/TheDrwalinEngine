@@ -5,6 +5,11 @@
 #include <BasicWindow.h>
 #include <Debug.h>
 
+float BasicWindow::GetSkippedTime()
+{
+	return skippedTime;
+}
+
 unsigned BasicWindow::GetWidth()
 {
 	return al_get_bitmap_width( GetDisplayBitmap() );
@@ -229,7 +234,14 @@ void BasicWindow::OneLoopFullTick()
 	AlTick();
 	
 	if( al_get_time() - beginTime < 1.0/60.0 )
-		al_rest( (1.0/60.0) - (al_get_time() - beginTime) );
+	{
+		skippedTime = (1.0/60.0) - (al_get_time() - beginTime);
+		al_rest( /*skippedTime*/(1.0/60.0) - (al_get_time() - beginTime) );
+	}
+	else
+	{
+		skippedTime = 0.0;
+	}
 }
 
 void BasicWindow::BeginLoop()
@@ -346,7 +358,8 @@ BasicWindow::BasicWindow()
 	font = NULL;
 	zNear = 0.01;
 	zFar = 1000.0;
-	deltaTime = 0.01;;
+	deltaTime = 0.01;
+	skippedTime = 0.0;
 	
 	lockMouse = false;
 	

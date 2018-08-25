@@ -40,6 +40,7 @@ private:
 	ALLEGRO_FONT * font;
 	float zNear, zFar;
 	float deltaTime;
+	float skippedTime;
 	
 	bool lockMouse;
 	
@@ -53,6 +54,8 @@ protected:
 	StringToEnter * stringToEnter;
 	
 public:
+	
+	float GetSkippedTime();
 	
 	EventResponser * GetEventResponser();
 	void SetEventResponser( EventResponser * eventResponser );

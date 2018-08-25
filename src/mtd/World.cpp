@@ -4,6 +4,11 @@
 
 #include <World.h>
 
+btDiscreteDynamicsWorld * World::DynamicsWorld()
+{
+	return dynamicsWorld;
+}
+
 void World::Tick( btScalar deltaTime, int count )
 {
 	if( count > 0 )

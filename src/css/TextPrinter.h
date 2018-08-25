@@ -4,6 +4,8 @@
 
 #include <allegro5/allegro.h>
 
+#include <string>
+
 #include <cstdio>
 
 class TextPrinter
@@ -26,6 +28,7 @@ public:
 	void SetColor( ALLEGRO_COLOR color );
 	int GetMaxBorderWidth();
 	int GetMaxBorderHeight();
+	void Print( const std::string & str );
 	void Print( const char * str );
 	void Print( const char val );
 	void Print( const unsigned char val );

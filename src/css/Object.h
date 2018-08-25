@@ -31,7 +31,14 @@ private:
 	btVector3 scale;
 	float boundingSphereRadius;
 	
+	int rayTraceChannel;
+	
 public:
+	
+	std::string GetName() const;
+	
+	void SetRayTraceChannel( int src );
+	int GetRayTraceChannel();
 	
 	float GetRadius();
 	void CalculateRadius();

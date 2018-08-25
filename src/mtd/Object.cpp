@@ -92,6 +92,21 @@ void Object::CalculateRadius()
 	}
 }
 
+void Object::SetRayTraceChannel( int src )
+{
+	rayTraceChannel = src;
+}
+
+int Object::GetRayTraceChannel()
+{
+	return rayTraceChannel;
+}
+
+std::string Object::GetName() const
+{
+	return name;
+}
+
 Object::Object( Engine * engine, std::string name, btRigidBody * body )
 {
 	this->engine = engine;
@@ -100,6 +115,7 @@ Object::Object( Engine * engine, std::string name, btRigidBody * body )
 	model = NULL;
 	scale = btVector3(1,1,1);
 	CalculateRadius();
+	rayTraceChannel = Engine::RayTraceChannel::COLLIDING | Engine::RayTraceChannel::NOT_TRANSPARENT;
 }
 
 Object::Object()
@@ -110,6 +126,7 @@ Object::Object()
 	model = NULL;
 	scale = btVector3(1,1,1);
 	boundingSphereRadius = 1.0f;
+	rayTraceChannel = Engine::RayTraceChannel::COLLIDING | Engine::RayTraceChannel::NOT_TRANSPARENT;
 }
 
 Object::~Object()

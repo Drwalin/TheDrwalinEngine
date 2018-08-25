@@ -24,6 +24,8 @@ private:
 	
 public:
 	
+	btDiscreteDynamicsWorld * DynamicsWorld();
+	
 	void UpdateColliderForObject( btRigidBody * body );
 	
 	std::map < std::string, btRigidBody* > object;

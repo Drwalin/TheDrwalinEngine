@@ -4,6 +4,92 @@
 
 #include <Engine.h>
 
+/*
+enum RayTraceChannel
+{
+	NONE = 0;
+	PHYSICS = 1;
+	TRANSPARENCY = 2;
+};
+
+struct RayTraceData
+{
+	float distance;
+	btVector3 begin, end;
+	btVector3 point, normal;
+	Object * object;
+};
+*/
+
+bool Engine::RayTraceData::operator < ( const RayTraceData & other ) const
+{
+	return distance < other.distance;
+}
+
+Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id ) :
+	distance(10000000000.0), object(NULL)
+{
+	if( hitData.m_collisionObjects.size() > id && hitData.m_hitNormalWorld.size() > id && hitData.m_hitPointWorld.size() > id )
+	{
+		const btCollisionObject * temp = hitData.m_collisionObjects.at( id );
+		if( temp )
+		{
+			object = (Object*)(temp->getUserPointer());
+			if( object )
+			{
+				begin = hitData.m_rayFromWorld;
+				end = hitData.m_rayToWorld;
+				point = hitData.m_hitPointWorld.at( id );
+				normal = hitData.m_hitNormalWorld.at( id );
+				distance = begin.distance2( point );
+			}
+		}
+	}
+	else
+	{
+		DEBUG( "It should not appear" );
+	}
+}
+
+Engine::RayTraceData::RayTraceData() :
+	distance(10000000000.0), object(NULL)
+{
+}
+
+Object * Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < Object* > & ignoreObjects )
+{
+	point = normal = btVector3(0,0,0);
+	
+	btCollisionWorld::AllHitsRayResultCallback rayTraceResult( begin, end );
+	world->DynamicsWorld()->rayTest( begin, end, rayTraceResult );
+	if( rayTraceResult.hasHit() )
+	{
+		std::set < Object* > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?
+		std::set < RayTraceData > objects;
+		
+		for( int i = 0; i < rayTraceResult.m_collisionObjects.size(); ++i )
+		{
+			RayTraceData hitData( rayTraceResult, i );
+			if( hitData.object->GetRayTraceChannel() & channel )
+			{
+				if( ignoreObjectsSet.find( hitData.object ) == ignoreObjectsSet.end() )
+				{
+					objects.insert( hitData );
+				}
+			}
+		}
+		
+		if( objects.size() > 0 )
+		{
+			point = objects.begin()->point;
+			normal = objects.begin()->normal;
+			
+			return objects.begin()->object;
+		}
+	}
+	return NULL;
+}
+
 CollisionShapeManager * Engine::GetCollisionShapeManager()
 {
 	return collisionShapeManager;
@@ -90,6 +176,9 @@ Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransf
 		
 		Object * obj = new Object( this, name, rigidBody );
 		object[name] = obj;
+		
+		rigidBody->setUserPointer( obj );
+		
 		return obj;
 	}
 	return NULL;
@@ -306,7 +395,24 @@ void Engine::DeleteObject( std::string name )
 }
 
 
-
+void Engine::DrawCrosshair()
+{
+	float width, height;
+	width = window->GetWidth();
+	height = window->GetHeight();
+	
+	float midx = width/2.0, midy = height/2.0;
+	
+	ALLEGRO_COLOR color = al_map_rgba( 230, 110, 5, 128 );
+	
+	float a = 2, b = 3;
+	
+	al_draw_line( midx-a, midy-b, midx+a, midy-b, color, 2.0 );
+	al_draw_line( midx-a, midy+b, midx+a, midy+b, color, 2.0 );
+	
+	al_draw_line( midx-b, midy-a, midx-b, midy+a, color, 2.0 );
+	al_draw_line( midx+b, midy-a, midx+b, midy+a, color, 2.0 );
+}
 
 void Engine::Draw2D()
 {
@@ -337,6 +443,26 @@ void Engine::Draw2D()
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
+	window->output->Print( "\n\nPoint at object: " );
+	{
+		Object * player = this->GetObject("Player");
+		btVector3 begin, end, point, normal;
+		
+		begin = this->GetCamera()->GetLocation();
+		end = begin + ( this->GetCamera()->GetForwardVector() * 100.0 );
+		
+		Object * temp = this->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
+		
+		if( temp )
+		{
+			window->output->Print( temp->GetName() );
+		}
+		else
+		{
+			window->output->Print( "(NULL)" );
+		}
+	}
+	
 	{
 		window->output->Print( "\ncollisionShape: " );
 		window->output->Print( int(collisionShapeManager->collisionShape.size()) );
@@ -360,7 +486,8 @@ void Engine::Draw2D()
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
 		
-		float sumTime = guiDrawTime + sceneDrawTime + physicsSimulationTime;
+		float sumTime = /*guiDrawTime + sceneDrawTime + physicsSimulationTime +*/ window->GetDeltaTime();
+		float otherTime = sumTime - ( guiDrawTime + sceneDrawTime + physicsSimulationTime );
 		float step = sumTime / 40;
 		float t;
 		
@@ -377,6 +504,10 @@ void Engine::Draw2D()
 		for( t = 0.0f; t < physicsSimulationTime; t += step )
 			window->output->Print( "#" );
 		
+		window->output->SetColor( al_map_rgb( 128, 128, 128 ) );
+		for( t = 0.0f; t < otherTime; t += step )
+			window->output->Print( "#" );
+		
 		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
 		window->output->Print( "\n guiDrawTime: " );
 		window->output->Print( guiDrawTime );
@@ -386,7 +517,12 @@ void Engine::Draw2D()
 		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
 		window->output->Print( "\n physicsSimulationTime: " );
 		window->output->Print( physicsSimulationTime );
+		window->output->SetColor( al_map_rgb( 128, 128, 128 ) );
+		window->output->Print( "\n otherTime: " );
+		window->output->Print( otherTime );
 	}
+	
+	DrawCrosshair();
 	
 	guiDrawTime = al_get_time() - time;
 }

@@ -64,13 +64,14 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case MOUSE_LEFT:
-//		temp = engine->AddBox( engine->GetAvailableObjectName("Box"), btVector3(0.5,0.5,0.5), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-//		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-//		temp->SetModel( engine->GetModel( "Crate01" ) );
+		engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		temp->SetModel( engine->GetModel( "Crate01" ) );
 		break;
 	case MOUSE_RIGHT:
-//		temp = engine->AddBall( engine->GetAvailableObjectName("Ball"), 0.5, btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-//		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		temp->SetModel( engine->GetModel( "Sphere" ) );
 		break;
 	}
 }
@@ -123,6 +124,20 @@ void Event::KeyHoldedEvent( int keyCode )
 		if( velocity < 1.0f )
 			velocity = 1.0f;
 		break;
+		
+	case ALLEGRO_KEY_UP:
+		window->camera->Rotate( btVector3( -window->GetDeltaTime(), 0.0, 0.0 ) * ALLEGRO_PI );
+		break;
+	case ALLEGRO_KEY_DOWN:
+		window->camera->Rotate( btVector3( window->GetDeltaTime(), 0.0, 0.0 ) * ALLEGRO_PI );
+		break;
+	case ALLEGRO_KEY_RIGHT:
+		window->camera->Rotate( btVector3( 0.0, window->GetDeltaTime(), 0.0 ) * ALLEGRO_PI );
+		break;
+	case ALLEGRO_KEY_LEFT:
+		window->camera->Rotate( btVector3( 0.0, -window->GetDeltaTime(), 0.0 ) * ALLEGRO_PI );
+		break;
+		
 	case ALLEGRO_KEY_W:
 		if( player == NULL )
 			break;

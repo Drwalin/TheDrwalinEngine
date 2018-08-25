@@ -5,6 +5,16 @@
 #include <BasicWindow.h>
 #include <Debug.h>
 
+unsigned BasicWindow::GetWidth()
+{
+	return al_get_bitmap_width( GetDisplayBitmap() );
+}
+
+unsigned BasicWindow::GetHeight()
+{
+	return al_get_bitmap_height( GetDisplayBitmap() );
+}
+
 bool BasicWindow::IsMouseLocked()
 {
 	return lockMouse;

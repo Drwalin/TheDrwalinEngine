@@ -7,6 +7,7 @@
 #include <LinearMath/btQuaternion.h>
 #include <btBulletDynamicsCommon.h>
 
+#include <set>
 #include <map>
 #include <vector>
 #include <string>
@@ -42,6 +43,31 @@ private:
 	bool pausePhysics;
 	
 public:
+	
+	class RayTraceData
+	{
+	public:
+		float distance;
+		btVector3 begin, end;
+		btVector3 point, normal;
+		Object * object;
+		bool operator < ( const RayTraceData & other ) const;
+		RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id );
+		RayTraceData();
+	};
+	
+	enum RayTraceChannel
+	{
+		NONE = 0,
+		COLLIDING = 1,
+		NOT_TRANSPARENT = 2
+	};
+	
+	void DrawCrosshair();
+	
+public:
+	
+	Object * RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < Object* > & ignoreObjects );
 	
 	World * GetWorld();
 	Window * GetWindow();

@@ -71,6 +71,8 @@ public:
 	int GetFontWidth();			// get with al_font_width??
 	int GetFontHeight();		// get with al_font_width??
 	
+	unsigned GetWidth();
+	unsigned GetHeight();
 	
 	ALLEGRO_FONT * GetFont();
 	

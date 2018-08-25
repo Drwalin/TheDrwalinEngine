@@ -82,6 +82,11 @@ void TextPrinter::SetColor( ALLEGRO_COLOR color )
 	currentTextColor = color;
 }
 
+void TextPrinter::Print( const std::string & str )
+{
+	Print( str.c_str() );
+}
+
 void TextPrinter::Print( const char * str )
 {
 	char * ptr = (char*)str;

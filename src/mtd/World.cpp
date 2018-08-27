@@ -5,6 +5,16 @@
 #include <World.h>
 #include <Debug.h>
 
+void World::ActivateAll()
+{
+	if( activateAll <= 0 )
+		activateAll = 1;
+	else if( activateAll < 2 )
+		++activateAll;
+	else if( activateAll > 2 )
+		activateAll = 2;
+}
+
 btDiscreteDynamicsWorld * World::DynamicsWorld()
 {
 	return dynamicsWorld;
@@ -12,6 +22,32 @@ btDiscreteDynamicsWorld * World::DynamicsWorld()
 
 void World::Tick( btScalar deltaTime, int count )
 {
+	if( activateAll > 0 )
+	{
+		auto it = object.find( currentActivator );
+		if( it == object.end() )
+			it = object.begin();
+		
+		for( int i = 0; i < 113; ++i, ++it )
+		{
+			if( it == object.end() )
+			{
+				--activateAll;
+				break;
+			}
+			it->second->activate( true );
+		}
+		
+		if( it != object.end() )
+		{
+			currentActivator = it->first;
+		}
+		else
+		{
+			currentActivator = "";
+		}
+	}
+	
 	if( count > 0 )
 		dynamicsWorld->stepSimulation( deltaTime, count );
 	else
@@ -45,6 +81,7 @@ bool World::AddBody( std::string name, btRigidBody * body )
 	{
 		if( object.find(name) != object.end() )
 		{
+			return false;
 			//DeleteObject( name );			////////////////////////////////////////////////////////////////////////
 		}
 		else
@@ -64,6 +101,8 @@ void World::RemoveBody( std::string name )
 	{
 		if( it->second )
 		{
+			ActivateAll();
+			it->second->activate( true );
 			dynamicsWorld->removeRigidBody( it->second );
 		}
 		object.erase( it );
@@ -103,7 +142,8 @@ void World::Destroy()
 	broadphase = NULL;
 }
 
-World::World()
+World::World() :
+	activateAll(0)
 {
 	broadphase = NULL;
 	collisionConfiguration = NULL;

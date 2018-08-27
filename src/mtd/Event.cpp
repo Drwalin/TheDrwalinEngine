@@ -33,7 +33,6 @@ void Event::KeyPressedEvent( int keyCode )
 	Object * player = engine->GetObject( "Player" );
 	Object * temp;
 	btVector3 begin, end, point, normal;
-	static bool t = true;
 	
 	switch( keyCode )
 	{
@@ -65,28 +64,10 @@ void Event::KeyPressedEvent( int keyCode )
 		player->GetBody()->applyCentralImpulse( btVector3( 0, -velocity * 0.15, 0 ) );
 		break;
 		
-	case ALLEGRO_KEY_DELETE:
-		begin = engine->GetCamera()->GetLocation();
-		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
-		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
-		if( temp )
-		{
-			if( temp->GetName() != "TestMap" )
-			{
-				engine->DeleteObject( temp->GetName() );
-			}
-		}
-		break;
-		
 	case MOUSE_LEFT:
 		temp = engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
 		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 		temp->SetModel( engine->GetModel( "Crate01" ) );
-		if( t )
-		{
-			temp->SetScale( btVector3(2,2,2) );
-			t = false;
-		}
 		break;
 	case MOUSE_RIGHT:
 		temp = engine->AddObject( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
@@ -128,6 +109,7 @@ void Event::KeyHoldedEvent( int keyCode )
 {
 	Object * player = engine->GetObject( "Player" );
 	Object * temp;
+	btVector3 begin, end, point, normal;
 	
 	btVector3 vector;
 	
@@ -143,6 +125,21 @@ void Event::KeyHoldedEvent( int keyCode )
 		velocity -= 10.0f;
 		if( velocity < 1.0f )
 			velocity = 1.0f;
+		break;
+		
+	case ALLEGRO_KEY_DELETE:
+		begin = engine->GetCamera()->GetLocation();
+		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
+		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
+		if( temp )
+		{
+			if( temp->GetName() != "TestMap" )
+			{
+				if( temp->GetBody() )
+					temp->GetBody()->activate();
+				engine->DeleteObject( temp->GetName() );
+			}
+		}
 		break;
 		
 	case ALLEGRO_KEY_UP:

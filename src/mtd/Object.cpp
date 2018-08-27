@@ -10,9 +10,11 @@ void Object::SetScale( btVector3 scale )
 	this->scale = scale;
 	if( body )
 	{
+		body->activate( true );
 		body->getCollisionShape()->setLocalScaling( scale );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		CalculateRadius();
+		body->activate( true );
 	}
 }
 

@@ -5,6 +5,43 @@
 #include <BasicWindow.h>
 #include <Debug.h>
 
+void ParallelThreadFunctionToDraw( BasicWindow * window )
+{
+	while( window->useParallelThreadToDraw.load() == true )
+	{
+		window->parallelThreadToDrawMutex.lock();
+		
+		window->ParallelToDrawTick( window->deltaTime );
+		
+		window->parallelThreadToDrawMutex.unlock();
+	}
+}
+
+
+bool BasicWindow::IsParallelToDrawTickInUse()
+{
+	return useParallelThreadToDraw.load();
+}
+
+void BasicWindow::UseParallelThreadToDraw()
+{
+	if( useParallelThreadToDraw.load() == false )
+	{
+		parallelThreadToDrawMutex.lock();
+		useParallelThreadToDraw.store( true );
+		parallelThreadToDraw = std::thread( ParallelThreadFunctionToDraw, this );
+	}
+}
+
+void BasicWindow::ShutDownParallelThreadToDraw()
+{
+	if( useParallelThreadToDraw.load() == true )
+	{
+		useParallelThreadToDraw.store( false );
+		parallelThreadToDraw.join();
+	}
+}
+
 float BasicWindow::GetSkippedTime()
 {
 	return skippedTime;
@@ -189,6 +226,8 @@ bool BasicWindow::Init( const char * windowName, const char * iconFile, int widt
 
 void BasicWindow::Destroy()
 {
+	ShutDownParallelThreadToDraw();
+	
 	if( display )
 		al_destroy_display( display );
 	if( font )
@@ -233,12 +272,14 @@ void BasicWindow::OneLoopFullTick()
 	
 	AlTick();
 	
+	/*
 	if( al_get_time() - beginTime < 1.0/60.0 )
 	{
 		skippedTime = (1.0/60.0) - (al_get_time() - beginTime);
-		al_rest( /*skippedTime*/(1.0/60.0) - (al_get_time() - beginTime) );
+		al_rest( skippedTime );
 	}
 	else
+	*/
 	{
 		skippedTime = 0.0;
 	}
@@ -258,6 +299,9 @@ void BasicWindow::QueueQuit()
 
 void BasicWindow::AlDraw()
 {
+	if( useParallelThreadToDraw.load() == true )
+		parallelThreadToDrawMutex.unlock();
+	
 	Use2DSpace();
 	al_clear_to_color( al_map_rgb( 0, 0, 0 ) );
 	
@@ -272,6 +316,8 @@ void BasicWindow::AlDraw()
 	
 	al_flip_display();
 	
+	if( useParallelThreadToDraw.load() == true )
+		parallelThreadToDrawMutex.lock();
 }
 
 
@@ -346,7 +392,8 @@ EventResponser * BasicWindow::GetEventResponser()
 	return eventResponser;
 }
 
-BasicWindow::BasicWindow()
+BasicWindow::BasicWindow() :
+	useParallelThreadToDraw(false)
 {
 	quitWhenPossible = false;
 	
@@ -365,6 +412,8 @@ BasicWindow::BasicWindow()
 	
 	eventResponser = NULL;
 	stringToEnter = new StringToEnter;
+	
+	useParallelThreadToDraw = false;
 }
 
 BasicWindow::~BasicWindow()

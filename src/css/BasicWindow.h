@@ -20,11 +20,17 @@
 		-o test -lm -lpthread -lSM -lICE -lX11 -lXext -lXcursor -lXpm -lXi -lXinerama -lXrandr -lGL -lGLU -lpng -lz -lpulse-simple -lpulse -lasound -lopenal -lfreetype -lallegro_monolith-static
 */
 
+#include <atomic>
+#include <thread>
+#include <mutex>
+
 #include <Keyboard.h>
 #include <EventResponser.h>
 #include <Camera.h>
 #include <StringToEnter.h>
 #include <TextPrinter.h>
+
+void ParallelThreadFunctionToDraw( class BasicWindow * window );
 
 class BasicWindow
 {
@@ -44,16 +50,26 @@ private:
 	
 	bool lockMouse;
 	
+	std::mutex parallelThreadToDrawMutex;
+	std::thread parallelThreadToDraw;
+	std::atomic<bool> useParallelThreadToDraw;
+	
 	void Use3DSpace();
 	void Use2DSpace();
 	
 	EventResponser * eventResponser;
+	
+	friend void ParallelThreadFunctionToDraw( BasicWindow* );
 	
 protected:
 	
 	StringToEnter * stringToEnter;
 	
 public:
+	
+	void UseParallelThreadToDraw();
+	void ShutDownParallelThreadToDraw();
+	bool IsParallelToDrawTickInUse();
 	
 	float GetSkippedTime();
 	
@@ -78,6 +94,8 @@ public:
 	unsigned GetHeight();
 	
 	ALLEGRO_FONT * GetFont();
+	
+	virtual void ParallelToDrawTick( const float deltaTime ) = 0;
 	
 	virtual void Tick( const float deltaTime ) = 0;
 	void AlTick();

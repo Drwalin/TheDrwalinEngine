@@ -132,15 +132,29 @@ int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
 	return 1;
 }
 
+void Engine::ParallelToDrawTick( const float deltaTime )
+{
+	float time = al_get_time();
+	if( window->IsParallelToDrawTickInUse() == true )
+	{
+		if( !pausePhysics )
+		{
+			world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
+		}
+	}
+	physicsSimulationTime = al_get_time() - time;
+}
+
 void Engine::Tick( const float deltaTime )
 {
 	float time = al_get_time();
-	
-	if( !pausePhysics )
+	if( window->IsParallelToDrawTickInUse() == false )
 	{
-		world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
+		if( !pausePhysics )
+		{
+			world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
+		}
 	}
-	
 	physicsSimulationTime = al_get_time() - time;
 }
 
@@ -431,8 +445,16 @@ void Engine::Draw2D()
 	window->output->SetWorkSpace( 5, 10, 80, 80 );
 	window->output->Goto( 5, 10 );
 	window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
-	window->output->Print( "FPS: " );
+	window->output->Print( "DeltaTime: " );
+	window->output->Print( window->GetDeltaTime() );
+	
+	
+	//window->output->SetWorkSpace( 5, 10, 80, 80 );
+	//window->output->Goto( 5, 10 );
+	//window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
+	window->output->Print( "\nFPS: " );
 	window->output->Print( window->GetSmoothFps() );
+	/*
 	window->output->Print( "\n" );
 	window->output->Print( (int)al_get_time() );
 	
@@ -442,10 +464,11 @@ void Engine::Draw2D()
 	window->output->Print( window->camera->GetLocation().y() );
 	window->output->Print( " : " );
 	window->output->Print( window->camera->GetLocation().z() );
-	
+	*/
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
+	if( false )
 	{
 		window->output->Print( "\n\nPointing at object: " );
 		Object * player = this->GetObject("Player");
@@ -466,6 +489,7 @@ void Engine::Draw2D()
 		}
 	}
 	
+	if( false )
 	{
 		window->output->Print( "\ncollisionShape: " );
 		window->output->Print( int(collisionShapeManager->collisionShape.size()) );
@@ -486,6 +510,7 @@ void Engine::Draw2D()
 		window->output->Print( int(collisionShapeManager->customCollisionShapeName.size()) );
 	}
 	
+	if( false )
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
 		
@@ -587,6 +612,8 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	window->LockMouse();
 	
 	collisionShapeManager = new CollisionShapeManager;
+	
+	//window->UseParallelThreadToDraw();
 }
 
 void Engine::Destroy()

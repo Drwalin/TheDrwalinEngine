@@ -22,13 +22,18 @@ private:
 	btSequentialImpulseConstraintSolver * solver;
 	btDiscreteDynamicsWorld * dynamicsWorld;
 	
+	std::map < std::string, btRigidBody* > object;
+	
+	std::string currentActivator;
+	int activateAll;
+	
 public:
+	
+	void ActivateAll();
 	
 	btDiscreteDynamicsWorld * DynamicsWorld();
 	
 	void UpdateColliderForObject( btRigidBody * body );
-	
-	std::map < std::string, btRigidBody* > object;
 	
 	btVector3 GetGravity();
 	

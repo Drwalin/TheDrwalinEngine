@@ -5,6 +5,12 @@
 #include <Window.h>
 #include <Engine.h>
 
+void Window::ParallelToDrawTick( const float deltaTime )
+{
+	if( engine )
+		engine->ParallelToDrawTick( deltaTime );
+}
+
 void Window::Tick( const float deltaTime )
 {
 	if( engine )

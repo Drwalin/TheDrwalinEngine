@@ -98,6 +98,7 @@ public:
 	
 	int CalculateNumberOfSimulationsPerFrame( const float deltaTime );
 	void Tick( const float deltaTime );
+	void ParallelToDrawTick( const float deltaTime );
 	
 	void Draw2D();
 	void Draw3D();

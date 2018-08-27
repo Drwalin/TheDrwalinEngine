@@ -30,8 +30,8 @@ void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 
 void Event::KeyPressedEvent( int keyCode )
 {
-	Object * player = engine->GetObject( "Player" );
-	Object * temp;
+	SmartPtr<Object> player = engine->GetObject( "Player" );
+	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;
 	
 	switch( keyCode )
@@ -52,12 +52,12 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case ALLEGRO_KEY_SPACE:
-		if( player == NULL )
+		if( !player )
 			break;
 		player->GetBody()->applyCentralImpulse( btVector3( 0, velocity*0.8, 0 ) );
 		break;
 	case ALLEGRO_KEY_LCTRL:
-		if( player == NULL )
+		if( !player )
 			break;
 		player->SetScale( btVector3( 1.0, 0.5, 1.0 ) );
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 0.25, 1.0 ) );
@@ -79,7 +79,7 @@ void Event::KeyPressedEvent( int keyCode )
 
 void Event::KeyReleasedEvent( int keyCode )
 {
-	Object * player = engine->GetObject( "Player" );
+	SmartPtr<Object> player = engine->GetObject( "Player" );
 	
 	switch( keyCode )
 	{
@@ -87,7 +87,7 @@ void Event::KeyReleasedEvent( int keyCode )
 		window->QueueQuit();
 		break;
 	case ALLEGRO_KEY_LCTRL:
-		if( player == NULL )
+		if( !player )
 			break;
 		player->SetScale( btVector3( 1.0, 1.0, 1.0 ) );
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 1.0, 1.0 ) );
@@ -107,8 +107,8 @@ float GetMaxVelocity()
 
 void Event::KeyHoldedEvent( int keyCode )
 {
-	Object * player = engine->GetObject( "Player" );
-	Object * temp;
+	SmartPtr<Object> player = engine->GetObject( "Player" );
+	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;
 	
 	btVector3 vector;
@@ -156,7 +156,7 @@ void Event::KeyHoldedEvent( int keyCode )
 		break;
 		
 	case ALLEGRO_KEY_W:
-		if( player == NULL )
+		if( !player )
 			break;
 		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatForwardVector() ) < GetMaxVelocity()  )
 		{
@@ -164,7 +164,7 @@ void Event::KeyHoldedEvent( int keyCode )
 		}
 		break;
 	case ALLEGRO_KEY_A:
-		if( player == NULL )
+		if( !player )
 			break;
 		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatRightVector() ) < GetMaxVelocity() - 0.5f )
 		{
@@ -172,7 +172,7 @@ void Event::KeyHoldedEvent( int keyCode )
 		}
 		break;
 	case ALLEGRO_KEY_S:
-		if( player == NULL )
+		if( !player )
 			break;
 		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatForwardVector() ) < GetMaxVelocity() - 1.0f )
 		{
@@ -180,7 +180,7 @@ void Event::KeyHoldedEvent( int keyCode )
 		}
 		break;
 	case ALLEGRO_KEY_D:
-		if( player == NULL )
+		if( !player )
 			break;
 		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatRightVector() ) < GetMaxVelocity() - 0.5f )
 		{

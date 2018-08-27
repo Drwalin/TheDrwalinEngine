@@ -25,7 +25,7 @@ std::string CollisionShapeManager::GetFirstAvailableName( std::string name )
 	return name;
 }
 
-btCollisionShape * CollisionShapeManager::GetShape( std::vector < btScalar > constructionData, bool independent )
+SmartPtr<btCollisionShape> CollisionShapeManager::GetShape( std::vector < btScalar > constructionData, bool independent )
 {
 	auto it = collisionShape.find( constructionData );
 	if( !independent && it != collisionShape.end() )
@@ -34,7 +34,7 @@ btCollisionShape * CollisionShapeManager::GetShape( std::vector < btScalar > con
 	}
 	else
 	{
-		btCollisionShape * shape = NULL;
+		SmartPtr<btCollisionShape> shape;
 		switch( constructionData.size() )
 		{
 		case 1:
@@ -58,12 +58,13 @@ btCollisionShape * CollisionShapeManager::GetShape( std::vector < btScalar > con
 		}
 		return shape;
 	}
-	return NULL;
+	SmartPtr<btCollisionShape> ret;
+	return ret;
 }
 
-btCollisionShape * CollisionShapeManager::AddShape( std::vector < btScalar > constructionData, std::string name )
+SmartPtr<btCollisionShape> CollisionShapeManager::AddShape( std::vector < btScalar > constructionData, std::string name )
 {
-	btCollisionShape * shape = NULL;
+	SmartPtr<btCollisionShape> shape;
 	if( name == "" )
 	{
 		shape = GetShape( constructionData, false );
@@ -92,70 +93,72 @@ btCollisionShape * CollisionShapeManager::AddShape( std::vector < btScalar > con
 	return shape;
 }
 
-btCollisionShape * CollisionShapeManager::GetBox( btVector3 size, std::string name )
+SmartPtr<btCollisionShape> CollisionShapeManager::GetBox( btVector3 size, std::string name )
 {
 	std::vector < btScalar > constructionData = { size.x(), size.y(), size.z() };
 	return AddShape( constructionData, name );
 }
 
-btCollisionShape * CollisionShapeManager::GetBall( btScalar radius, std::string name )
+SmartPtr<btCollisionShape> CollisionShapeManager::GetBall( btScalar radius, std::string name )
 {
 	std::vector < btScalar > constructionData = { radius };
 	return AddShape( constructionData, name );
 }
 
-btCollisionShape * CollisionShapeManager::GetCapsule( btScalar radius, btScalar height, std::string name )
+SmartPtr<btCollisionShape> CollisionShapeManager::GetCapsule( btScalar radius, btScalar height, std::string name )
 {
 	std::vector < btScalar > constructionData = { radius, height };
 	return AddShape( constructionData, name );
 }
 
-btCollisionShape * CollisionShapeManager::GetCylinder( btScalar radius, btScalar height, std::string name )
+SmartPtr<btCollisionShape> CollisionShapeManager::GetCylinder( btScalar radius, btScalar height, std::string name )
 {
 	std::vector < btScalar > constructionData = { radius, height, radius, height };
 	return AddShape( constructionData, name );
 }
 
-btCollisionShape * CollisionShapeManager::CreateCustomShape( std::string name, Model * model, int shapeType )
+SmartPtr<btCollisionShape> CollisionShapeManager::CreateCustomShape( std::string name, SmartPtr<Model> model, int shapeType )
 {
-	if( model == NULL || IsNameAvailable( name ) == false )
-		return NULL;
-	
-	CustomCollisionShapeData * data = model->GetCustomCollisionShapeData();
-	
-	if( data == NULL )
+	if( !model || IsNameAvailable( name ) == false )
 	{
-		return NULL;
+		return SmartPtr<btCollisionShape>();
 	}
 	
-	modelPointerCustomCollisionData[ data ] = model;
+	SmartPtr<CustomCollisionShapeData> data = model->GetCustomCollisionShapeData();
 	
-	btCollisionShape * shape = NULL;
-	
-	switch( shapeType )
+	if( data )
 	{
-	case SHAPE_TYPE_CONVEX:
-		shape = data->GetConvexShape();
-		break;
-	case SHAPE_TYPE_TRIANGLE:
-		shape = data->GetTriangleShape();
-		break;
-	default:
-		return NULL;
+		modelPointerCustomCollisionData[ data ] = model;
+		
+		SmartPtr<btCollisionShape> shape;
+		
+		switch( shapeType )
+		{
+		case SHAPE_TYPE_CONVEX:
+			shape = data->GetConvexShape();
+			break;
+		case SHAPE_TYPE_TRIANGLE:
+			shape = data->GetTriangleShape();
+			break;
+		default:
+			return shape;
+		}
+		
+		if( shape )
+		{
+			modelCustomCollisionData[ data ] += 1;
+			customCollisionShape[ name ] = shape;
+			customCollisionShapeData[ shape ] = data;
+			customCollisionShapeName[ shape ] = name;
+		}
+		
+		return shape;
 	}
 	
-	if( shape )
-	{
-		modelCustomCollisionData[ data ] += 1;
-		customCollisionShape[ name ] = shape;
-		customCollisionShapeData[ shape ] = data;
-		customCollisionShapeName[ shape ] = name;
-	}
-	
-	return shape;
+	return SmartPtr<btCollisionShape>();
 }
 
-btCollisionShape * CollisionShapeManager::GetCustomShape( std::string name )
+SmartPtr<btCollisionShape> CollisionShapeManager::GetCustomShape( std::string name )
 {
 	auto it = customCollisionShape.find( name );
 	if( it != customCollisionShape.end() )
@@ -164,7 +167,7 @@ btCollisionShape * CollisionShapeManager::GetCustomShape( std::string name )
 		modelCustomCollisionData[it2->second] += 1;
 		return it->second;
 	}
-	return NULL;
+	return SmartPtr<btCollisionShape>();
 }
 
 void CollisionShapeManager::RemoveCustomShape( std::string name )
@@ -183,29 +186,24 @@ void CollisionShapeManager::RemoveCustomShape( std::string name )
 			{
 				modelPointerCustomCollisionData[ it2->second ]->NullCustomCollisionShape();
 				modelPointerCustomCollisionData.erase( it2->second );
-				assert( it2->second != NULL );
-				delete it2->second;
-				it2->second = NULL;
+				it2->second.Delete();
 				modelCustomCollisionData.erase( it3 );
 			}
 			
 			customCollisionShapeName.erase( it->second );
 			customCollisionShapeData.erase( it2 );
-			it->second = NULL;
 			customCollisionShape.erase( it );
 		}
 		else
 		{
 			customCollisionShapeName.erase( it->second );
-			assert( it->second != NULL );
-			delete it->second;
-			it->second = NULL;
+			it->second.Delete();
 			customCollisionShape.erase( it );
 		}
 	}
 }
 
-void CollisionShapeManager::RemoveShape( btCollisionShape * shape )
+void CollisionShapeManager::RemoveShape( SmartPtr<btCollisionShape> shape )
 {
 	{
 		auto it = collisionShapeRev.find( shape );
@@ -217,8 +215,7 @@ void CollisionShapeManager::RemoveShape( btCollisionShape * shape )
 			{
 				collisionShape.erase( it->second );
 				numberOfReferencesToShape.erase( it->first );
-				assert( it->first != NULL );
-				delete it->first;
+				((SmartPtr<btCollisionShape>*)&(it->first))->Delete();
 				collisionShapeRev.erase( it );
 			}
 			return;
@@ -243,14 +240,12 @@ void CollisionShapeManager::Destroy()
 	
 	for( auto it = numberOfReferencesToShape.begin(); it != numberOfReferencesToShape.end(); ++it )
 	{
-		assert( it->first != NULL );
-		delete it->first;
+		((SmartPtr<btCollisionShape>*)&(it->first))->Delete();
 	}
 	
 	for( auto it = modelPointerCustomCollisionData.begin(); it != modelPointerCustomCollisionData.end(); ++it )
 	{
-		assert( it->first != NULL );
-		delete it->first;
+		((SmartPtr<CustomCollisionShapeData>*)&(it->first))->Delete();
 	}
 	
 	collisionShape.clear();

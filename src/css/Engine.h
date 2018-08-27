@@ -13,6 +13,7 @@
 #include <string>
 
 #include <Debug.h>
+#include <SmartPtr.h>
 
 #include <Event.h>
 #include <World.h>
@@ -32,13 +33,13 @@ private:
 	Event * event;
 	CollisionShapeManager * collisionShapeManager;
 	
-	std::map < std::string, Texture* > texture;
-	std::map < std::string, Model* > model;
-	std::map < std::string, Object* > object;
+	std::map < std::string, SmartPtr<Texture> > texture;
+	std::map < std::string, SmartPtr<Model> > model;
+	std::map < std::string, SmartPtr<Object> > object;
 	
 	float guiDrawTime, sceneDrawTime, physicsSimulationTime;
 	
-	Object * cameraParent;
+	SmartPtr<Object> cameraParent;
 	
 	bool pausePhysics;
 	
@@ -50,7 +51,7 @@ public:
 		float distance;
 		btVector3 begin, end;
 		btVector3 point, normal;
-		Object * object;
+		SmartPtr<Object> object;
 		bool operator < ( const RayTraceData & other ) const;
 		RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id );
 		RayTraceData();
@@ -67,7 +68,7 @@ public:
 	
 public:
 	
-	Object * RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < Object* > & ignoreObjects );
+	SmartPtr<Object> RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < SmartPtr<Object> > & ignoreObjects );
 	
 	World * GetWorld();
 	Window * GetWindow();
@@ -81,16 +82,16 @@ public:
 	
 	CollisionShapeManager * GetCollisionShapeManager();
 	
-	Object * AddObject( std::string name, btCollisionShape * shape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );
-	Object * AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
+	SmartPtr<Object> AddObject( std::string name, SmartPtr<btCollisionShape> shape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );
+	SmartPtr<Object> AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
 	
 	void AttachCameraToObject( std::string name, btVector3 location );
-	bool SetCustomModelName( std::string name, Model * mdl );
+	bool SetCustomModelName( std::string name, SmartPtr<Model> mdl );
 	
-	Model * LoadModel( std::string name );
-	Texture * GetTexture( std::string name );
-	Model * GetModel( std::string name );
-	Object * GetObject( std::string name );
+	SmartPtr<Model> LoadModel( std::string name );
+	SmartPtr<Texture> GetTexture( std::string name );
+	SmartPtr<Model> GetModel( std::string name );
+	SmartPtr<Object> GetObject( std::string name );
 	
 	std::string GetAvailableObjectName( std::string name );
 	

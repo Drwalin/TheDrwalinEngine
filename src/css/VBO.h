@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <Debug.h>
+#include <SmartPtr.h>
 
 #include <Texture.h>
 
@@ -17,7 +18,7 @@ class VBO
 {
 private:
 	
-	Texture * texture;
+	SmartPtr<Texture> texture;
 	std::vector < ALLEGRO_VERTEX > vertices;
 	std::vector < int > indices;
 	
@@ -30,9 +31,12 @@ public:
 	void Draw();
 	void Generate();
 	void Destroy();
-	void SetTexture( Texture * texture );
-	Texture * GetTexture();
+	void SetTexture( SmartPtr<Texture> texture );
+	SmartPtr<Texture> GetTexture();
 	
+	VBO & operator = ( const VBO & other );
+	
+	VBO( const VBO & other );
 	VBO();
 	~VBO();
 };

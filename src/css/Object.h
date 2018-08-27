@@ -12,9 +12,9 @@
 #include <iostream>
 
 #include <Debug.h>
+#include <SmartPtr.h>
 
 #include <Model.h>
-#include <Camera.h>
 
 class Engine;
 
@@ -26,14 +26,17 @@ private:
 	
 	std::string name;
 	
-	btRigidBody * body;
-	Model * model;
+	SmartPtr<btCollisionShape> collisionShape;
+	SmartPtr<btRigidBody> body;
+	SmartPtr<Model> model;
 	btVector3 scale;
 	float boundingSphereRadius;
 	
 	int rayTraceChannel;
 	
 public:
+	
+	Engine * GetEngine();
 	
 	std::string GetName() const;
 	
@@ -49,14 +52,13 @@ public:
 	btTransform GetTransform();
 	btVector3 GetLocation();
 	
-	btRigidBody * GetBody();
-	void SetBody( btRigidBody * body );
+	SmartPtr<btRigidBody> GetBody();
 	
 	void Draw();
 	
-	void SetModel( Model * model );
+	void SetModel( SmartPtr<Model> model );
 	
-	Object( Engine * engine, std::string name, btRigidBody * body );
+	Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape );
 	Object();
 	~Object();
 };

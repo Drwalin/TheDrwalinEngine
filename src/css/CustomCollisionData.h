@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include <SmartPtr.h>
+
 class CustomCollisionShapeData
 {
 private:
@@ -14,10 +16,10 @@ private:
 	std::vector < btVector3 > vertices;
 	std::vector < int > indices;
 	
-	btCollisionShape * convexShape;
+	SmartPtr<btCollisionShape> convexShape;
 	
-	btTriangleIndexVertexArray * triangleData;
-	btCollisionShape * triangleShape;
+	SmartPtr<btTriangleIndexVertexArray> triangleData;
+	SmartPtr<btCollisionShape> triangleShape;
 	
 	float friction;
 	float restitution;
@@ -26,8 +28,8 @@ private:
 	
 public:
 	
-	btCollisionShape * GetTriangleShape();
-	btCollisionShape * GetConvexShape();
+	SmartPtr<btCollisionShape> GetTriangleShape();
+	SmartPtr<btCollisionShape> GetConvexShape();
 	
 	void DestroyTriangleShape();
 	void DestroyConvexShape();

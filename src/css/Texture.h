@@ -9,6 +9,8 @@
 
 #include <Debug.h>
 
+#include <string>
+
 class Texture
 {
 private:
@@ -17,6 +19,7 @@ private:
 	int mode;
 	
 public:
+	std::string file;
 	
 	const static int NEAREST = 0;
 	const static int LINEAR = 1;
@@ -31,6 +34,7 @@ public:
 	
 	void Destroy();
 	
+	Texture( const Texture * other );
 	Texture();
 	~Texture();
 };

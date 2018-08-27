@@ -11,6 +11,8 @@
 
 #include <CustomCollisionData.h>
 
+#include <SmartPtr.h>
+
 class Model;
 class Object;
 
@@ -18,19 +20,19 @@ class CollisionShapeManager
 {
 private:
 	
-	std::map < std::vector < btScalar >, btCollisionShape* > collisionShape;
-	std::map < btCollisionShape*, std::vector < btScalar > > collisionShapeRev;
-	std::map < btCollisionShape*, int > numberOfReferencesToShape;
+	std::map < std::vector < btScalar >, SmartPtr<btCollisionShape> > collisionShape;
+	std::map < SmartPtr<btCollisionShape>, std::vector < btScalar > > collisionShapeRev;
+	std::map < SmartPtr<btCollisionShape>, int > numberOfReferencesToShape;
 	
-	std::map < CustomCollisionShapeData*, Model* > modelPointerCustomCollisionData;
-	std::map < CustomCollisionShapeData*, int > modelCustomCollisionData;
-	std::map < btCollisionShape*, CustomCollisionShapeData* > customCollisionShapeData;
-	std::map < std::string, btCollisionShape* > customCollisionShape;
-	std::map < btCollisionShape*, std::string > customCollisionShapeName;
+	std::map < SmartPtr<CustomCollisionShapeData>, SmartPtr<Model> > modelPointerCustomCollisionData;
+	std::map < SmartPtr<CustomCollisionShapeData>, int > modelCustomCollisionData;
+	std::map < SmartPtr<btCollisionShape>, SmartPtr<CustomCollisionShapeData> > customCollisionShapeData;
+	std::map < std::string, SmartPtr<btCollisionShape> > customCollisionShape;
+	std::map < SmartPtr<btCollisionShape>, std::string > customCollisionShapeName;
 	
 	
-	btCollisionShape * GetShape( std::vector < btScalar > constructionData, bool independent );
-	btCollisionShape * AddShape( std::vector < btScalar > constructionData, std::string name );
+	SmartPtr<btCollisionShape> GetShape( std::vector < btScalar > constructionData, bool independent );
+	SmartPtr<btCollisionShape> AddShape( std::vector < btScalar > constructionData, std::string name );
 	
 	friend class Engine;
 	
@@ -43,15 +45,15 @@ public:
 	bool IsNameAvailable( std::string name );
 	
 	// if name == "" ->collisionShape else ->customCollisionShape
-	btCollisionShape * GetBox( btVector3 size, std::string name = "" );
-	btCollisionShape * GetBall( btScalar radius, std::string name = "" );
-	btCollisionShape * GetCapsule( btScalar radius, btScalar height, std::string name = "" );
-	btCollisionShape * GetCylinder( btScalar radius, btScalar height, std::string name = "" );
+	SmartPtr<btCollisionShape> GetBox( btVector3 size, std::string name = "" );
+	SmartPtr<btCollisionShape> GetBall( btScalar radius, std::string name = "" );
+	SmartPtr<btCollisionShape> GetCapsule( btScalar radius, btScalar height, std::string name = "" );
+	SmartPtr<btCollisionShape> GetCylinder( btScalar radius, btScalar height, std::string name = "" );
 	
-	btCollisionShape * CreateCustomShape( std::string name, Model * model, int shapeType );
-	btCollisionShape * GetCustomShape( std::string name );
+	SmartPtr<btCollisionShape> CreateCustomShape( std::string name, SmartPtr<Model> model, int shapeType );
+	SmartPtr<btCollisionShape> GetCustomShape( std::string name );
 	void RemoveCustomShape( std::string name );
-	void RemoveShape( btCollisionShape * shape );
+	void RemoveShape( SmartPtr<btCollisionShape> shape );
 	
 	void Destroy();
 	

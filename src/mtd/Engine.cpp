@@ -4,39 +4,23 @@
 
 #include <Engine.h>
 
-/*
-enum RayTraceChannel
-{
-	NONE = 0;
-	PHYSICS = 1;
-	TRANSPARENCY = 2;
-};
-
-struct RayTraceData
-{
-	float distance;
-	btVector3 begin, end;
-	btVector3 point, normal;
-	Object * object;
-};
-*/
-
 bool Engine::RayTraceData::operator < ( const RayTraceData & other ) const
 {
 	return distance < other.distance;
 }
 
 Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id ) :
-	distance(10000000000.0), object(NULL)
+	distance(10000000000.0)
 {
 	if( hitData.m_collisionObjects.size() > id && hitData.m_hitNormalWorld.size() > id && hitData.m_hitPointWorld.size() > id )
 	{
 		const btCollisionObject * temp = hitData.m_collisionObjects.at( id );
 		if( temp )
 		{
-			object = (Object*)(temp->getUserPointer());
-			if( object )
+			Object * objectT = (Object*)(temp->getUserPointer());
+			if( objectT )
 			{
+				object = objectT->GetEngine()->GetObject( objectT->GetName() );
 				begin = hitData.m_rayFromWorld;
 				end = hitData.m_rayToWorld;
 				point = hitData.m_hitPointWorld.at( id );
@@ -52,11 +36,11 @@ Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback &
 }
 
 Engine::RayTraceData::RayTraceData() :
-	distance(10000000000.0), object(NULL)
+	distance(10000000000.0)
 {
 }
 
-Object * Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < Object* > & ignoreObjects )
+SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < SmartPtr<Object> > & ignoreObjects )
 {
 	point = normal = btVector3(0,0,0);
 	
@@ -64,7 +48,7 @@ Object * Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector
 	world->DynamicsWorld()->rayTest( begin, end, rayTraceResult );
 	if( rayTraceResult.hasHit() )
 	{
-		std::set < Object* > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?
+		std::set < SmartPtr<Object> > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?
 		std::set < RayTraceData > objects;
 		
 		for( int i = 0; i < rayTraceResult.m_collisionObjects.size(); ++i )
@@ -87,7 +71,8 @@ Object * Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector
 			return objects.begin()->object;
 		}
 	}
-	return NULL;
+	SmartPtr<Object> ret;
+	return ret;
 }
 
 CollisionShapeManager * Engine::GetCollisionShapeManager()
@@ -173,7 +158,7 @@ std::string Engine::GetAvailableObjectName( std::string name )
 	return name;
 }
 
-Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
+SmartPtr<Object> Engine::AddObject( std::string name, SmartPtr<btCollisionShape> shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
 {
 	if( shape && object.find(name) == object.end() )
 	{
@@ -183,28 +168,31 @@ Object * Engine::AddObject( std::string name, btCollisionShape * shape, btTransf
 			mass = 0;
 		
 		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
-		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, shape, inertia );
-		btRigidBody* rigidBody = new btRigidBody( rigidBodyCI );
+		//btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, (btCollisionShape*)shape.GetPtr(), inertia );
+		//SmartPtr<btRigidBody> rigidBody( btRigidBody( rigidBodyCI ) );
+		SmartPtr<btRigidBody> rigidBody;
+		rigidBody = new btRigidBody( mass, motionState, (btCollisionShape*)shape.GetPtr(), inertia );
 		world->AddBody( name, rigidBody );
 		rigidBody->setDamping( 0.1, 0.1 );
 		
-		Object * obj = new Object( this, name, rigidBody );
+		SmartPtr<Object> obj;
+		obj = new Object( this, name, rigidBody, shape );
 		object[name] = obj;
 		
-		rigidBody->setUserPointer( obj );
+		rigidBody->setUserPointer( (void*)obj.GetPtr() );
 		
 		return obj;
 	}
-	return NULL;
+	return SmartPtr<Object>();
 }
 
-Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
+SmartPtr<Object> Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
 {
 	if( object.find(name) == object.end() )
 	{
 		std::string shapeName = collisionShapeManager->GetFirstAvailableName( name );
-		btCollisionShape * shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
-		Object * obj = AddObject( name, shape, transform, true, mass, btVector3(0,0,0) );
+		SmartPtr<btCollisionShape> shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
+		SmartPtr<Object> obj = AddObject( name, shape, transform, true, mass, btVector3(0,0,0) );
 		if( obj )
 		{
 			obj->GetBody()->setAngularFactor( btVector3( 0, 0, 0 ) );
@@ -219,7 +207,7 @@ Object * Engine::AddCharacter( std::string name, btScalar width, btScalar height
 		}
 		return obj;
 	}
-	return NULL;
+	return SmartPtr<Object>();
 }
 
 void Engine::AttachCameraToObject( std::string name, btVector3 location )
@@ -271,11 +259,11 @@ void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size
 	};
 	
 	window->camera->SetWorldTransform( transform, btVector3(1,1,1) );
-	Texture * tex = GetTexture("media/Textures/DebugTexturte.png");
+	SmartPtr<Texture> tex = GetTexture("media/Textures/DebugTexturte.png");
 	al_draw_indexed_prim( vtx, NULL, tex ? tex->GetBitmapPtr() : NULL, indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
-bool Engine::SetCustomModelName( std::string name, Model * mdl )
+bool Engine::SetCustomModelName( std::string name, SmartPtr<Model> mdl )
 {
 	auto it = model.find( name );
 	if( it == model.end() )
@@ -286,7 +274,7 @@ bool Engine::SetCustomModelName( std::string name, Model * mdl )
 	return false;
 }
 
-Model * Engine::LoadModel( std::string name )
+SmartPtr<Model> Engine::LoadModel( std::string name )
 {
 	auto it = model.find( name );
 	if( it != model.end() )
@@ -298,12 +286,12 @@ Model * Engine::LoadModel( std::string name )
 	}
 	else
 	{
-		Model * mdl = new Model;
+		SmartPtr<Model> mdl;
+		mdl = new Model;
 		if( mdl->LoadFromFile( this, name ) == false )
 		{
-			delete mdl;
-			mdl = NULL;
-			return NULL;
+			mdl.Delete();
+			return SmartPtr<Model>();
 		}
 		else
 		{
@@ -311,10 +299,10 @@ Model * Engine::LoadModel( std::string name )
 			return mdl;
 		}
 	}
-	return NULL;
+	return SmartPtr<Model>();
 }
 
-Texture * Engine::GetTexture( std::string name )
+SmartPtr<Texture> Engine::GetTexture( std::string name )
 {
 	auto it = texture.find( name );
 	if( it != texture.end() )
@@ -328,13 +316,13 @@ Texture * Engine::GetTexture( std::string name )
 	}
 	else
 	{
-		Texture * tex = new Texture;
+		SmartPtr<Texture> tex;
+		tex = new Texture;
 		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP ) == false )
 		{
 			DEBUG( name + ": not done" );
-			delete tex;
-			tex = NULL;
-			return NULL;
+			tex.Delete();
+			return SmartPtr<Texture>();
 		}
 		else
 		{
@@ -343,10 +331,10 @@ Texture * Engine::GetTexture( std::string name )
 		}
 	}
 	DEBUG( name + ": not done" );
-	return NULL;
+	return SmartPtr<Texture>();
 }
 
-Model * Engine::GetModel( std::string name )
+SmartPtr<Model> Engine::GetModel( std::string name )
 {
 	auto it = model.find( name );
 	if( it != model.end() )
@@ -358,12 +346,12 @@ Model * Engine::GetModel( std::string name )
 	}
 	else
 	{
-		Model * mdl = new Model;
+		SmartPtr<Model> mdl;
+		mdl = new Model;
 		if( mdl->LoadFromFile( this, name ) == false )
 		{
-			delete mdl;
-			mdl = NULL;
-			return NULL;
+			mdl.Delete();
+			return SmartPtr<Model>();
 		}
 		else
 		{
@@ -371,10 +359,11 @@ Model * Engine::GetModel( std::string name )
 			return mdl;
 		}
 	}
-	return NULL;
+	SmartPtr<Model> ret;
+	return ret;
 }
 
-Object * Engine::GetObject( std::string name )
+SmartPtr<Object> Engine::GetObject( std::string name )
 {
 	auto it = object.find( name );
 	if( it != object.end() )
@@ -388,7 +377,8 @@ Object * Engine::GetObject( std::string name )
 			object.erase( it );
 		}
 	}
-	return NULL;
+	SmartPtr<Object> ret;
+	return ret;
 }
 
 void Engine::DeleteObject( std::string name )
@@ -402,8 +392,7 @@ void Engine::DeleteObject( std::string name )
 		if( it->second )
 		{
 			world->RemoveBody( name );
-			delete it->second;
-			it->second = NULL;
+			it->second.Delete();
 		}
 		
 		object.erase( it );
@@ -471,13 +460,13 @@ void Engine::Draw2D()
 	if( false )
 	{
 		window->output->Print( "\n\nPointing at object: " );
-		Object * player = this->GetObject("Player");
+		SmartPtr<Object> player = this->GetObject("Player");
 		btVector3 begin, end, point, normal;
 		
 		begin = this->GetCamera()->GetLocation();
 		end = begin + ( this->GetCamera()->GetForwardVector() * 100.0 );
 		
-		Object * temp = this->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
+		SmartPtr<Object> temp = this->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
 		
 		if( temp )
 		{
@@ -624,24 +613,20 @@ void Engine::Destroy()
 	{
 		if( it->second )
 		{
-			assert( it->second != NULL );
+			assert( it->second );
 			world->RemoveBody( it->first );
-			delete it->second;
-			it->second = NULL;
+			it->second.Delete();
 		}
 	}
 	object.clear();
 	
-	std::map < Model*, bool > destroyed;
 	for( auto it = model.begin(); it != model.end(); ++it )
 	{
-		if( it->second && destroyed[it->second] == false )
+		if( it->second )
 		{
-			assert( it->second != NULL );
-			destroyed[it->second] = true;
+			assert( it->second );
 			it->second->Destroy();
-			delete it->second;
-			it->second = NULL;
+			it->second.Delete();
 		}
 	}
 	model.clear();
@@ -650,10 +635,9 @@ void Engine::Destroy()
 	{
 		if( it->second )
 		{
-			assert( it->second != NULL );
+			assert( it->second );
 			it->second->Destroy();
-			delete it->second;
-			it->second = NULL;
+			it->second.Delete();
 		}
 	}
 	texture.clear();
@@ -698,7 +682,6 @@ Engine::Engine()
 	world = NULL;
 	window = NULL;
 	pausePhysics = true;
-	cameraParent = NULL;
 	collisionShapeManager = NULL;
 	
 	guiDrawTime = 0.01;

@@ -5,7 +5,7 @@
 #include <Camera.h>
 #include <Object.h>
 
-bool Camera::IsObjectInView( Object * object )
+bool Camera::IsObjectInView( SmartPtr<Object> object )
 {
 	if( object )
 	{

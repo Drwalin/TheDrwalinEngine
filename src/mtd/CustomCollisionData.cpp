@@ -6,26 +6,26 @@
 
 #include <Debug.h>
 
-btCollisionShape * CustomCollisionShapeData::GetTriangleShape()
+SmartPtr<btCollisionShape> CustomCollisionShapeData::GetTriangleShape()
 {
-	if( triangleShape == NULL )
+	if( !triangleShape )
 	{
-		if( triangleData == NULL )
+		if( !triangleData )
 		{
 			triangleData = new btTriangleIndexVertexArray( indices.size() / 3, &indices.front(), sizeof(int) * 3, vertices.size(), vertices.front().m_floats, sizeof(btVector3) );
-			if( triangleData == NULL )
+			if( !triangleData )
 			{
-				return NULL;
+				return triangleShape;
 			}
 		}
-		triangleShape = new btBvhTriangleMeshShape( triangleData, true, true );
+		triangleShape = new btBvhTriangleMeshShape( (btStridingMeshInterface*)(triangleData.GetPtr()), true, true );
 	}
 	return triangleShape;
 }
 
-btCollisionShape * CustomCollisionShapeData::GetConvexShape()
+SmartPtr<btCollisionShape> CustomCollisionShapeData::GetConvexShape()
 {
-	if( convexShape == NULL )
+	if( !convexShape )
 	{
 		convexShape = new btConvexHullShape( vertices.front().m_floats, vertices.size(), sizeof(btVector3) );
 	}
@@ -34,36 +34,25 @@ btCollisionShape * CustomCollisionShapeData::GetConvexShape()
 
 void CustomCollisionShapeData::DestroyTriangleShape()
 {
-	if( triangleShape )
-		delete triangleShape;
-	triangleShape = NULL;
-	if( triangleData )
-		delete triangleData;
-	triangleData = NULL;
+	triangleShape.Delete();
+	triangleData.Delete();
 }
 
 void CustomCollisionShapeData::DestroyConvexShape()
 {
-	if( convexShape )
-		delete convexShape;
-	convexShape = NULL;
+	convexShape.Delete();
 }
 
 CustomCollisionShapeData::CustomCollisionShapeData()
 {
 	friction = 0.5f;
 	restitution = 0.5f;
-	convexShape = NULL;
-	triangleData = NULL;
-	triangleShape = NULL;
 }
 
 CustomCollisionShapeData::~CustomCollisionShapeData()
 {
 	friction = 0.0f;
 	restitution = 0.0f;
-	DestroyConvexShape();
-	DestroyTriangleShape();
 }
 
 #endif

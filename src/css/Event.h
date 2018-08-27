@@ -12,6 +12,8 @@
 
 #include <ctime>
 
+#include <SmartPtr.h>
+
 class Event : public EventResponser
 {
 private:

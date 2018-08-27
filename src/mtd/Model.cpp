@@ -29,7 +29,7 @@ void Model::RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX
 		currentTextureWidth = currentTextureHeight = 1.0f;
 		if( engine && materialTexture.size() )
 		{
-			Texture * texture = engine->GetTexture( materialTexture.at( it->first ) );
+			SmartPtr<Texture> texture = engine->GetTexture( materialTexture.at( it->first ) );
 			if( texture )
 			{
 				currentTextureWidth = texture->GetWidth();
@@ -365,7 +365,7 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 		{
 			vbo[i].SetTexture( engine->GetTexture( materialTexture[it->first] ) );
 		}
-		if( vbo[i].GetTexture() == NULL )
+		if( !vbo[i].GetTexture() )
 			DEBUG( std::string( "Texture not exist" ) );
 		vbo[i].vertices = it->second;
 		vbo[i].Generate();
@@ -409,14 +409,13 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			
 			if( engine )
 			{	
-				Texture * texture = engine->GetTexture( textureFileNameWithPath );
+				SmartPtr<Texture> texture = engine->GetTexture( textureFileNameWithPath );
 				if( texture )
 				{
 					currentTextureWidth = texture->GetWidth();
 					currentTextureHeight = texture->GetHeight();
 				}
-				vbo[i].SetTexture( texture );	
-				texture = NULL;
+				vbo[i].SetTexture( texture );
 			}
 			
 			file.read( (char*)&numberOfVertices, sizeof(int) );
@@ -463,8 +462,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			
 			if( !file )
 			{
-				delete collisionShapeData;
-				collisionShapeData = NULL;
+				collisionShapeData.Delete();
 				return true;
 			}
 			
@@ -478,8 +476,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 				file.read( (char*)&(collisionShapeData->vertices[i]), sizeof(float) * 3 );
 				if( !file )
 				{
-					delete collisionShapeData;
-					collisionShapeData = NULL;
+					collisionShapeData.Delete();
 					return true;
 				}
 			}
@@ -487,8 +484,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			file.read( (char*)&(collisionShapeData->indices.front()), sizeof(int) * numberOfIndices );
 			if( !file )
 			{
-				delete collisionShapeData;
-				collisionShapeData = NULL;
+				collisionShapeData.Delete();
 				return true;
 			}
 		}
@@ -526,9 +522,9 @@ bool Model::LoadFromFile( Engine * engine, std::string fileName )
 	return false;
 }
 
-CustomCollisionShapeData * Model::GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices )
+SmartPtr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices )
 {
-	if( collisionShapeData == NULL )
+	if( !collisionShapeData )
 	{
 		float squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
 		collisionShapeData = new CustomCollisionShapeData;
@@ -575,10 +571,18 @@ void Model::Destroy()
 	collisionShapeData = NULL;
 }
 
+Model::Model( const Model * other )
+{
+	if( other )
+	{
+		vbo = other->vbo;
+		engine = other->engine;;
+	}
+}
+
 Model::Model()
 {
 	engine = NULL;
-	collisionShapeData = NULL;
 }
 
 Model::~Model()

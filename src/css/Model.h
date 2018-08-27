@@ -21,6 +21,7 @@
 
 #include <Debug.h>
 #include <AR.hpp>
+#include <SmartPtr.h>
 
 #include <VBO.h>
 #include <CustomCollisionData.h>
@@ -34,7 +35,7 @@ private:
 	std::vector < VBO > vbo;
 	Engine * engine;
 	
-	CustomCollisionShapeData * collisionShapeData;
+	SmartPtr<CustomCollisionShapeData> collisionShapeData;
 	
 public:
 	
@@ -50,11 +51,12 @@ public:
 	bool loadFromMeshFile( Engine * engine, std::string meshFileName );
 	bool LoadFromFile( Engine * engine, std::string fileName );
 	
-	CustomCollisionShapeData * GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices = 0.0311 );
+	SmartPtr<CustomCollisionShapeData> GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices = 0.0311 );
 	void NullCustomCollisionShape();
 	
 	void Destroy();
 	
+	Model( const Model * other );
 	Model();
 	~Model();
 };

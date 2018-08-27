@@ -10,7 +10,7 @@ void VBO::Draw()
 		al_draw_indexed_prim( &vertices.front(), NULL, texture ? texture->GetBitmapPtr() : NULL, &indices.front(), indices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
-Texture * VBO::GetTexture()
+SmartPtr<Texture> VBO::GetTexture()
 {
 	return texture;
 }
@@ -32,21 +32,36 @@ void VBO::AddTriangle( ALLEGRO_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c )
 
 void VBO::Destroy()
 {
-	texture = NULL;
 	vertices.clear();
 	indices.clear();
 	vertices.shrink_to_fit();
 	indices.shrink_to_fit();
 }
 
-void VBO::SetTexture( Texture * texture )
+void VBO::SetTexture( SmartPtr<Texture> texture )
 {
+	this->texture = texture;
+}
+
+VBO & VBO::operator = ( const VBO & other )
+{
+	DEBUG( "Copy" )
+	this->vertices = other.vertices;
+	this->indices = other.indices;
+	this->texture = texture;
+	return *this;
+}
+
+VBO::VBO( const VBO & other )
+{
+	DEBUG( "Construct from other" )
+	this->vertices = other.vertices;
+	this->indices = other.indices;
 	this->texture = texture;
 }
 
 VBO::VBO()
 {
-	texture = NULL;
 }
 
 VBO::~VBO()

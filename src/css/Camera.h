@@ -8,6 +8,9 @@
 #include <LinearMath/btQuaternion.h>
 
 #include <Debug.h>
+#include <SmartPtr.h>
+
+#include <Object.h>
 
 class Camera
 {
@@ -23,7 +26,7 @@ private:
 	
 public:
 	
-	bool IsObjectInView( class Object * object );
+	bool IsObjectInView( SmartPtr<Object> object );
 	void UpdateViewPlanes();
 	
 	void SetLocationScale( btVector3 scale );

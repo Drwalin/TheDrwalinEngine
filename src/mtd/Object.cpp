@@ -5,6 +5,11 @@
 #include <Object.h>
 #include <Engine.h>
 
+Engine * Object::GetEngine()
+{
+	return engine;
+}
+
 void Object::SetScale( btVector3 scale )
 {
 	this->scale = scale;
@@ -31,15 +36,9 @@ btTransform Object::GetTransform()
 	return transform;
 }
 
-btRigidBody * Object::GetBody()
+SmartPtr<btRigidBody> Object::GetBody()
 {
 	return body;
-}
-
-void Object::SetBody( btRigidBody * body )
-{
-	this->body = body;
-	CalculateRadius();
 }
 
 void Object::Draw()
@@ -51,7 +50,7 @@ void Object::Draw()
 	}
 }
 
-void Object::SetModel( Model * model )
+void Object::SetModel( SmartPtr<Model> model )
 {
 	this->model = model;
 }
@@ -109,8 +108,9 @@ std::string Object::GetName() const
 	return name;
 }
 
-Object::Object( Engine * engine, std::string name, btRigidBody * body )
+Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape )
 {
+	this->collisionShape = collisionShape;
 	this->engine = engine;
 	this->name = name;
 	this->body = body;
@@ -124,8 +124,6 @@ Object::Object()
 {
 	engine = NULL;
 	name = "";
-	body = NULL;
-	model = NULL;
 	scale = btVector3(1,1,1);
 	boundingSphereRadius = 1.0f;
 	rayTraceChannel = Engine::RayTraceChannel::COLLIDING | Engine::RayTraceChannel::NOT_TRANSPARENT;
@@ -133,29 +131,27 @@ Object::Object()
 
 Object::~Object()
 {
+	if( collisionShape )
+	{
+		engine->GetCollisionShapeManager()->RemoveShape( collisionShape );
+	}
+	
 	if( body )
 	{
 		if( body->getMotionState() )
 		{
 			assert( body->getMotionState() != NULL );
 			delete body->getMotionState();
-			body->setMotionState( NULL );/////////////////////////////////////////////////////////////////////////////////
+			body->setMotionState( NULL );
 		}
 		
-		if( body->getCollisionShape() )
-		{
-			engine->GetCollisionShapeManager()->RemoveShape( body->getCollisionShape() );
-			body->setCollisionShape( NULL );/////////////////////////////////////////////////////////////////////////////////
-		}
+		body->setCollisionShape( NULL );
 		
-		assert( body != NULL );
-		delete body;
-		body = NULL;
+		assert( body );
+		body.Delete();
 	}
 	
 	name = "";
-	engine = NULL;
-	model = NULL;
 	scale = btVector3(0,0,0);
 	boundingSphereRadius = 0.0f;
 }

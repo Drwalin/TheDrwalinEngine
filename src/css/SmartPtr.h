@@ -51,7 +51,7 @@ private:
 	
 public:
 	
-	int CountReferences() const;
+	inline int CountReferences() const;
 	
 	inline bool IsAlone() const;
 	inline void JoinOtherToGroup( SmartPtr & other );

@@ -7,13 +7,21 @@
 
 void ParallelThreadFunctionToDraw( BasicWindow * window )
 {
-	while( window->useParallelThreadToDraw.load() == true )
+	if( window )
 	{
-		window->parallelThreadToDrawMutex.lock();
-		
-		window->ParallelToDrawTick( window->deltaTime );
-		
-		window->parallelThreadToDrawMutex.unlock();
+		while( window->IsParallelToDrawTickInUse() )
+		{
+			while( window->parallelThreadToDrawContinue.load() == false )
+			{
+				if( window->IsParallelToDrawTickInUse() == false )
+					return;
+				al_rest( 0.001 );
+			}
+			
+			window->ParallelToDrawTick( window->GetDeltaTime() );
+			
+			window->parallelThreadToDrawContinue.store( false );
+		}
 	}
 }
 
@@ -27,7 +35,7 @@ void BasicWindow::UseParallelThreadToDraw()
 {
 	if( useParallelThreadToDraw.load() == false )
 	{
-		parallelThreadToDrawMutex.lock();
+		parallelThreadToDrawContinue.store( false );
 		useParallelThreadToDraw.store( true );
 		parallelThreadToDraw = std::thread( ParallelThreadFunctionToDraw, this );
 	}
@@ -265,8 +273,8 @@ void BasicWindow::OneLoopFullTick()
 	deltaTime = al_get_time() - beginTime;
 	beginTime = al_get_time();
 	
-	if( deltaTime < 0.001 )
-		deltaTime = 0.001;
+	if( deltaTime < 0.0001 )
+		deltaTime = 0.0001;
 	else if( deltaTime > 0.3 )
 		deltaTime = 0.3;
 	
@@ -299,8 +307,8 @@ void BasicWindow::QueueQuit()
 
 void BasicWindow::AlDraw()
 {
-	if( useParallelThreadToDraw.load() == true )
-		parallelThreadToDrawMutex.unlock();
+	if( IsParallelToDrawTickInUse() )
+		parallelThreadToDrawContinue.store( true );
 	
 	Use2DSpace();
 	al_clear_to_color( al_map_rgb( 0, 0, 0 ) );
@@ -316,8 +324,9 @@ void BasicWindow::AlDraw()
 	
 	al_flip_display();
 	
-	if( useParallelThreadToDraw.load() == true )
-		parallelThreadToDrawMutex.lock();
+	if( IsParallelToDrawTickInUse() )
+		while( parallelThreadToDrawContinue.load() )
+			al_rest( 0.001 );
 }
 
 

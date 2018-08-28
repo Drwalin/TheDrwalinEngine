@@ -35,6 +35,8 @@ private:
 	std::vector < VBO > vbo;
 	Engine * engine;
 	
+	btVector3 minAABB, maxAABB;
+	
 	SmartPtr<CustomCollisionShapeData> collisionShapeData;
 	
 public:

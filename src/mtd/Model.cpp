@@ -341,19 +341,17 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	mtlFileName.resize( mtlFileName.size()-3 );
 	mtlFileName += "mtl";
 	
-	btVector3 min, max;
-	
 	std::map < std::string, std::string > materialTexture;
 	std::map < std::string, std::vector < ALLEGRO_VERTEX > > trianglesMaterial;
 	
 	Model::LoadMtl( mtlFileName, materialTexture );
-	if( Model::LoadObj( objFileName, trianglesMaterial, min, max ) == false )
+	if( Model::LoadObj( objFileName, trianglesMaterial, minAABB, maxAABB ) == false )
 	{
 		DEBUG(1);
 		return false;
 	}
 	
-	Model::RescaleAndMove( trianglesMaterial, min, max, false, btVector3(), engine, materialTexture );
+	Model::RescaleAndMove( trianglesMaterial, minAABB, maxAABB, false, btVector3(), engine, materialTexture );
 	
 	vbo.resize( trianglesMaterial.size() );
 	
@@ -432,6 +430,21 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 				vbo[i].vertices[j].u *= currentTextureWidth;
 				vbo[i].vertices[j].v *= currentTextureHeight;
 				vbo[i].vertices[j].color = color;
+				if( i == 0 && j == 0 )
+				{
+					minAABB = maxAABB = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+				}
+				else
+				{
+					btVector3 temp( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+					for( int k = 0; k < 3; ++k )
+					{
+						if( minAABB.m_floats[k] > temp.m_floats[k] )
+							minAABB.m_floats[k] = temp.m_floats[k];
+						if( maxAABB.m_floats[k] < temp.m_floats[k] )
+							maxAABB.m_floats[k] = temp.m_floats[k];
+					}
+				}
 			}	
 			
 			vbo[i].Generate();

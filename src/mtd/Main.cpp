@@ -46,10 +46,15 @@ int main()
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
 	
-	SmartPtr<btCollisionShape> crateShape = engine->GetCollisionShapeManager()->CreateCustomShape( "crate01shape", crate01, CollisionShapeManager::SHAPE_TYPE_CONVEX );
-	engine->AddObject( engine->GetAvailableObjectName("Box"), crateShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) - btVector3(2.5,2.5,2.5) ), true, 500.0 )->SetModel( crate01 );
+	//SmartPtr<btCollisionShape> crateShape = engine->GetCollisionShapeManager()->CreateCustomShape( "crate01shape", crate01, CollisionShapeManager::SHAPE_TYPE_CONVEX );
+	//engine->AddObject( engine->GetAvailableObjectName("Box"), crateShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) - btVector3(2.5,2.5,2.5) ), true, 500.0 )->SetModel( crate01 );
 	for( int i = 0; i < 100; ++i )
-		engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,20,0) + btVector3((i/5)%5,i/25,i%5) - btVector3(2.5,2.5,2.5) ), true, 500.0 )->SetModel( crate01 );
+	{
+		auto o = engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) )/*engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" )*/, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,10.3,0) + btVector3(0,(i%12)*0.3,((i/12))+(float(i%2)/2.0)) ), true, 50.0 );
+		o->SetModel( crate01 );
+		o->SetScale( btVector3( 0.6, 0.3, 1 ) );
+		o->GetBody()->setFriction( 0.9 );
+	}
 	
 	SmartPtr<Object> player = engine->AddCharacter( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 75.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );

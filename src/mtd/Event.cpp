@@ -127,9 +127,18 @@ void Event::KeyHoldedEvent( int keyCode )
 			velocity = 1.0f;
 		break;
 		
+	case ALLEGRO_KEY_BACKSPACE:
 	case ALLEGRO_KEY_DELETE:
-		begin = engine->GetCamera()->GetLocation();
-		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
+		if( keyCode == ALLEGRO_KEY_DELETE )
+		{
+			begin = engine->GetCamera()->GetLocation();
+			end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
+		}
+		else
+		{
+			begin = btVector3(0,11.2,0);
+			end = btVector3(0,11.2,300);
+		}
 		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
 		if( temp )
 		{

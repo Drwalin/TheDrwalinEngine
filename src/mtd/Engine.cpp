@@ -27,6 +27,10 @@ Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback &
 				normal = hitData.m_hitNormalWorld.at( id );
 				distance = begin.distance2( point );
 			}
+			else
+			{
+				object = NULL;
+			}
 		}
 	}
 	else
@@ -54,7 +58,7 @@ SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, 
 		for( int i = 0; i < rayTraceResult.m_collisionObjects.size(); ++i )
 		{
 			RayTraceData hitData( rayTraceResult, i );
-			if( hitData.object->GetRayTraceChannel() & channel )
+			if( hitData.object && ( hitData.object->GetRayTraceChannel() & channel ) )
 			{
 				if( ignoreObjectsSet.find( hitData.object ) == ignoreObjectsSet.end() )
 				{
@@ -102,7 +106,6 @@ void Engine::ResumeSimulation()
 
 int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
 {
-	return 0;
 	float fps = 1.0 / deltaTime;
 	if( fps >= 57.0 )
 		return 100;
@@ -602,7 +605,7 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	collisionShapeManager = new CollisionShapeManager;
 	
-	//window->UseParallelThreadToDraw();
+	window->UseParallelThreadToDraw();
 }
 
 void Engine::Destroy()

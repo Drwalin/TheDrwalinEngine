@@ -128,6 +128,24 @@ SmartPtrData<T>::~SmartPtrData()
 
 
 template < class T >
+inline int SmartPtr<T>::CountReferences() const
+{
+	int i = 1;
+	
+	SmartPtr<T> * curr = (SmartPtr<T>*)this;
+	SmartPtr<T> * next = curr->next;
+	
+	while( next != this )
+	{
+		++i;
+		curr = next;
+		next = curr->next;
+	}
+	
+	return i;
+}
+
+template < class T >
 inline void SmartPtr<T>::InitData()
 {
 	if( data == nullptr )

@@ -22,7 +22,6 @@
 
 #include <atomic>
 #include <thread>
-#include <mutex>
 
 #include <Keyboard.h>
 #include <EventResponser.h>
@@ -50,7 +49,7 @@ private:
 	
 	bool lockMouse;
 	
-	std::mutex parallelThreadToDrawMutex;
+	std::atomic<bool> parallelThreadToDrawContinue;
 	std::thread parallelThreadToDraw;
 	std::atomic<bool> useParallelThreadToDraw;
 	

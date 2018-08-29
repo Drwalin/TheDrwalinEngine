@@ -5,6 +5,65 @@
 #include <Object.h>
 #include <Engine.h>
 
+void Object::Tick( const float deltaTime )
+{
+	if( body )
+	{
+		previousTransform = currentTransform;
+		body->getMotionState()->getWorldTransform( currentTransform );
+	}
+	
+	if( currentTransform.getOrigin().y() < -1000.0 )
+	{
+		engine->QueueObjectToDestroy( name );
+	}
+}
+
+void Object::ApplyDamage( const float damage, btVector3 point, btVector3 normal )
+{
+}
+
+void Object::ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal )
+{
+	if( body )
+	{
+		if( normal.dot( direction ) > 0 )
+			normal *= -1;
+		
+		body->activate( true );
+		body->applyImpulse( direction.normalized() * impetus,  point - currentTransform.getOrigin() );
+		body->activate( true );
+	}
+}
+
+void Object::SetMass( float mass )
+{
+	if( IsDynamic() )
+	{
+		this->mass = mass;
+		if( body )
+		{
+			btCollisionShape * shape = body->getCollisionShape();
+			if( shape )
+			{
+				btVector3 inertia = body->getInvInertiaDiagLocal();
+				shape->calculateLocalInertia( mass, inertia );
+				body->setMassProps( mass, inertia );
+			}
+		}
+	}
+}
+
+bool Object::IsDynamic()
+{
+	if( body )
+	{
+		if( mass > 0.0f )
+			return true;
+	}
+	return false;
+}
+
 Engine * Object::GetEngine()
 {
 	return engine;
@@ -82,8 +141,8 @@ void Object::CalculateRadius()
 		max = (max-origin).absolute();
 		
 		for(int i = 0; i < 3; ++i )
-			if( min.m_floats[0]> max.m_floats[0] )
-				max.m_floats[0] = min.m_floats[0];
+			if( min.m_floats[i] > max.m_floats[i] )
+				max.m_floats[i] = min.m_floats[i];
 		
 		boundingSphereRadius = max.length();
 	}
@@ -108,7 +167,8 @@ std::string Object::GetName() const
 	return name;
 }
 
-Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape )
+Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :
+	mass(mass_)
 {
 	this->collisionShape = collisionShape;
 	this->engine = engine;
@@ -120,7 +180,8 @@ Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, S
 	rayTraceChannel = Engine::RayTraceChannel::COLLIDING | Engine::RayTraceChannel::NOT_TRANSPARENT;
 }
 
-Object::Object()
+Object::Object() :
+	mass(1.0)
 {
 	engine = NULL;
 	name = "";
@@ -154,6 +215,7 @@ Object::~Object()
 	name = "";
 	scale = btVector3(0,0,0);
 	boundingSphereRadius = 0.0f;
+	mass = 0.0f;
 }
 
 #endif

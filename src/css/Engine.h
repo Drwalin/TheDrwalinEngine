@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <queue>
 
 #include <Debug.h>
 #include <SmartPtr.h>
@@ -37,11 +38,15 @@ private:
 	std::map < std::string, SmartPtr<Model> > model;
 	std::map < std::string, SmartPtr<Object> > object;
 	
+	std::queue < std::string > objectsQueuedToDestroy;
+	
 	float guiDrawTime, sceneDrawTime, physicsSimulationTime;
 	
 	SmartPtr<Object> cameraParent;
 	
 	bool pausePhysics;
+	
+	void UpdateObjects( const float deltaTime );
 	
 public:
 	
@@ -68,7 +73,12 @@ public:
 	
 public:
 	
+	void QueueObjectToDestroy( SmartPtr<Object> ptr );
+	void QueueObjectToDestroy( const std::string & name );
+	
 	SmartPtr<Object> RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < SmartPtr<Object> > & ignoreObjects );
+	
+	float GetDeltaTime();
 	
 	World * GetWorld();
 	Window * GetWindow();
@@ -82,7 +92,9 @@ public:
 	
 	CollisionShapeManager * GetCollisionShapeManager();
 	
+	template < class T >
 	SmartPtr<Object> AddObject( std::string name, SmartPtr<btCollisionShape> shape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );
+	template < class T >
 	SmartPtr<Object> AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
 	
 	void AttachCameraToObject( std::string name, btVector3 location );
@@ -113,6 +125,8 @@ public:
 	Engine();
 	~Engine();
 };
+
+#include "Engine.hpp"
 
 #endif
 

@@ -85,7 +85,66 @@ public:
 	~SmartPtr();
 };
 
-//#include <SmartPtr.tcc>
+
+
+template < class T >
+inline const T* SmartPtr<T>::GetPtr() const
+{
+	if( data )
+		return data->data;
+	return nullptr;
+}
+
+template < class T >
+inline SmartPtr<T>::operator bool() const
+{
+	if( data )
+		if( data->data )
+			return true;
+	return false;
+}
+
+template < class T >
+inline bool SmartPtr<T>::operator < ( const SmartPtr & other ) const
+{
+	return this->GetPtr() < other.GetPtr();
+}
+
+template < class T >
+inline bool SmartPtr<T>::operator > ( const SmartPtr & other ) const
+{
+	return this->GetPtr() > other.GetPtr();
+}
+
+template < class T >
+inline bool SmartPtr<T>::operator <= ( const SmartPtr & other ) const
+{
+	return this->GetPtr() <= other.GetPtr();
+}
+
+template < class T >
+inline bool SmartPtr<T>::operator >= ( const SmartPtr & other ) const
+{
+	return this->GetPtr() >= other.GetPtr();
+}
+
+template < class T >
+inline bool SmartPtr<T>::operator == ( const SmartPtr & other ) const
+{
+	return this->GetPtr() == other.GetPtr();
+}
+
+template < class T >
+inline bool SmartPtr<T>::operator != ( const SmartPtr & other ) const
+{
+	return this->GetPtr() != other.GetPtr();
+}
+
+template < class T >
+inline T* SmartPtr<T>::operator->()
+{
+	return data->data;
+}
 
 #endif
 

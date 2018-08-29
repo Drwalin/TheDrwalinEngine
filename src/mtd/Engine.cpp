@@ -4,79 +4,45 @@
 
 #include <Engine.h>
 
-bool Engine::RayTraceData::operator < ( const RayTraceData & other ) const
+void Engine::UpdateObjects( const float deltaTime )
 {
-	return distance < other.distance;
-}
-
-Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id ) :
-	distance(10000000000.0)
-{
-	if( hitData.m_collisionObjects.size() > id && hitData.m_hitNormalWorld.size() > id && hitData.m_hitPointWorld.size() > id )
-	{
-		const btCollisionObject * temp = hitData.m_collisionObjects.at( id );
-		if( temp )
-		{
-			Object * objectT = (Object*)(temp->getUserPointer());
-			if( objectT )
-			{
-				object = objectT->GetEngine()->GetObject( objectT->GetName() );
-				begin = hitData.m_rayFromWorld;
-				end = hitData.m_rayToWorld;
-				point = hitData.m_hitPointWorld.at( id );
-				normal = hitData.m_hitNormalWorld.at( id );
-				distance = begin.distance2( point );
-			}
-			else
-			{
-				object = NULL;
-			}
-		}
-	}
-	else
-	{
-		DEBUG( "It should not appear" );
-	}
-}
-
-Engine::RayTraceData::RayTraceData() :
-	distance(10000000000.0)
-{
-}
-
-SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < SmartPtr<Object> > & ignoreObjects )
-{
-	point = normal = btVector3(0,0,0);
+	//float time = al_get_time();
 	
-	btCollisionWorld::AllHitsRayResultCallback rayTraceResult( begin, end );
-	world->DynamicsWorld()->rayTest( begin, end, rayTraceResult );
-	if( rayTraceResult.hasHit() )
+	while( !objectsQueuedToDestroy.empty() )
 	{
-		std::set < SmartPtr<Object> > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?
-		std::set < RayTraceData > objects;
-		
-		for( int i = 0; i < rayTraceResult.m_collisionObjects.size(); ++i )
+		DeleteObject( objectsQueuedToDestroy.front() );
+		objectsQueuedToDestroy.pop();
+	}
+	
+	for( auto it = object.begin(); it != object.end(); ++it )
+	{
+		if( it->second )
 		{
-			RayTraceData hitData( rayTraceResult, i );
-			if( hitData.object && ( hitData.object->GetRayTraceChannel() & channel ) )
-			{
-				if( ignoreObjectsSet.find( hitData.object ) == ignoreObjectsSet.end() )
-				{
-					objects.insert( hitData );
-				}
-			}
-		}
-		
-		if( objects.size() > 0 )
-		{
-			point = objects.begin()->point;
-			normal = objects.begin()->normal;
-			
-			return objects.begin()->object;
+			it->second->Tick( deltaTime );
 		}
 	}
-	SmartPtr<Object> ret;
-	return ret;
+	
+	//updateObjectTime = al_get_time() - time;
+}
+
+void Engine::QueueObjectToDestroy( SmartPtr<Object> ptr )
+{
+	if( ptr )
+		objectsQueuedToDestroy.push( ptr->GetName() );
+}
+
+void Engine::QueueObjectToDestroy( const std::string & name )
+{
+	objectsQueuedToDestroy.push( name );
+}
+
+float Engine::GetDeltaTime()
+{
+	if( window )
+	{
+		return window->GetDeltaTime();
+	}
+	return 1.0f/60.0f;
 }
 
 CollisionShapeManager * Engine::GetCollisionShapeManager()
@@ -106,6 +72,7 @@ void Engine::ResumeSimulation()
 
 int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
 {
+	return 1;
 	float fps = 1.0 / deltaTime;
 	if( fps >= 57.0 )
 		return 100;
@@ -122,19 +89,13 @@ int Engine::CalculateNumberOfSimulationsPerFrame( const float deltaTime )
 
 void Engine::ParallelToDrawTick( const float deltaTime )
 {
-	float time = al_get_time();
-	if( window->IsParallelToDrawTickInUse() == true )
-	{
-		if( !pausePhysics )
-		{
-			world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
-		}
-	}
-	physicsSimulationTime = al_get_time() - time;
+	Tick( deltaTime );
 }
 
 void Engine::Tick( const float deltaTime )
 {
+	UpdateObjects( deltaTime );
+	
 	float time = al_get_time();
 	if( window->IsParallelToDrawTickInUse() == false )
 	{
@@ -159,58 +120,6 @@ std::string Engine::GetAvailableObjectName( std::string name )
 		if( object.find( name+std::to_string(i) ) == object.end() )
 			return name+std::to_string(i);
 	return name;
-}
-
-SmartPtr<Object> Engine::AddObject( std::string name, SmartPtr<btCollisionShape> shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
-{
-	if( shape && object.find(name) == object.end() )
-	{
-		if( dynamic && mass > 0 )
-			shape->calculateLocalInertia( mass, inertia );
-		else
-			mass = 0;
-		
-		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
-		//btRigidBody::btRigidBodyConstructionInfo rigidBodyCI( mass, motionState, (btCollisionShape*)shape.GetPtr(), inertia );
-		//SmartPtr<btRigidBody> rigidBody( btRigidBody( rigidBodyCI ) );
-		SmartPtr<btRigidBody> rigidBody;
-		rigidBody = new btRigidBody( mass, motionState, (btCollisionShape*)shape.GetPtr(), inertia );
-		world->AddBody( name, rigidBody );
-		rigidBody->setDamping( 0.1, 0.1 );
-		
-		SmartPtr<Object> obj;
-		obj = new Object( this, name, rigidBody, shape );
-		object[name] = obj;
-		
-		rigidBody->setUserPointer( (void*)obj.GetPtr() );
-		
-		return obj;
-	}
-	return SmartPtr<Object>();
-}
-
-SmartPtr<Object> Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
-{
-	if( object.find(name) == object.end() )
-	{
-		std::string shapeName = collisionShapeManager->GetFirstAvailableName( name );
-		SmartPtr<btCollisionShape> shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
-		SmartPtr<Object> obj = AddObject( name, shape, transform, true, mass, btVector3(0,0,0) );
-		if( obj )
-		{
-			obj->GetBody()->setAngularFactor( btVector3( 0, 0, 0 ) );
-			obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
-			obj->GetBody()->setDamping( 0.99, 0.8 );
-			obj->GetBody()->setGravity( world->GetGravity() * 6.0 );
-			obj->GetBody()->setFriction( 0.8 );
-		}
-		else
-		{
-			collisionShapeManager->RemoveCustomShape( shapeName );
-		}
-		return obj;
-	}
-	return SmartPtr<Object>();
 }
 
 void Engine::AttachCameraToObject( std::string name, btVector3 location )
@@ -605,7 +514,7 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	collisionShapeManager = new CollisionShapeManager;
 	
-	window->UseParallelThreadToDraw();
+	//window->UseParallelThreadToDraw();
 }
 
 void Engine::Destroy()

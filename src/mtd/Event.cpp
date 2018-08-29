@@ -63,17 +63,6 @@ void Event::KeyPressedEvent( int keyCode )
 		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 0.25, 1.0 ) );
 		player->GetBody()->applyCentralImpulse( btVector3( 0, -velocity * 0.15, 0 ) );
 		break;
-		
-	case MOUSE_LEFT:
-		temp = engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		temp->SetModel( engine->GetModel( "Crate01" ) );
-		break;
-	case MOUSE_RIGHT:
-		temp = engine->AddObject( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 200.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		temp->SetModel( engine->GetModel( "Sphere" ) );
-		break;
 	}
 }
 
@@ -127,6 +116,29 @@ void Event::KeyHoldedEvent( int keyCode )
 			velocity = 1.0f;
 		break;
 		
+	case MOUSE_LEFT:
+		begin = engine->GetCamera()->GetLocation();
+		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
+		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
+		if( temp )
+		{
+			temp->ApplyImpactDamage( 0, 100.0 * engine->GetDeltaTime(), engine->GetCamera()->GetForwardVector(), point, normal );
+		}
+		break;
+		
+		/*
+	case MOUSE_LEFT:
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		temp->SetModel( engine->GetModel( "Crate01" ) );
+		break;
+		*/
+	case MOUSE_RIGHT:
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		temp->SetModel( engine->GetModel( "Sphere" ) );
+		break;
+		
 	case ALLEGRO_KEY_BACKSPACE:
 	case ALLEGRO_KEY_DELETE:
 		if( keyCode == ALLEGRO_KEY_DELETE )
@@ -142,11 +154,11 @@ void Event::KeyHoldedEvent( int keyCode )
 		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
 		if( temp )
 		{
-			if( temp->GetName() != "TestMap" )
+			if( temp->GetName() != "TestMap" && temp->GetName() != "Box" )
 			{
 				if( temp->GetBody() )
 					temp->GetBody()->activate();
-				engine->DeleteObject( temp->GetName() );
+				engine->QueueObjectToDestroy( temp->GetName() );
 			}
 		}
 		break;

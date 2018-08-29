@@ -26,6 +26,9 @@ private:
 	
 	std::string name;
 	
+	btTransform currentTransform;
+	btTransform previousTransform;
+	
 	SmartPtr<btCollisionShape> collisionShape;
 	SmartPtr<btRigidBody> body;
 	SmartPtr<Model> model;
@@ -34,7 +37,13 @@ private:
 	
 	int rayTraceChannel;
 	
+	float mass;
+	
 public:
+	
+	void SetMass( float mass );
+	
+	bool IsDynamic();
 	
 	Engine * GetEngine();
 	
@@ -54,11 +63,15 @@ public:
 	
 	SmartPtr<btRigidBody> GetBody();
 	
+	virtual void Tick( const float deltaTime );
+	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );
+	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal );
+	
 	void Draw();
 	
 	void SetModel( SmartPtr<Model> model );
 	
-	Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape );
+	Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ );
 	Object();
 	~Object();
 };

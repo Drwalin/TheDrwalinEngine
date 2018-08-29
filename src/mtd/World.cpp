@@ -7,10 +7,9 @@
 
 void World::ActivateAll()
 {
+	++activateAll;
 	if( activateAll <= 0 )
 		activateAll = 1;
-	else if( activateAll < 2 )
-		++activateAll;
 	else if( activateAll > 2 )
 		activateAll = 2;
 }
@@ -31,10 +30,7 @@ void World::Tick( btScalar deltaTime, int count )
 		for( int i = 0; i < 113; ++i, ++it )
 		{
 			if( it == object.end() )
-			{
-				--activateAll;
 				break;
-			}
 			it->second->activate( true );
 		}
 		
@@ -44,6 +40,7 @@ void World::Tick( btScalar deltaTime, int count )
 		}
 		else
 		{
+			--activateAll;
 			currentActivator = "";
 		}
 	}

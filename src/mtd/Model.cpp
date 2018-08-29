@@ -49,6 +49,8 @@ void Model::RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX
 				it->second[j].y *= scale.y();
 				it->second[j].z *= scale.z();
 			}
+			it->second[j].v = 1.0 - it->second[j].v;
+			
 			it->second[j].u *= currentTextureWidth;
 			it->second[j].v *= currentTextureHeight;
 		}
@@ -73,6 +75,12 @@ bool Model::LoadObj( std::string objFileName, std::map < std::string, std::vecto
 			std::stringstream sstream;
 			line = "";
 			std::getline( file, line );
+			
+			if( line.size() )
+			{
+				if( line[line.size()-1] == 13 )
+					line.resize( line.size()-1 );
+			}
 			text = "";
 			sstream << line;
 			sstream.flush();
@@ -126,7 +134,10 @@ bool Model::LoadObj( std::string objFileName, std::map < std::string, std::vecto
 					temp.back()[1]--;
 					temp.back()[2]--;
 					if( temp.back()[0] < 0 || temp.back()[1] < 0 || temp.back()[2] < 0 )
+					{
 						temp.resize( temp.size() - 1 );
+						break;
+					}
 				}
 				
 				if( temp.size() >= 3 )
@@ -180,6 +191,8 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 		}
 	}
 	
+	DEBUG( std::string("Loading mtl...: ") + mtlFileName )
+	
 	if( file.good() )
 	{
 		std::string line, text, currentMaterial;
@@ -190,6 +203,11 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 			line = "";
 			std::getline( file, line );
 			text = "";
+			if( line.size() )
+			{
+				if( line[line.size()-1] == 13 )
+					line.resize( line.size()-1 );
+			}
 			sstream << line;
 			sstream.flush();
 			sstream >> text;
@@ -203,6 +221,7 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 				text = "";
 				sstream >> text;
 				materialTexture[currentMaterial] = path + text;
+DEBUG( mtlFileName + " - mtl file new texture: " + path + text )
 			}
 		}
 		
@@ -301,16 +320,12 @@ bool Model::SaveMeshFile( std::string meshFileName, bool containPhysicsBool, flo
 	return false;
 }
 
-bool Model::ConvertObjToMesh( std::string objFileName, bool containPhysicsBool, float friction, float restitution, bool scaleToSize, btVector3 size )
+bool Model::ConvertObjToMesh( std::string objFileName, std::string meshFileName, bool containPhysicsBool, float friction, float restitution, bool scaleToSize, btVector3 size )
 {
 	if( objFileName.size() < 5 )
 		return false;
 	
 	std::string mtlFileName = objFileName;
-	std::string meshFileName = objFileName;
-	
-	meshFileName.resize( meshFileName.size()-3 );
-	meshFileName += "phmesh";
 	
 	mtlFileName.resize( mtlFileName.size()-3 );
 	mtlFileName += "mtl";
@@ -355,6 +370,7 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	
 	vbo.resize( trianglesMaterial.size() );
 	
+DEBUG( std::string("Begin : ") + objFileName )
 	int i = 0;
 	for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it, ++i )
 	{
@@ -369,11 +385,14 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 		vbo[i].Generate();
 	}
 	
+DEBUG("End")
 	return true;
 }
 
 bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 {
+DEBUG( std::string("Begin : ") + meshFileName )
+	
 	Destroy();
 	
 	std::ifstream file( meshFileName, std::ifstream::binary );
@@ -453,6 +472,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 		if( !file )
 		{
 			Destroy();
+DEBUG("End1")
 			return false;
 		}
 		
@@ -476,6 +496,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			if( !file )
 			{
 				collisionShapeData.Delete();
+DEBUG("End2")
 				return true;
 			}
 			
@@ -490,6 +511,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 				if( !file )
 				{
 					collisionShapeData.Delete();
+DEBUG("End3")
 					return true;
 				}
 			}
@@ -498,13 +520,16 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			if( !file )
 			{
 				collisionShapeData.Delete();
+DEBUG("End4")
 				return true;
 			}
 		}
 		
+DEBUG("End5")
 		return true;
 	}
 	
+DEBUG("End6")
 	return false;
 }
 

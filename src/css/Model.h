@@ -47,7 +47,7 @@ public:
 	static void RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 min, btVector3 max, bool scaleToSize = false, btVector3 size = btVector3(1,1,1), Engine * engine = NULL, const std::map < std::string, std::string > & materialTexture = std::map<std::string,std::string>() );
 	static bool LoadMtl( std::string mtlFileName, std::map < std::string, std::string > & materialTexture );
 	static bool LoadObj( std::string objFileName, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 & min, btVector3 & max );
-	static bool ConvertObjToMesh( std::string objFileName, bool containPhysicsBool, float friction = 0.5f, float restitution = 0.0f, bool scaleToSize = false, btVector3 size = btVector3(1,1,1) );
+	static bool ConvertObjToMesh( std::string objFileName, std::string meshFile, bool containPhysicsBool, float friction = 0.5f, float restitution = 0.0f, bool scaleToSize = false, btVector3 size = btVector3(1,1,1) );
 	
 	bool LoadFromObj( Engine * engine, std::string objFileName );
 	bool loadFromMeshFile( Engine * engine, std::string meshFileName );

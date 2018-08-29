@@ -166,62 +166,6 @@ inline void SmartPtr<T>::JoinOtherToGroup( SmartPtr & other )
 
 
 template < class T >
-inline const T* SmartPtr<T>::GetPtr() const
-{
-	if( data )
-		return data->data;
-	return nullptr;
-}
-
-template < class T >
-inline SmartPtr<T>::operator bool() const
-{
-	if( data )
-		if( data->data )
-			return true;
-	return false;
-}
-
-
-template < class T >
-inline bool SmartPtr<T>::operator < ( const SmartPtr & other ) const
-{
-	return this->GetPtr() < other.GetPtr();
-}
-
-template < class T >
-inline bool SmartPtr<T>::operator > ( const SmartPtr & other ) const
-{
-	return this->GetPtr() > other.GetPtr();
-}
-
-template < class T >
-inline bool SmartPtr<T>::operator <= ( const SmartPtr & other ) const
-{
-	return this->GetPtr() <= other.GetPtr();
-}
-
-template < class T >
-inline bool SmartPtr<T>::operator >= ( const SmartPtr & other ) const
-{
-	return this->GetPtr() >= other.GetPtr();
-}
-
-template < class T >
-inline bool SmartPtr<T>::operator == ( const SmartPtr & other ) const
-{
-	return this->GetPtr() == other.GetPtr();
-}
-
-template < class T >
-inline bool SmartPtr<T>::operator != ( const SmartPtr & other ) const
-{
-	return this->GetPtr() != other.GetPtr();
-}
-
-
-
-template < class T >
 inline SmartPtr<T>& SmartPtr<T>::operator = ( T & value )
 {
 	if( data )
@@ -240,7 +184,7 @@ inline SmartPtr<T>& SmartPtr<T>::operator = ( const T & value )
 }
 
 template < class T >
-inline SmartPtr<T>& SmartPtr<T>::operator = ( T * ptr )		// argument to these operator shouldn't be stored after calling this function
+inline SmartPtr<T>& SmartPtr<T>::operator = ( T * ptr )
 {
 	InitData();
 	if( data->data )
@@ -271,12 +215,6 @@ inline SmartPtr<T>& SmartPtr<T>::operator = ( SmartPtr<T> & other )
 	other.InitData();
 	other.data->AddMember( this );
 	return *this;
-}
-
-template < class T >
-inline T* SmartPtr<T>::operator->()
-{
-	return data->data;
 }
 
 template < class T >
@@ -329,8 +267,6 @@ SmartPtr<T>::~SmartPtr()
 		data->RemoveMember( this );
 }
 
-
-
 #include <Object.h>
 #include <Model.h>
 #include <Texture.h>
@@ -343,8 +279,6 @@ template class SmartPtr<btRigidBody>;
 template class SmartPtr<Texture>;
 template class SmartPtr<Object>;
 template class SmartPtr<Model>;
-
-
 
 #endif
 

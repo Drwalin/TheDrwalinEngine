@@ -6,57 +6,63 @@
 #include <Debug.h>
 #include <SmartPtr.h>
 
+#include "../game/Header.h"
+
 int main()
 {
+	ConvertMeshes( "media/meshes.list" );
+	
 	srand( time( NULL ) );
 	
 	Engine * engine = new Engine;
 	engine->Init( "Engine 0.0.0", NULL, 800, 600, false );
 	
-	if( !std::ifstream("./media/Models/Sphere.phmesh").good() )
-	{
-		if( Model::ConvertObjToMesh( "./media/Models/Sphere.obj", true, 0.5, 0.0, true, btVector3(1,1,1) ) == false )
-			DEBUG( "Unable to convert" );
-	}
-	SmartPtr<Model> sphere = engine->LoadModel( "./media/Models/Sphere.phmesh" );
-	assert( sphere );
-	engine->SetCustomModelName( "Sphere", sphere );
+	LoadMeshes( "media/loadMeshes.list", engine );
 	
-	if( !std::ifstream("./media/Models/Crate01.phmesh").good() )
-	{
-		if( Model::ConvertObjToMesh( "./media/Models/Crate01.obj", true, 0.5, 0.0, true, btVector3(1,1,1) ) == false )
-			DEBUG( "Unable to convert" );
-	}
-	SmartPtr<Model> crate01 = engine->LoadModel( "./media/Models/Crate01.phmesh" );
-	assert( crate01 );
-	engine->SetCustomModelName( "Crate01", crate01 );
 	
-	if( !std::ifstream("./media/AmadeusMap/as_oilrig.phmesh").good() )
-	{
-		if( Model::ConvertObjToMesh( "./media/AmadeusMap/as_oilrig.obj", true, 0.5, 0.0, false ) == false )
-			DEBUG( "Unable to convert" );
-	}
-	SmartPtr<Model> mapModel = engine->LoadModel( "./media/AmadeusMap/as_oilrig.phmesh" );
+	
+	SmartPtr<Model> sphere = engine->GetModel( "Sphere" );
+	SmartPtr<Model> crate01 = engine->GetModel( "Crate01" );
+	SmartPtr<Model> mapModel = engine->GetModel( "as_oilrig" );
 	assert( mapModel );
-	assert( engine->GetCollisionShapeManager() );
+	
 	SmartPtr<btCollisionShape> mapShape = engine->GetCollisionShapeManager()->CreateCustomShape( "Map triangle collision mesh", mapModel, CollisionShapeManager::SHAPE_TYPE_TRIANGLE );
 	assert( mapShape );
-	SmartPtr<Object> map = engine->AddObject( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) ), false );
+	
+	/*
+	SmartPtr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) ), false );
 	map->SetModel( mapModel );
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
+	*/
 	
 	//SmartPtr<btCollisionShape> crateShape = engine->GetCollisionShapeManager()->CreateCustomShape( "crate01shape", crate01, CollisionShapeManager::SHAPE_TYPE_CONVEX );
-	//engine->AddObject( engine->GetAvailableObjectName("Box"), crateShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) - btVector3(2.5,2.5,2.5) ), true, 500.0 )->SetModel( crate01 );
-	for( int i = 0; i < 100; ++i )
+	
+	
 	{
-		auto o = engine->AddObject( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) )/*engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" )*/, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,10.3,0) + btVector3(0,(i%12)*0.3,((i/12))+(float(i%2)/2.0)) ), true, 50.0 );
+		auto o = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(1.5,1.5,1.5) )/*engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" )*/, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,-10.3,0) ), false );
+		o->SetModel( crate01 );
+		o->SetScale( btVector3( 30, 3, 30 ) );
+	}
+	
+	
+	
+	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
+	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
+	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10 )->SetModel( engine->GetModel("m4a1") );
+	
+	
+	
+	
+	for( int i = 0; i < 0; ++i )
+	{
+		auto o = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) )/*engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" )*/, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,10.3,0) + btVector3(0,(i%12)*0.3,((i/12))+(float(i%2)/2.0)) ), true, 50.0 );
 		o->SetModel( crate01 );
 		o->SetScale( btVector3( 0.6, 0.3, 1 ) );
 		o->GetBody()->setFriction( 0.9 );
 	}
 	
-	SmartPtr<Object> player = engine->AddCharacter( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 75.0 );
+	SmartPtr<Object> player = engine->AddCharacter<Object>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 75.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	
 	DEBUG( std::string("Loading cpu time: ") + std::to_string(float(clock())/float(CLOCKS_PER_SEC)) );

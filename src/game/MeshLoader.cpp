@@ -36,10 +36,6 @@ void LoadMeshes( std::string loadMeshesListFile, Engine * engine )
 				{
 					DEBUG( std::string("Couldn't set custom mesh: \"") + customName + "\"" );
 				}
-				else
-				{
-					DEBUG( std::string("Mesh loaded: \"") + meshFile + "\" -> \"" + customName + "\"" );
-				}
 			}
 			else
 			{

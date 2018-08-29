@@ -88,7 +88,8 @@ public:
 	
 	void DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size );
 	
-	Camera * GetCamera();
+	SmartPtr<Camera> GetCamera() const;
+	SmartPtr<Object> GetCameraParent() const;
 	
 	CollisionShapeManager * GetCollisionShapeManager();
 	

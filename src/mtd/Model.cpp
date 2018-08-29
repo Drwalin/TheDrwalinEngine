@@ -191,8 +191,6 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 		}
 	}
 	
-	DEBUG( std::string("Loading mtl...: ") + mtlFileName )
-	
 	if( file.good() )
 	{
 		std::string line, text, currentMaterial;
@@ -221,7 +219,6 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 				text = "";
 				sstream >> text;
 				materialTexture[currentMaterial] = path + text;
-DEBUG( mtlFileName + " - mtl file new texture: " + path + text )
 			}
 		}
 		
@@ -370,7 +367,6 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	
 	vbo.resize( trianglesMaterial.size() );
 	
-DEBUG( std::string("Begin : ") + objFileName )
 	int i = 0;
 	for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it, ++i )
 	{
@@ -385,14 +381,11 @@ DEBUG( std::string("Begin : ") + objFileName )
 		vbo[i].Generate();
 	}
 	
-DEBUG("End")
 	return true;
 }
 
 bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 {
-DEBUG( std::string("Begin : ") + meshFileName )
-	
 	Destroy();
 	
 	std::ifstream file( meshFileName, std::ifstream::binary );
@@ -472,7 +465,6 @@ DEBUG( std::string("Begin : ") + meshFileName )
 		if( !file )
 		{
 			Destroy();
-DEBUG("End1")
 			return false;
 		}
 		
@@ -496,7 +488,6 @@ DEBUG("End1")
 			if( !file )
 			{
 				collisionShapeData.Delete();
-DEBUG("End2")
 				return true;
 			}
 			
@@ -511,7 +502,6 @@ DEBUG("End2")
 				if( !file )
 				{
 					collisionShapeData.Delete();
-DEBUG("End3")
 					return true;
 				}
 			}
@@ -520,16 +510,13 @@ DEBUG("End3")
 			if( !file )
 			{
 				collisionShapeData.Delete();
-DEBUG("End4")
 				return true;
 			}
 		}
 		
-DEBUG("End5")
 		return true;
 	}
 	
-DEBUG("End6")
 	return false;
 }
 

@@ -5,6 +5,7 @@
 #include <Event.h>
 #include <Window.h>
 #include <Engine.h>
+#include "../game/Character.h"
 
 void Event::SetEngine( class Engine * engine )
 {
@@ -16,23 +17,31 @@ void Event::Init()
 	window = (Window*)( GetBasicWindow() );
 }
 
-float velocity = 1600.0f;
-bool running = false;
-
 void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 {
-	window->camera->Rotate( btVector3( dy/80.0, dx/80.0, 0.0 ) );
-	velocity += float(dw)*10.0f;
-	if( velocity < 1.0f )
-		velocity = 1.0f;
-	return;
+	SmartPtr<Object> player = engine->GetObject( "Player" );
+	if( player )
+	{
+		Character * character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
+		if( character )
+		{
+			character->EventRotateCameraBy( btVector3( dy/80.0, dx/80.0, 0.0 ) );
+		}
+	}
 }
+
+
+
+
 
 void Event::KeyPressedEvent( int keyCode )
 {
 	SmartPtr<Object> player = engine->GetObject( "Player" );
 	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;
+	Character * character = NULL;
+	if( player )
+		character = dynamic_cast < Character* > ( ((Object*)(player.GetPtr())) );
 	
 	switch( keyCode )
 	{
@@ -48,20 +57,28 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case ALLEGRO_KEY_LSHIFT:
-		running = true;
+		if( character )
+			character->EventBeginRun();
 		break;
 		
 	case ALLEGRO_KEY_SPACE:
-		if( !player )
-			break;
-		player->GetBody()->applyCentralImpulse( btVector3( 0, velocity*0.8, 0 ) );
+		if( character )
+			character->EventJump();
 		break;
 	case ALLEGRO_KEY_LCTRL:
-		if( !player )
-			break;
-		player->SetScale( btVector3( 1.0, 0.5, 1.0 ) );
-		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 0.25, 1.0 ) );
-		player->GetBody()->applyCentralImpulse( btVector3( 0, -velocity * 0.15, 0 ) );
+		if( character )
+			character->EventCrouch();
+		break;
+		
+	case MOUSE_LEFT:
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ ), true, 20.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 16.0 );
+		temp->SetModel( engine->GetModel( "Crate01" ) );
+		break;
+	case MOUSE_RIGHT:
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
+		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+		temp->SetModel( engine->GetModel( "Sphere" ) );
 		break;
 	}
 }
@@ -69,29 +86,26 @@ void Event::KeyPressedEvent( int keyCode )
 void Event::KeyReleasedEvent( int keyCode )
 {
 	SmartPtr<Object> player = engine->GetObject( "Player" );
+	Character * character = NULL;
+	if( player )
+		character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
 	
 	switch( keyCode )
 	{
 	case ALLEGRO_KEY_ESCAPE:
 		window->QueueQuit();
 		break;
-	case ALLEGRO_KEY_LCTRL:
-		if( !player )
-			break;
-		player->SetScale( btVector3( 1.0, 1.0, 1.0 ) );
-		engine->GetCamera()->SetLocationScale( btVector3( 1.0, 1.0, 1.0 ) );
-		player->GetBody()->applyCentralImpulse( btVector3( 0, velocity * 0.15, 0 ) );
-		break;
+		
 		
 	case ALLEGRO_KEY_LSHIFT:
-		running = false;
+		if( character )
+			character->EventStopRun();
+		break;
+	case ALLEGRO_KEY_LCTRL:
+		if( character )
+			character->EventStandUp();
 		break;
 	}
-}
-
-float GetMaxVelocity()
-{
-	return 6.0f + ( running ? 3.0f : 0.0f );
 }
 
 void Event::KeyHoldedEvent( int keyCode )
@@ -99,6 +113,9 @@ void Event::KeyHoldedEvent( int keyCode )
 	SmartPtr<Object> player = engine->GetObject( "Player" );
 	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;
+	Character * character = NULL;
+	if( player )
+		character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
 	
 	btVector3 vector;
 	
@@ -107,15 +124,8 @@ void Event::KeyHoldedEvent( int keyCode )
 	case ALLEGRO_KEY_ESCAPE:
 		window->QueueQuit();
 		break;
-	case ALLEGRO_KEY_EQUALS:
-		velocity += 10.0f;
-		break;
-	case ALLEGRO_KEY_MINUS:
-		velocity -= 10.0f;
-		if( velocity < 1.0f )
-			velocity = 1.0f;
-		break;
 		
+		/*
 	case MOUSE_LEFT:
 		begin = engine->GetCamera()->GetLocation();
 		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
@@ -125,19 +135,8 @@ void Event::KeyHoldedEvent( int keyCode )
 			temp->ApplyImpactDamage( 0, 100.0 * engine->GetDeltaTime(), engine->GetCamera()->GetForwardVector(), point, normal );
 		}
 		break;
-		
-		/*
-	case MOUSE_LEFT:
-		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		temp->SetModel( engine->GetModel( "Crate01" ) );
-		break;
 		*/
-	case MOUSE_RIGHT:
-		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
-		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
-		temp->SetModel( engine->GetModel( "Sphere" ) );
-		break;
+		
 		
 	case ALLEGRO_KEY_BACKSPACE:
 	case ALLEGRO_KEY_DELETE:
@@ -164,49 +163,37 @@ void Event::KeyHoldedEvent( int keyCode )
 		break;
 		
 	case ALLEGRO_KEY_UP:
-		window->camera->Rotate( btVector3( -window->GetDeltaTime(), 0.0, 0.0 ) * ALLEGRO_PI );
+		if( character )
+			character->EventRotateCameraBy( btVector3( -window->GetDeltaTime(), 0.0, 0.0 ) * 2.0 );
 		break;
 	case ALLEGRO_KEY_DOWN:
-		window->camera->Rotate( btVector3( window->GetDeltaTime(), 0.0, 0.0 ) * ALLEGRO_PI );
+		if( character )
+			character->EventRotateCameraBy( btVector3( window->GetDeltaTime(), 0.0, 0.0 ) * 2.0 );
 		break;
 	case ALLEGRO_KEY_RIGHT:
-		window->camera->Rotate( btVector3( 0.0, window->GetDeltaTime(), 0.0 ) * ALLEGRO_PI );
+		if( character )
+			character->EventRotateCameraBy( btVector3( 0.0, window->GetDeltaTime(), 0.0 ) * 2.0 );
 		break;
 	case ALLEGRO_KEY_LEFT:
-		window->camera->Rotate( btVector3( 0.0, -window->GetDeltaTime(), 0.0 ) * ALLEGRO_PI );
+		if( character )
+			character->EventRotateCameraBy( btVector3( 0.0, -window->GetDeltaTime(), 0.0 ) * 2.0 );
 		break;
 		
 	case ALLEGRO_KEY_W:
-		if( !player )
-			break;
-		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatForwardVector() ) < GetMaxVelocity()  )
-		{
-			player->GetBody()->applyCentralImpulse( window->camera->GetFlatForwardVector() * window->GetDeltaTime() * velocity * 9.0 );
-		}
+		if( character )
+			character->EventMoveInDirection( character->GetFlatForwardVector(), true );
 		break;
 	case ALLEGRO_KEY_A:
-		if( !player )
-			break;
-		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatRightVector() ) < GetMaxVelocity() - 0.5f )
-		{
-			player->GetBody()->applyCentralImpulse( -window->camera->GetFlatRightVector() * window->GetDeltaTime() * velocity * 9.0 );
-		}
+		if( character )
+			character->EventMoveInDirection( character->GetFlatLeftVector(), true );
 		break;
 	case ALLEGRO_KEY_S:
-		if( !player )
-			break;
-		if( player->GetBody()->getLinearVelocity().dot( -window->camera->GetFlatForwardVector() ) < GetMaxVelocity() - 1.0f )
-		{
-			player->GetBody()->applyCentralImpulse( -window->camera->GetFlatForwardVector() * window->GetDeltaTime() * velocity * 9.0 );
-		}
+		if( character )
+			character->EventMoveInDirection( -character->GetFlatForwardVector(), true );
 		break;
 	case ALLEGRO_KEY_D:
-		if( !player )
-			break;
-		if( player->GetBody()->getLinearVelocity().dot( window->camera->GetFlatRightVector() ) < GetMaxVelocity() - 0.5f )
-		{
-			player->GetBody()->applyCentralImpulse( window->camera->GetFlatRightVector() * window->GetDeltaTime() * velocity * 9.0 );
-		}
+		if( character )
+			character->EventMoveInDirection( -character->GetFlatLeftVector(), true );
 		break;
 	}
 }

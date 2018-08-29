@@ -8,6 +8,8 @@
 
 #include "../game/Header.h"
 
+#include "../game/Player.h"
+
 int main()
 {
 	ConvertMeshes( "media/meshes.list" );
@@ -29,16 +31,15 @@ int main()
 	SmartPtr<btCollisionShape> mapShape = engine->GetCollisionShapeManager()->CreateCustomShape( "Map triangle collision mesh", mapModel, CollisionShapeManager::SHAPE_TYPE_TRIANGLE );
 	assert( mapShape );
 	
-	/*
+	
 	SmartPtr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) ), false );
 	map->SetModel( mapModel );
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
-	*/
-	
-	//SmartPtr<btCollisionShape> crateShape = engine->GetCollisionShapeManager()->CreateCustomShape( "crate01shape", crate01, CollisionShapeManager::SHAPE_TYPE_CONVEX );
 	
 	
+	
+	if( false )
 	{
 		auto o = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(1.5,1.5,1.5) )/*engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" )*/, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,-10.3,0) ), false );
 		o->SetModel( crate01 );
@@ -62,8 +63,12 @@ int main()
 		o->GetBody()->setFriction( 0.9 );
 	}
 	
-	SmartPtr<Object> player = engine->AddCharacter<Object>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 75.0 );
+	SmartPtr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 15.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
+	((Character*)(player.GetPtr()))->SetCamera( engine->GetCamera() );
+	
+	
+	
 	
 	DEBUG( std::string("Loading cpu time: ") + std::to_string(float(clock())/float(CLOCKS_PER_SEC)) );
 	DEBUG( std::string("Loading time: ") + std::to_string(al_get_time()) );

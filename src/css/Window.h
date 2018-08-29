@@ -14,6 +14,8 @@
 
 #include <string>
 
+#include <SmartPtr.h>
+
 class Window : public BasicWindow
 {
 private:
@@ -22,7 +24,7 @@ private:
 	
 public:
 	
-	Camera * camera;
+	SmartPtr<Camera> camera;
 	TextPrinter * output;
 	
 	void Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, bool fullscreen = false );

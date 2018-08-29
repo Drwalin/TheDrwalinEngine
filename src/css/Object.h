@@ -20,7 +20,7 @@ class Engine;
 
 class Object
 {
-private:
+protected:
 	
 	Engine * engine;
 	
@@ -59,7 +59,7 @@ public:
 	btVector3 GetScale();
 	
 	btTransform GetTransform();
-	btVector3 GetLocation();
+	btVector3 GetLocation() const;
 	
 	SmartPtr<btRigidBody> GetBody();
 	
@@ -67,7 +67,7 @@ public:
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );
 	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal );
 	
-	void Draw();
+	virtual void Draw();
 	
 	void SetModel( SmartPtr<Model> model );
 	

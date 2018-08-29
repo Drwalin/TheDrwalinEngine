@@ -97,19 +97,23 @@ void Engine::Tick( const float deltaTime )
 	UpdateObjects( deltaTime );
 	
 	float time = al_get_time();
-	if( window->IsParallelToDrawTickInUse() == false )
+	
+	if( !pausePhysics )
 	{
-		if( !pausePhysics )
-		{
-			world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
-		}
+		world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
 	}
+	
 	physicsSimulationTime = al_get_time() - time;
 }
 
-Camera * Engine::GetCamera()
+SmartPtr<Camera> Engine::GetCamera() const
 {
 	return window->camera;
+}
+
+SmartPtr<Object> Engine::GetCameraParent() const
+{
+	return cameraParent;
 }
 
 std::string Engine::GetAvailableObjectName( std::string name )
@@ -514,7 +518,7 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	collisionShapeManager = new CollisionShapeManager;
 	
-	//window->UseParallelThreadToDraw();
+	window->UseParallelThreadToDraw();
 }
 
 void Engine::Destroy()

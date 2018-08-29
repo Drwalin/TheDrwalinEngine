@@ -114,7 +114,7 @@ void Object::SetModel( SmartPtr<Model> model )
 	this->model = model;
 }
 
-btVector3 Object::GetLocation()
+btVector3 Object::GetLocation() const
 {
 	if( body )
 	{

@@ -73,6 +73,7 @@ public:
 	inline SmartPtr<T>& operator = ( SmartPtr<T> & other );
 	
 	inline T* operator->();
+	inline T* operator->() const;
 	
 	inline void Separate();
 	
@@ -142,6 +143,12 @@ inline bool SmartPtr<T>::operator != ( const SmartPtr & other ) const
 
 template < class T >
 inline T* SmartPtr<T>::operator->()
+{
+	return data->data;
+}
+
+template < class T >
+inline T* SmartPtr<T>::operator->() const
 {
 	return data->data;
 }

@@ -73,7 +73,7 @@ Window::Window()
 Window::~Window()
 {
 	Destroy();
-	delete camera;
+	camera.Delete();
 	camera = NULL;
 	delete output;
 	output = NULL;

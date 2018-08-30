@@ -35,6 +35,8 @@ protected:
 	float GetMovementVelocity() const;
 	float GetJumpVelocity() const;
 	
+	void CorrectCameraRotation();
+	
 public:
 	
 	static btTransform MakeTransformFromEuler( const btVector3 & euler );

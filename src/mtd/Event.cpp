@@ -69,6 +69,10 @@ void Event::KeyPressedEvent( int keyCode )
 		if( character )
 			character->EventCrouch();
 		break;
+	case ALLEGRO_KEY_ALT:
+		if( character )
+			character->EventBeginStravage();
+		break;
 		
 	case MOUSE_LEFT:
 		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ ), true, 20.0 );
@@ -105,6 +109,10 @@ void Event::KeyReleasedEvent( int keyCode )
 		if( character )
 			character->EventStandUp();
 		break;
+	case ALLEGRO_KEY_ALT:
+		if( character )
+			character->EventStopStravage();
+		break;
 	}
 }
 
@@ -121,6 +129,17 @@ void Event::KeyHoldedEvent( int keyCode )
 	
 	switch( keyCode )
 	{
+	case MOUSE_MIDDLE:
+		if( character )
+		{
+			temp = engine->GetObject( "Box" );
+			if( temp )
+			{
+				character->EventRotateCameraToLookAtPoint( temp->GetLocation(), true );
+			}
+		}
+		break;
+		
 	case ALLEGRO_KEY_ESCAPE:
 		window->QueueQuit();
 		break;

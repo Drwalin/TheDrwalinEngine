@@ -4,7 +4,68 @@
 
 #include <Engine.h>
 
-void Engine::UpdateObjects( const float deltaTime )
+inline void Engine::UpdateObjectOverlaps()
+{
+	for( auto it = object.begin(); it != object.end(); ++it )
+	{
+		if( it->second )
+		{
+			it->second->NextOverlappingFrame();
+		}
+	}
+	
+	btDispatcher * dispacher = world->GetDynamicsWorld()->getDispatcher();
+	if( dispacher )
+	{
+		int numberOfManifolds = dispacher->getNumManifolds();
+//		DEBUG( std::string("Number of manifolds: ") + std::to_string( numberOfManifolds ) );
+		for( int i = 0; i < numberOfManifolds; ++i )
+		{
+			btPersistentManifold * contactManifold =  dispacher->getManifoldByIndexInternal(i);
+			if( contactManifold )
+			{
+				Object * a = ((Object*)(contactManifold->getBody0()->getUserPointer()));
+				Object * b = ((Object*)(contactManifold->getBody1()->getUserPointer()));
+				
+				if( a && b )
+				{
+					if( a->IsDynamic() )
+						a->OverlapWithObject( b, contactManifold );
+					
+					if( b->IsDynamic() )
+						b->OverlapWithObject( a, contactManifold );
+					
+					/*
+					SmartPtr<Object> A = GetObject( a->GetName() );
+					SmartPtr<Object> B = GetObject( b->GetName() );
+					
+					if( A && B )
+					{
+						if( A->IsDynamic() )
+							A->OverlapWithObject( B, contactManifold );
+						if( B->IsDynamic() )
+							B->OverlapWithObject( A, contactManifold );
+					}
+					*/
+				}
+				else
+				{
+					DEBUG( "btCollisionShape->getUserPointer() = NULL" );
+				}
+			}
+			else
+			{
+				DEBUG( std::string( "dispacher->getManifoldByIndexInternal(") + std::to_string(i) + ") = 0 " );
+			}
+		}
+	}
+	else
+	{
+		DEBUG( std::string( "world->GetDynamicsWorld()->getDispatcher() = 0 " ) );
+	}
+}
+
+inline void Engine::UpdateObjects( const float deltaTime )
 {
 	//float time = al_get_time();
 	
@@ -13,6 +74,8 @@ void Engine::UpdateObjects( const float deltaTime )
 		DeleteObject( objectsQueuedToDestroy.front() );
 		objectsQueuedToDestroy.pop();
 	}
+	
+	UpdateObjectOverlaps();
 	
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
@@ -94,6 +157,8 @@ void Engine::ParallelToDrawTick( const float deltaTime )
 
 void Engine::Tick( const float deltaTime )
 {
+//	DEBUG(1)
+	
 	UpdateObjects( deltaTime );
 	
 	float time = al_get_time();
@@ -373,6 +438,12 @@ void Engine::Draw2D()
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
+	window->output->Print( "\nPlayer velocity: " );
+	window->output->Print( GetObject("Player")->GetBody()->getLinearVelocity().length() );
+	
+	window->output->Print( "\nPlayer velocity 2D: " );
+	window->output->Print( btVector3( GetObject("Player")->GetBody()->getLinearVelocity().x(), 0, GetObject("Player")->GetBody()->getLinearVelocity().z() ).length() );
+	
 	if( false )
 	{
 		window->output->Print( "\n\nPointing at object: " );
@@ -518,7 +589,7 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	collisionShapeManager = new CollisionShapeManager;
 	
-	window->UseParallelThreadToDraw();
+	//window->UseParallelThreadToDraw();
 }
 
 void Engine::Destroy()

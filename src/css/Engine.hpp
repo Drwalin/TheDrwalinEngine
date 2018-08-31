@@ -19,6 +19,7 @@ SmartPtr<Object> Engine::AddObject( std::string name, SmartPtr<btCollisionShape>
 		rigidBody = new btRigidBody( mass, motionState, (btCollisionShape*)shape.GetPtr(), inertia );
 		world->AddBody( name, rigidBody );
 		rigidBody->setDamping( 0.2, 0.1 );
+		rigidBody->setFriction( 0.2 );
 		
 		SmartPtr<Object> obj;
 		obj = new T( this, name, rigidBody, shape, mass );
@@ -44,7 +45,7 @@ SmartPtr<Object> Engine::AddCharacter( std::string name, btScalar width, btScala
 			obj->GetBody()->setAngularFactor( btVector3( 0, 0, 0 ) );
 			obj->GetBody()->setActivationState( DISABLE_DEACTIVATION );
 			obj->GetBody()->setDamping( 0.8, 0.0 );
-			obj->GetBody()->setGravity( world->GetGravity() * 1.7 );
+			//obj->GetBody()->setGravity( world->GetGravity() * 1.7 );
 			obj->GetBody()->setFriction( 0.8 );
 		}
 		else

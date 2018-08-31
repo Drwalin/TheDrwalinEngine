@@ -8,13 +8,60 @@
 
 #include <Debug.h>
 
+void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+{
+//	DEBUG(1);
+}
+
+void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+{
+	int numberOfContacts = perisstentManifold->getNumContacts();
+    for( int i = 0; i < numberOfContacts; i++ )
+    {
+        btManifoldPoint & pt = perisstentManifold->getContactPoint( i );
+        
+        const btVector3 & ptA = pt.getPositionWorldOnA();
+        const btVector3 & ptB = pt.getPositionWorldOnB();
+        
+        btVector3 point = ( ptA + ptB ) * 0.5f;
+        
+        btVector3 normal = pt.m_normalWorldOnB;
+        normal.normalized();
+        if( normal.y() < 0.0 )
+        	normal.m_floats[1] = -(normal.m_floats[1]);
+        
+        if( acos( normal.dot( btVector3(0,1,0) ) ) < ALLEGRO_PI * 40.0f / 180.0f )
+        {
+        	if( point.y() < GetBottomY() )
+        	{
+        		isInAir = false;
+        		if( al_get_time() - lastTimeInAir > engine->GetDeltaTime()*2.0f )
+        		{
+					body->setDamping( 0.8, 0.0 );
+					body->setFriction( 0.8 );
+				}
+        	}
+        }
+    }
+}
+
+void Character::EventOnObjectEndOverlapp( Object * other )
+{
+//	DEBUG(1);
+}
+
 void Character::EventJump()
 {
-	//if( !isInAir )
+	static float lastJumpedMoment = 0.0f;
+	if( !isInAir )
 	{
 		if( body )
 		{
-			body->applyCentralImpulse( btVector3( 0, GetJumpVelocity(), 0 ) );
+			if( al_get_time() - lastJumpedMoment > 0.08f )
+			{
+				lastJumpedMoment = al_get_time();
+				body->applyCentralImpulse( GetJumpVelocity() );
+			}
 		}
 	}
 }
@@ -91,10 +138,12 @@ void Character::EventStopStravage()
 
 void Character::EventMoveInDirection( const btVector3 & direction, bool flat )
 {
-	btVector3 dir = direction.normalized();
+	btVector3 dir = direction;
 	
 	if( flat )
 		dir.m_floats[1] = 0.0f;
+	
+	dir.normalize();
 	
 	if( body )
 	{

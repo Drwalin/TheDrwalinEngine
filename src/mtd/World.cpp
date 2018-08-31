@@ -14,12 +14,12 @@ void World::ActivateAll()
 		activateAll = 2;
 }
 
-btDiscreteDynamicsWorld * World::DynamicsWorld()
+btDiscreteDynamicsWorld * World::GetDynamicsWorld()
 {
 	return dynamicsWorld;
 }
 
-void World::Tick( btScalar deltaTime, int count )
+inline void World::UpdateObjectsActivation()
 {
 	if( activateAll > 0 )
 	{
@@ -44,6 +44,11 @@ void World::Tick( btScalar deltaTime, int count )
 			currentActivator = "";
 		}
 	}
+}
+
+void World::Tick( btScalar deltaTime, int count )
+{
+	UpdateObjectsActivation();
 	
 	if( count > 0 )
 		dynamicsWorld->stepSimulation( deltaTime, count );

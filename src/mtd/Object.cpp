@@ -5,6 +5,80 @@
 #include <Object.h>
 #include <Engine.h>
 
+void Object::NextOverlappingFrame()
+{
+//	DEBUG(std::to_string(1)+" - " + name)
+	
+	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
+	{
+		if( overlappingInCurrentFrame.find( *it ) == overlappingInCurrentFrame.end() )
+		{
+			EventOnObjectEndOverlapp( *it );
+		}
+	}
+	
+	overlappingInPreviousFrame = overlappingInCurrentFrame;
+	overlappingInCurrentFrame.clear();
+}
+
+void Object::OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold )
+{
+//	DEBUG(name + std::string(" + ") + other->name );
+	if( perisstentManifold )
+	{
+		if( other )
+		{
+			if( overlappingInPreviousFrame.find( other ) != overlappingInPreviousFrame.end() )
+			{
+				EventOnObjectTickOverlapp( other, perisstentManifold );
+			}
+			else
+			{
+				EventOnObjectBeginOverlapp( other, perisstentManifold );
+			}
+			overlappingInCurrentFrame.insert( other );
+		}
+		else
+		{
+			DEBUG( "other = NULL" );
+		}
+	}
+	else
+	{
+		DEBUG( "perisstentManifold = NULL" );
+	}
+}
+
+void Object::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+{
+}
+
+void Object::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+{
+}
+
+void Object::EventOnObjectEndOverlapp( Object * other )
+{
+}
+
+SmartPtr<Object> Object::GetThis()
+{
+	if( !thisPtr )
+	{
+		if( engine )
+		{
+			thisPtr = engine->GetObject( name );
+		}
+		else
+		{
+			DEBUG("Error creating SmartPtr Object::thisPtr ");
+		}
+	}
+	return thisPtr;
+}
+
+
+
 void Object::Tick( const float deltaTime )
 {
 	if( body )
@@ -54,12 +128,14 @@ void Object::SetMass( float mass )
 	}
 }
 
-bool Object::IsDynamic()
+bool Object::IsDynamic() const
 {
 	if( body )
 	{
 		if( mass > 0.0f )
+		{
 			return true;
+		}
 	}
 	return false;
 }

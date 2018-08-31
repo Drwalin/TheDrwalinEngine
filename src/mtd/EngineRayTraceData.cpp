@@ -49,7 +49,7 @@ SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, 
 	point = normal = btVector3(0,0,0);
 	
 	btCollisionWorld::AllHitsRayResultCallback rayTraceResult( begin, end );
-	world->DynamicsWorld()->rayTest( begin, end, rayTraceResult );
+	world->GetDynamicsWorld()->rayTest( begin, end, rayTraceResult );
 	if( rayTraceResult.hasHit() )
 	{
 		std::set < SmartPtr<Object> > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?

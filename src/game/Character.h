@@ -32,17 +32,27 @@ protected:
 	
 	SmartPtr<Camera> camera;
 	
+	float lastTimeInAir;
+	
 	float GetMovementVelocity() const;
-	float GetJumpVelocity() const;
+	btVector3 GetJumpVelocity() const;
 	
 	void CorrectCameraRotation();
 	
 public:
 	
+	virtual void NextOverlappingFrame() override;
+	
+	float GetBottomY() const;
+	
 	static btTransform MakeTransformFromEuler( const btVector3 & euler );
 	
 	void SetCamera( SmartPtr<Camera> camera );
 	
+	
+	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
+	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
+	virtual void EventOnObjectEndOverlapp( Object * other ) override;
 	
 	void EventJump();
 	void EventCrouch();

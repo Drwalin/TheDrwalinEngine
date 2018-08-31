@@ -6,6 +6,28 @@
 
 #include <Debug.h>
 
+void Character::NextOverlappingFrame()
+{
+//	DEBUG(1)
+	Object::NextOverlappingFrame();
+	if( isInAir )
+		lastTimeInAir = al_get_time();
+	isInAir = true;
+	body->setDamping( 0.1, 0.0 );
+	body->setFriction( 0.0 );
+}
+
+float Character::GetBottomY() const
+{
+	if( body )
+	{
+		btVector3 min, max, origin;
+		body->getAabb( min, max );
+		return (min.y()*0.85) + (GetLocation().y()*0.15);
+	}
+	return currentTransform.getOrigin().y();
+}
+
 btTransform Character::MakeTransformFromEuler( const btVector3 & euler )
 {
 	btQuaternion quat( btVector3( 0, 1, 0 ), -euler.y() );
@@ -19,7 +41,7 @@ float Character::GetMovementVelocity() const
 	float velocity = defaultVelocity;
 	
 	if( isInAir )
-		velocity *= 0.311f;
+		velocity *= 0.08f;
 	
 	switch( walkMode )
 	{
@@ -40,12 +62,18 @@ float Character::GetMovementVelocity() const
 	return velocity;
 }
 
-float Character::GetJumpVelocity() const
+btVector3 Character::GetJumpVelocity() const
 {
 	if( body )
-		return sqrt( ( ((btRigidBody*)body.GetPtr())->getGravity().length() ) * jumpHeight * 0.5f ) * ( walkMode == Character::WalkMode::RUN ? 1.1f : 1.0f ) * 35.0;
+	{
+		btVector3 vel = body->getLinearVelocity();
+		vel.m_floats[1] = 0;
+		
+		
+		return ( btVector3( 0, sqrt( ( ( /*((btRigidBody*)*/body/*.GetPtr())*/->getGravity().length() ) * jumpHeight * 0.5f ) + ( vel.length() * 0.311 ) ), 0 ) * 35.0 ) + ( vel * 0.1 );
+	}
 	DEBUG( "Shouldn't appear" );
-	return 2.5f;
+	return btVector3(0,2.5f,0);
 }
 
 
@@ -145,7 +173,9 @@ Character::Character( Engine * engine, std::string name, SmartPtr<btRigidBody> b
 	Object( engine, name, body, collisionShape, mass_ ),
 	cameraRotation(0,0,0), cameraLocation(0,0,0),
 	defaultVelocity(4.5), jumpHeight(1.1), height(1.75),
-	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK)
+	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
+	isInAir(false),
+	lastTimeInAir(0.0)
 {
 	SetCameraLocation( btVector3( 0.0, height * 0.5 * 0.9, 0.0 ) );
 }
@@ -153,7 +183,9 @@ Character::Character( Engine * engine, std::string name, SmartPtr<btRigidBody> b
 Character::Character() :
 	Object(), cameraRotation(0,0,0), cameraLocation(0,0,0),
 	defaultVelocity(4.5), jumpHeight(1.1), height(1.75),
-	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK)
+	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
+	isInAir(false),
+	lastTimeInAir(0.0)
 {
 	SetCameraLocation( btVector3( 0.0, height * 0.5 * 0.9, 0.0 ) );
 }

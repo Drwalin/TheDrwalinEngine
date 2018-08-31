@@ -19,13 +19,14 @@ void Event::Init()
 
 void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 {
+	
 	SmartPtr<Object> player = engine->GetObject( "Player" );
 	if( player )
 	{
 		Character * character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
 		if( character )
 		{
-			character->EventRotateCameraBy( btVector3( dy/80.0, dx/80.0, 0.0 ) );
+			character->EventRotateCameraBy( btVector3( float(dy)/80.0, float(dx)/80.0, 0.0 ) * 0.5f );
 		}
 	}
 }
@@ -59,11 +60,6 @@ void Event::KeyPressedEvent( int keyCode )
 	case ALLEGRO_KEY_LSHIFT:
 		if( character )
 			character->EventBeginRun();
-		break;
-		
-	case ALLEGRO_KEY_SPACE:
-		if( character )
-			character->EventJump();
 		break;
 	case ALLEGRO_KEY_LCTRL:
 		if( character )
@@ -114,6 +110,8 @@ void Event::KeyReleasedEvent( int keyCode )
 			character->EventStopStravage();
 		break;
 	}
+	
+	KeyHoldedEvent( keyCode );
 }
 
 void Event::KeyHoldedEvent( int keyCode )
@@ -138,6 +136,11 @@ void Event::KeyHoldedEvent( int keyCode )
 				character->EventRotateCameraToLookAtPoint( temp->GetLocation(), true );
 			}
 		}
+		break;
+		
+	case ALLEGRO_KEY_SPACE:
+		if( character )
+			character->EventJump();
 		break;
 		
 	case ALLEGRO_KEY_ESCAPE:

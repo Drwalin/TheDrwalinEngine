@@ -29,11 +29,13 @@ private:
 	std::string currentActivator;
 	int activateAll;
 	
+	inline void UpdateObjectsActivation();
+	
 public:
 	
 	void ActivateAll();
 	
-	btDiscreteDynamicsWorld * DynamicsWorld();
+	btDiscreteDynamicsWorld * GetDynamicsWorld();
 	
 	void UpdateColliderForObject( SmartPtr<btRigidBody> body );
 	

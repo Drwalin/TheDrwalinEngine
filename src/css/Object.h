@@ -8,8 +8,7 @@
 #include <btBulletDynamicsCommon.h>
 
 #include <string>
-#include <map>
-#include <iostream>
+#include <set>
 
 #include <Debug.h>
 #include <SmartPtr.h>
@@ -39,11 +38,23 @@ protected:
 	
 	float mass;
 	
+	std::set< Object* > overlappingInPreviousFrame;
+	std::set< Object* > overlappingInCurrentFrame;
+	
+	SmartPtr<Object> thisPtr;
+	
 public:
+	
+	virtual void NextOverlappingFrame();
+	void OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold );
+	
+	
+	SmartPtr<Object> GetThis();
+	
 	
 	void SetMass( float mass );
 	
-	bool IsDynamic();
+	bool IsDynamic() const;
 	
 	Engine * GetEngine();
 	
@@ -62,6 +73,10 @@ public:
 	btVector3 GetLocation() const;
 	
 	SmartPtr<btRigidBody> GetBody();
+	
+	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold );
+	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold );
+	virtual void EventOnObjectEndOverlapp( Object * other );
 	
 	virtual void Tick( const float deltaTime );
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );

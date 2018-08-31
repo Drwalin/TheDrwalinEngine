@@ -46,7 +46,9 @@ private:
 	
 	bool pausePhysics;
 	
-	void UpdateObjects( const float deltaTime );
+	
+	inline void UpdateObjectOverlaps();
+	inline void UpdateObjects( const float deltaTime );
 	
 public:
 	

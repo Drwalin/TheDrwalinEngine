@@ -17,7 +17,7 @@ int main()
 	srand( time( NULL ) );
 	
 	Engine * engine = new Engine;
-	engine->Init( "Engine 0.0.0", NULL, 800, 600, false );
+	engine->Init( "Engine 0.0.0", NULL, 320, 240, true );
 	
 	LoadMeshes( "media/loadMeshes.list", engine );
 	
@@ -25,17 +25,17 @@ int main()
 	
 	SmartPtr<Model> sphere = engine->GetModel( "Sphere" );
 	SmartPtr<Model> crate01 = engine->GetModel( "Crate01" );
-	SmartPtr<Model> mapModel = engine->GetModel( "as_oilrig" );
+	SmartPtr<Model> mapModel = engine->GetModel( "Plane" );//"as_oilrig" );
 	assert( mapModel );
 	
 	SmartPtr<btCollisionShape> mapShape = engine->GetCollisionShapeManager()->CreateCustomShape( "Map triangle collision mesh", mapModel, CollisionShapeManager::SHAPE_TYPE_TRIANGLE );
 	assert( mapShape );
 	
 	
-	SmartPtr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,0,0) ), false );
+	SmartPtr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,-30,0) ), false );
 	map->SetModel( mapModel );
 	map->GetBody()->setFriction( 0.65 );
-	map->SetScale( btVector3(0.023,0.023,0.023) );
+	//map->SetScale( btVector3(0.023,0.023,0.023) );
 	
 	
 	

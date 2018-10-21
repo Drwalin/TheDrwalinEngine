@@ -29,7 +29,7 @@ void LoadMeshes( std::string loadMeshesListFile, Engine * engine )
 			}
 			
 			SmartPtr<Model> ptr = engine->LoadModel( meshFile );
-			assert( ptr );
+			assert( (bool)ptr );
 			if( ptr )
 			{
 				if( engine->SetCustomModelName( customName, ptr ) == false )

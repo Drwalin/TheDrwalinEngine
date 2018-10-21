@@ -22,6 +22,7 @@
 #include <Texture.h>
 #include <Model.h>
 #include <Object.h>
+#include <Shader.h>
 
 #include <CollisionShapeManager.h>
 
@@ -34,6 +35,7 @@ private:
 	Event * event;
 	CollisionShapeManager * collisionShapeManager;
 	
+	std::map < std::string, SmartPtr<Shader> > shader;
 	std::map < std::string, SmartPtr<Texture> > texture;
 	std::map < std::string, SmartPtr<Model> > model;
 	std::map < std::string, SmartPtr<Object> > object;
@@ -49,6 +51,8 @@ private:
 	
 	inline void UpdateObjectOverlaps();
 	inline void UpdateObjects( const float deltaTime );
+	
+	void LoadCoreShader();
 	
 public:
 	
@@ -74,6 +78,10 @@ public:
 	void DrawCrosshair();
 	
 public:
+	
+	bool LoadShader( const std::string & name, const std::string & vs, const std::string & gs, const std::string & fs );
+	SmartPtr<Shader> GetShader( const std::string & name );
+	void DestroyShader( const std::string & name );
 	
 	void QueueObjectToDestroy( SmartPtr<Object> ptr );
 	void QueueObjectToDestroy( const std::string & name );

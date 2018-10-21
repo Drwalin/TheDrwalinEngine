@@ -3,39 +3,90 @@
 #define VBO_CPP
 
 #include <VBO.h>
+#include <Engine.h>
 
-void VBO::Draw()
+std::vector < unsigned char > & VBO::AccessVertices()
 {
-	if( vertices.size() && indices.size() )
-		al_draw_indexed_prim( &vertices.front(), NULL, texture ? texture->GetBitmapPtr() : NULL, &indices.front(), indices.size(), ALLEGRO_PRIM_TRIANGLE_LIST );
+	return vertices;
 }
 
-SmartPtr<Texture> VBO::GetTexture()
+void VBO::SetAttribPointer( const int location, const unsigned int count, const GLenum type, const bool normalized, const unsigned int offset )
 {
-	return texture;
+	if( generated )
+	{
+		glBindVertexArray( vaoID );
+		glBindBuffer( GL_ARRAY_BUFFER, vboID );
+		glEnableVertexAttribArray( location );
+		glVertexAttribPointer( location, count, type, normalized, vertexSize, (void*)offset );
+	}
 }
 
-void VBO::Generate()
+void VBO::AddVertex( const void * bytes )
 {
-	indices.resize( vertices.size() );
-	for( int i = 0; i < indices.size(); ++i )
-		indices[i] = i;
+	if( bytes )
+	{
+		unsigned long long oldsize = vertices.size();
+		vertices.resize( oldsize + vertexSize );
+		memcpy( &(vertices[oldsize]), bytes, vertexSize );
+	}
 }
 
-void VBO::AddTriangle( ALLEGRO_VERTEX a, ALLEGRO_VERTEX b, ALLEGRO_VERTEX c )
+void VBO::AddVertices( const void * ptr, const unsigned int vertices )
 {
-	vertices.resize( vertices.size() + 3 );
-	vertices[vertices.size()-3] = a;
-	vertices[vertices.size()-2] = b;
-	vertices[vertices.size()-1] = c;
+	if( ptr )
+	{
+		unsigned long long oldsize = this->vertices.size();
+		this->vertices.resize( oldsize + (vertexSize*vertices) );
+		memcpy( &(this->vertices[oldsize]), ptr, (vertexSize*vertices) );
+	}
 }
 
-void VBO::Destroy()
+void VBO::SetVertexSize( const unsigned int size )
+{
+	vertexSize = size;
+}
+
+bool VBO::IsGenerated() const
+{
+	return generated;
+}
+
+void VBO::Generate( Engine * engine, const GLenum type )
+{
+	if( generated )
+		Destroy();
+	
+	glGenVertexArrays( 1, &vaoID );
+	glBindVertexArray( vaoID );
+	
+	glGenBuffers( 1, &vboID );
+	glBindBuffer( GL_ARRAY_BUFFER, vboID );
+	glBufferData( GL_ARRAY_BUFFER, vertices.size()*sizeof(unsigned char), &(vertices.front()), GL_STATIC_DRAW );
+	glBindVertexArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	
+	this->type = type;
+	
+	generated = true;
+	
+	vertices.shrink_to_fit();
+	
+	if( engine )
+	{
+		SmartPtr<Shader> core = engine->GetShader( "Core" );
+		if( core )
+		{
+			this->SetAttribPointer( core->GetAttributeLocation( "position" ), 3, GL_FLOAT, false, 0 );
+			this->SetAttribPointer( core->GetAttributeLocation( "textureCoord" ), 2, GL_FLOAT, false, 3 * sizeof(float) );
+			this->SetAttribPointer( core->GetAttributeLocation( "colorIn" ), 4, GL_UNSIGNED_BYTE, false, 5 * sizeof(float) );
+		}
+	}
+}
+
+void VBO::ClearVertices()
 {
 	vertices.clear();
-	indices.clear();
 	vertices.shrink_to_fit();
-	indices.shrink_to_fit();
 }
 
 void VBO::SetTexture( SmartPtr<Texture> texture )
@@ -43,30 +94,140 @@ void VBO::SetTexture( SmartPtr<Texture> texture )
 	this->texture = texture;
 }
 
+SmartPtr<Texture> VBO::GetTexture()
+{
+	return texture;
+}
+
+void VBO::SetShader( SmartPtr<Shader> shader )
+{
+	this->shader = shader;
+}
+
+SmartPtr<Shader> VBO::GetShader()
+{
+	return shader;
+}
+
+void VBO::Draw( Engine * engine ) const
+{
+	if( generated )
+	{
+		glBindVertexArray( vaoID );
+		glBindBuffer( GL_ARRAY_BUFFER, vboID );
+		
+		if( shader )
+		{
+			shader->Use();
+			
+			glm::mat4 model(1.0f), view(1.0f), projection(1.0f);
+			
+			if( texture )
+			{
+				texture->Use( 0 );
+				shader->SetInt( shader->GetUniformLocation( "texture0" ), 0 );
+			}
+			else
+			{
+				DEBUG( "No texture" );
+			}
+			
+			//GLint modelLoc = shader->GetUniformLocation( "model" );
+			//GLint viewLoc = shader->GetUniformLocation( "view" );
+			//GLint projLoc = shader->GetUniformLocation( "projection" );
+			
+			if( engine )
+			{
+				//shader->SetMat4( projLoc, engine->GetWindow()->Get3DProjectionTransform() );
+				projection = engine->GetWindow()->Get3DProjectionTransform();
+				
+				SmartPtr<Camera> camera = engine->GetCamera();
+				if( camera )
+				{
+					//shader->SetMat4( viewLoc, camera->GetViewMatrix() );
+					view = camera->GetViewMatrix();
+					//shader->SetMat4( modelLoc, camera->GetModelMatrix() );
+					model = camera->GetModelMatrix();
+				}
+				else
+				{
+					DEBUG( "No camera" );
+				}
+			}
+			else
+			{
+				DEBUG( "No engine" );
+			}
+			
+			GLint matrixLoc = shader->GetUniformLocation( "transformMatrix" );
+			shader->SetMat4( matrixLoc, projection * view * model );		// projection * view * model
+		}
+		else
+		{
+			DEBUG( "No shader" );
+		}
+		
+		glDrawArrays( type, 0, vertices.size() );
+	}
+}
+
+void VBO::Destroy()
+{
+	if( generated )
+	{
+		glDeleteVertexArrays( 1, &vaoID );
+		glDeleteBuffers( 1, &vboID );
+		generated = false;
+		vaoID = 0;
+		vboID = 0;
+	}
+}
+
 VBO & VBO::operator = ( const VBO & other )
 {
-	DEBUG( "Copy" )
+	this->Destroy();
+	
+	this->texture = other.texture;
+	this->vertexSize = other.vertexSize;
 	this->vertices = other.vertices;
-	this->indices = other.indices;
-	this->texture = texture;
-	return *this;
+	
+	vertices.shrink_to_fit();
+}
+
+VBO & VBO::operator = ( const SmartPtr<VBO> other )
+{
+	this->Destroy();
+	
+	this->texture = other->texture;
+	this->vertexSize = other->vertexSize;
+	this->vertices = other->vertices;
+	
+	vertices.shrink_to_fit();
 }
 
 VBO::VBO( const VBO & other )
 {
-	DEBUG( "Construct from other" )
-	this->vertices = other.vertices;
-	this->indices = other.indices;
-	this->texture = texture;
+	vertexSize = 5 * sizeof(float);
+	generated = false;
+	vaoID = 0;
+	vboID = 0;
+	type = GL_TRIANGLES;
+	this->operator=( other );
 }
 
 VBO::VBO()
 {
+	vertexSize = 5 * sizeof(float);
+	generated = false;
+	vaoID = 0;
+	vboID = 0;
+	type = GL_TRIANGLES;
 }
 
 VBO::~VBO()
 {
 	Destroy();
+	vertices.clear();
 }
 
 #endif

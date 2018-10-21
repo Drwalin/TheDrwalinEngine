@@ -4,6 +4,8 @@
 
 #include <SmartPtr.h>
 
+#include <Debug.h>
+
 #include <cassert>
 
 template < class T >
@@ -197,7 +199,9 @@ template < class T >
 inline SmartPtr<T>& SmartPtr<T>::operator = ( const SmartPtr<T> & other )
 {
 	if( data )
+	{
 		data->RemoveMember( this );
+	}
 	
 	if( other.data )
 	{
@@ -211,7 +215,9 @@ template < class T >
 inline SmartPtr<T>& SmartPtr<T>::operator = ( SmartPtr<T> & other )
 {
 	if( data )
+	{
 		data->RemoveMember( this );
+	}
 	other.InitData();
 	other.data->AddMember( this );
 	return *this;
@@ -271,6 +277,7 @@ SmartPtr<T>::~SmartPtr()
 #include <Model.h>
 #include <Texture.h>
 #include <Camera.h>
+#include <Shader.h>
 
 template class SmartPtr<btTriangleIndexVertexArray>;
 template class SmartPtr<CustomCollisionShapeData>;
@@ -281,6 +288,7 @@ template class SmartPtr<Texture>;
 template class SmartPtr<Object>;
 template class SmartPtr<Camera>;
 template class SmartPtr<Model>;
+template class SmartPtr<Shader>;
 
 #endif
 

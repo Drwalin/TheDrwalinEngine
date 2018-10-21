@@ -7,14 +7,21 @@
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btQuaternion.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <Debug.h>
 #include <SmartPtr.h>
 
+#include <Shader.h>
 #include <Object.h>
 
 class Camera
 {
 private:
+	
+	glm::mat4 modelTransform;
+	glm::mat4 viewTransform;
 	
 	btVector3 pos;
 	btVector3 rot;
@@ -25,6 +32,9 @@ private:
 	btVector3 currentLocation;
 	
 public:
+	
+	glm::mat4 GetModelMatrix() const;
+	glm::mat4 GetViewMatrix() const;
 	
 	bool IsObjectInView( SmartPtr<Object> object );
 	void UpdateViewPlanes();

@@ -9,7 +9,7 @@ void Model::Draw()
 {
 	for( int i = 0; i < vbo.size(); ++i )
 	{
-		vbo[i].Draw();
+		vbo[i].Draw( engine );
 	}
 }
 
@@ -22,10 +22,11 @@ void Model::RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX
 	btVector3 scale = size / ( max - min );
 	btVector3 move = ( min + max ) * (-0.5f);
 	
-	float currentTextureWidth, currentTextureHeight;
+//	float currentTextureWidth, currentTextureHeight;
 	int i = 0;
 	for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it, ++i )
 	{
+		/*
 		currentTextureWidth = currentTextureHeight = 1.0f;
 		if( engine && materialTexture.size() )
 		{
@@ -37,6 +38,7 @@ void Model::RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX
 				texture = NULL;
 			}
 		}
+		*/
 		
 		for( int j = 0; j < it->second.size(); ++j )
 		{
@@ -49,10 +51,13 @@ void Model::RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX
 				it->second[j].y *= scale.y();
 				it->second[j].z *= scale.z();
 			}
+			
+			/*
 			it->second[j].v = 1.0 - it->second[j].v;
 			
 			it->second[j].u *= currentTextureWidth;
 			it->second[j].v *= currentTextureHeight;
+			*/
 		}
 	}
 }
@@ -371,14 +376,19 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it, ++i )
 	{
 		vbo[i].Destroy();
+		vbo[i].ClearVertices();
+		vbo[i].SetVertexSize( sizeof(ALLEGRO_VERTEX) );
 		if( engine )
 		{
 			vbo[i].SetTexture( engine->GetTexture( materialTexture[it->first] ) );
+			vbo[i].SetShader( engine->GetShader( "Core" ) );
 		}
 		if( !vbo[i].GetTexture() )
 			DEBUG( std::string( "Texture not exist" ) );
-		vbo[i].vertices = it->second;
-		vbo[i].Generate();
+		if( !vbo[i].GetShader() )
+			DEBUG( std::string( "Shader do not exist" ) );
+		vbo[i].AddVertices( &(it->second.front()), it->second.size() );
+		vbo[i].Generate( engine, GL_TRIANGLES );
 	}
 	
 	return true;
@@ -388,11 +398,13 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 {
 	Destroy();
 	
+	this->engine = engine;
+	
 	std::ifstream file( meshFileName, std::ifstream::binary );
 	
 	if( file.good() )
 	{
-		float currentTextureWidth, currentTextureHeight;
+//		float currentTextureWidth, currentTextureHeight;
 		
 		int numberOfVBOs;
 		file.read( (char*)&numberOfVBOs, sizeof(int) );
@@ -403,7 +415,7 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 		
 		for( int i = 0; i < numberOfVBOs; ++i )
 		{
-			currentTextureWidth = currentTextureHeight = 1.0f;
+//			currentTextureWidth = currentTextureHeight = 1.0f;
 			
 			int bytesPerTextureName;
 			int numberOfVertices;
@@ -416,39 +428,51 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 			textureFileNameWithPath[bytesPerTextureName] = 0;
 			
 			vbo[i].Destroy();
+			vbo[i].ClearVertices();
+			vbo[i].SetVertexSize( sizeof(ALLEGRO_VERTEX) );
 			
 			if( engine )
-			{	
+			{
 				SmartPtr<Texture> texture = engine->GetTexture( textureFileNameWithPath );
+				/*
 				if( texture )
 				{
 					currentTextureWidth = texture->GetWidth();
 					currentTextureHeight = texture->GetHeight();
 				}
+				*/
 				vbo[i].SetTexture( texture );
+				vbo[i].SetShader( engine->GetShader( "Core" ) );
 			}
+			
+			if( !vbo[i].GetTexture() )
+				DEBUG( std::string( "Texture not exist" ) );
+			if( !vbo[i].GetShader() )
+				DEBUG( std::string( "Shader do not exist" ) );
 			
 			file.read( (char*)&numberOfVertices, sizeof(int) );
 				
-			vbo[i].vertices.resize( numberOfVertices );
-				
+			vbo[i].vertices.resize( numberOfVertices*sizeof(ALLEGRO_VERTEX) );
+			
 			for( int j = 0; j < numberOfVertices; ++j )
 			{
-				file.read( (char*)&(vbo[i].vertices[j].x), sizeof(float) );
-				file.read( (char*)&(vbo[i].vertices[j].y), sizeof(float) );
-				file.read( (char*)&(vbo[i].vertices[j].z), sizeof(float) );
-				file.read( (char*)&(vbo[i].vertices[j].u), sizeof(float) );
-				file.read( (char*)&(vbo[i].vertices[j].v), sizeof(float) );
+				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x), sizeof(float) );
+				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y), sizeof(float) );
+				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z), sizeof(float) );
+				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].u), sizeof(float) );
+				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].v), sizeof(float) );
+				/*
 				vbo[i].vertices[j].u *= currentTextureWidth;
 				vbo[i].vertices[j].v *= currentTextureHeight;
-				vbo[i].vertices[j].color = color;
+				*/
+				((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].color = color;
 				if( i == 0 && j == 0 )
 				{
-					minAABB = maxAABB = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+					minAABB = maxAABB = btVector3( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z );
 				}
 				else
 				{
-					btVector3 temp( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+					btVector3 temp( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z );
 					for( int k = 0; k < 3; ++k )
 					{
 						if( minAABB.m_floats[k] > temp.m_floats[k] )
@@ -457,9 +481,9 @@ bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
 							maxAABB.m_floats[k] = temp.m_floats[k];
 					}
 				}
-			}	
+			}
 			
-			vbo[i].Generate();
+			vbo[i].Generate( engine, GL_TRIANGLES );
 		}
 		
 		if( !file )
@@ -524,6 +548,8 @@ bool Model::LoadFromFile( Engine * engine, std::string fileName )
 {
 	Destroy();
 	
+	this->engine = engine;
+	
 	std::string extension;
 	int i;
 	for( i = fileName.size()-1; i > 0; --i )
@@ -563,7 +589,7 @@ SmartPtr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acc
 				int k;
 				for( k = 0; k < collisionShapeData->vertices.size(); ++k )
 				{
-					if( btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z ).distance2( collisionShapeData->vertices[k] ) < squareAcceptableDistance )
+					if( btVector3( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z ).distance2( collisionShapeData->vertices[k] ) < squareAcceptableDistance )
 					{
 						break;
 					}
@@ -574,7 +600,7 @@ SmartPtr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acc
 				if( k >= collisionShapeData->vertices.size() )
 				{
 					collisionShapeData->vertices.resize( collisionShapeData->vertices.size() + 1 );
-					collisionShapeData->vertices.back() = btVector3( vbo[i].vertices[j].x, vbo[i].vertices[j].y, vbo[i].vertices[j].z );
+					collisionShapeData->vertices.back() = btVector3( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z );
 				}
 			}
 		}

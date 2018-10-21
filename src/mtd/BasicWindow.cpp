@@ -161,6 +161,7 @@ void BasicWindow::LoadIconFromFile( const char * iconFile )
 bool BasicWindow::CreateDisplay( const char * windowName, int width, int height, bool fullscreen )
 {
 //	al_set_new_display_flags( ALLEGRO_RESIZABLE );
+	al_set_new_display_flags( ALLEGRO_OPENGL );
 	al_set_new_display_option( ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST );
 	al_set_new_display_option( ALLEGRO_SUPPORT_NPOT_BITMAP, 0, ALLEGRO_REQUIRE) ;
 	al_set_new_window_position( 350, 200 );
@@ -257,6 +258,11 @@ void BasicWindow::Destroy()
 	eventResponser = NULL;
 }
 
+glm::mat4 BasicWindow::Get3DProjectionTransform() const
+{
+	return glmProjectionTransform3D;
+}
+
 void BasicWindow::CreatePerspectiveTransform( float zNear, float zFar )
 {
 	this->zNear = zNear;
@@ -264,6 +270,9 @@ void BasicWindow::CreatePerspectiveTransform( float zNear, float zFar )
 	float aspect_ratio = (float)al_get_bitmap_height( al_get_backbuffer( display ) ) / (float)al_get_bitmap_width( al_get_backbuffer( display ) );
 	al_identity_transform( &projection3DTransform );
 	al_perspective_transform( &projection3DTransform, -zNear, aspect_ratio * zNear, zNear, zNear, -aspect_ratio * zNear, zFar );
+	
+	glmProjectionTransform2D = glm::ortho( -zNear, zNear, aspect_ratio * zNear, -aspect_ratio * zNear );			// ????
+	glmProjectionTransform3D = glm::perspective( 3.14159f * 0.5f, 1.0f / aspect_ratio, this->zNear, this->zFar );
 }
 
 void BasicWindow::OneLoopFullTick()

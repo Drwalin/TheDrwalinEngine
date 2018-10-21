@@ -3,6 +3,7 @@
 #define ENGINE_CPP
 
 #include <Engine.h>
+#include <Shader.h>
 
 inline void Engine::UpdateObjectOverlaps()
 {
@@ -168,10 +169,16 @@ SmartPtr<Object> Engine::GetCameraParent() const
 std::string Engine::GetAvailableObjectName( std::string name )
 {
 	if( object.find( name ) == object.end() )
+	{
 		return name;
+	}
 	for( int i = 0;; ++i )
+	{
 		if( object.find( name+std::to_string(i) ) == object.end() )
+		{
 			return name+std::to_string(i);
+		}
+	}
 	return name;
 }
 
@@ -187,6 +194,63 @@ void Engine::AttachCameraToObject( std::string name, btVector3 location )
 		cameraParent = NULL;
 	}
 	GetCamera()->SetPos( location );
+}
+
+bool Engine::LoadShader( const std::string & name, const std::string & vs, const std::string & gs, const std::string & fs )
+{
+	if( shader.find( name ) != shader.end() )
+	{
+		DEBUG( std::string("Trying to redefine shader: ") + name );
+		return false;
+	}
+	else
+	{
+		SmartPtr<Shader> prog;
+		prog = new Shader();
+		if( prog )
+		{
+			if( prog->Load( vs.c_str(), gs.c_str(), fs.c_str() ) == 0 )
+			{
+				shader[name] = prog;
+				return true;
+			}
+			else
+			{
+				DEBUG( std::string("Unable to load shader: ") + name + " -> ( " + vs + ", " + ( gs.size() > 0 ? ( gs + ", " ) : "" ) + fs + " )" );
+			}
+			prog.Delete();
+		}
+		else
+		{
+			DEBUG( std::string("Unable to allocate smart pointer for shader") );
+		}
+	}
+	DEBUG( "Unknown error" );
+	return false;
+}
+
+SmartPtr<Shader> Engine::GetShader( const std::string & name )
+{
+	auto it = shader.find( name );
+	if( it != shader.end() )
+	{
+		return it->second;
+	}
+	DEBUG( std::string( "Unable to find shader: " ) + name );
+	return SmartPtr<Shader>();
+}
+
+void Engine::DestroyShader( const std::string & name )
+{
+	auto it = shader.find( name );
+	if( it != shader.end() )
+	{
+		shader.erase( name );
+	}
+	else
+	{
+		DEBUG( std::string("Trying to destroy unexisting shader: ") + name );
+	}
 }
 
 void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size )
@@ -305,9 +369,13 @@ SmartPtr<Model> Engine::GetModel( std::string name )
 	if( it != model.end() )
 	{
 		if( it->second )
+		{
 			return it->second;
+		}
 		else
+		{
 			model.erase( it );
+		}
 	}
 	else
 	{
@@ -556,6 +624,18 @@ void Engine::BeginLoop()
 	window->BeginLoop();
 }
 
+void Engine::LoadCoreShader()
+{
+	if( this->LoadShader( "Core", "media\\Shaders\\core.vs", "", "media\\Shaders\\core.fs" ) )
+	{
+		
+	}
+	else
+	{
+		DEBUG( "Unable to load core shader" );
+	}
+}
+
 void Engine::Init( const char * windowName, const char * iconFile, int width, int height, bool fullscreen )
 {
 	Destroy();
@@ -572,6 +652,16 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	window->LockMouse();
 	
 	collisionShapeManager = new CollisionShapeManager;
+	
+	
+	glewExperimental = GL_TRUE;
+	if( glewInit() != GLEW_OK )
+	{
+	    std::cerr << "\n Failed to initialize GLEW! ";
+	    return;
+	}
+	
+	LoadCoreShader();
 	
 	//window->UseParallelThreadToDraw();
 }

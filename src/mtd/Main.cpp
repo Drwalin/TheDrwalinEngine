@@ -16,8 +16,9 @@ int main()
 	
 	srand( time( NULL ) );
 	
+	
 	Engine * engine = new Engine;
-	engine->Init( "Engine 0.0.0", NULL, 320, 240, true );
+	engine->Init( "Engine 0.0.0", NULL, 800, 600, false );
 	
 	LoadMeshes( "media/loadMeshes.list", engine );
 	
@@ -28,15 +29,17 @@ int main()
 	SmartPtr<Model> mapModel = engine->GetModel( /*"Plane" );*/"as_oilrig" );
 	assert( mapModel );
 	
+	
+	
 	SmartPtr<btCollisionShape> mapShape = engine->GetCollisionShapeManager()->CreateCustomShape( "Map triangle collision mesh", mapModel, CollisionShapeManager::SHAPE_TYPE_TRIANGLE );
 	assert( mapShape );
+	
 	
 	
 	SmartPtr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,-30,0) ), false );
 	map->SetModel( mapModel );
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
-	
 	
 	
 	if( false )
@@ -47,12 +50,9 @@ int main()
 	}
 	
 	
-	
 	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
 	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
 	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10 )->SetModel( engine->GetModel("m4a1") );
-	
-	
 	
 	
 	for( int i = 0; i < 0; ++i )
@@ -62,6 +62,8 @@ int main()
 		o->SetScale( btVector3( 0.6, 0.3, 1 ) );
 		o->GetBody()->setFriction( 0.9 );
 	}
+	
+	
 	
 	SmartPtr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(22,10,0) ), 15.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );

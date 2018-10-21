@@ -2,6 +2,9 @@
 #ifndef BASIC_WINDOW_H
 #define BASIC_WINDOW_H
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
@@ -37,6 +40,9 @@ private:
 	
 	bool quitWhenPossible;
 	
+	glm::mat4 glmProjectionTransform3D;
+	glm::mat4 glmProjectionTransform2D;
+	
 	ALLEGRO_TRANSFORM projection2DTransform;
 	ALLEGRO_TRANSFORM projection3DTransform;
 	
@@ -65,6 +71,8 @@ protected:
 	StringToEnter * stringToEnter;
 	
 public:
+	
+	glm::mat4 Get3DProjectionTransform() const;
 	
 	void UseParallelThreadToDraw();
 	void ShutDownParallelThreadToDraw();

@@ -20,7 +20,7 @@ Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback &
 			Object * objectT = (Object*)(temp->getUserPointer());
 			if( objectT )
 			{
-				object = objectT->GetEngine()->GetObject( objectT->GetName() );
+				object = objectT->GetEngine()->GetObject( std::string(objectT->GetName()) );
 				begin = hitData.m_rayFromWorld;
 				end = hitData.m_rayToWorld;
 				point = hitData.m_hitPointWorld.at( id );

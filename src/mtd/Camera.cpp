@@ -215,38 +215,78 @@ void Camera::Rotate( btVector3 src )
 
 void Camera::SetWorldTransform( btTransform transform, btVector3 scale )
 {
-	ALLEGRO_TRANSFORM dst;
-	al_identity_transform( &dst );
-	
-	al_scale_transform_3d( &dst, scale.x(), scale.y(), scale.z() );
-	
 	{
 		btVector3 origin = transform.getOrigin();
 		btQuaternion rotation = transform.getRotation();
-		btVector3 axis = rotation.getAxis();
+		btVector3 axis = rotation.getAxis().normalized();
 		btScalar angle = rotation.getAngle();
 		
-		al_rotate_transform_3d( &dst, axis.x(), axis.y(), axis.z(), angle );
-		al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
+		modelTransform = glm::mat4(1.0f);
+		modelTransform = glm::scale( modelTransform, glm::vec3( scale.x(), scale.y(), scale.z() ) );
+		modelTransform = glm::rotate( modelTransform, angle, glm::vec3( axis.x(), axis.y(), axis.z() ) );
+		modelTransform = glm::translate( -modelTransform, glm::vec3( origin.x(), origin.y(), origin.z() ) );
 	}
 	
-	btVector3 origin = -parentTransformation.getOrigin();
-	
-	btScalar x, y, z;
-	parentTransformation.getRotation().getEulerZYX( z, y, x );
+	{
+		btVector3 origin = parentTransformation.getOrigin();
+		btScalar x, y, z;
+		parentTransformation.getRotation().getEulerZYX( z, y, x );
 		
-	al_translate_transform_3d( &dst, -pos.x()*locationScale.x(), -pos.y()*locationScale.y(), -pos.z()*locationScale.z() );
-	al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
-	al_rotate_transform_3d( &dst, 0, 1, 0, rot.y()-y );
-	al_rotate_transform_3d( &dst, 1, 0, 0, rot.x()+x );
-	al_rotate_transform_3d( &dst, 0, 0, 1, rot.z()+z );
+		viewTransform = glm::mat4(1.0f);
+		viewTransform = glm::rotate( viewTransform, rot.x()+x, glm::vec3( 0, 0, 1 ) );
+		viewTransform = glm::rotate( viewTransform, rot.y()-y, glm::vec3( 1, 0, 0 ) );
+		viewTransform = glm::rotate( viewTransform, rot.z()+z, glm::vec3( 0, 1, 0 ) );
+		viewTransform = glm::translate( viewTransform, glm::vec3( pos.x()*locationScale.x(), pos.y()*locationScale.y(), pos.z()*locationScale.z() ) );		// ??
+		viewTransform = glm::translate( viewTransform, glm::vec3( origin.x(), origin.y(), origin.z() ) );
+		
+		
+	}
 	
-	al_use_transform( &dst );
+	if( false )
+	{
+		ALLEGRO_TRANSFORM dst;
+		al_identity_transform( &dst );
+		
+		al_scale_transform_3d( &dst, scale.x(), scale.y(), scale.z() );
+		
+		{
+			btVector3 origin = transform.getOrigin();
+			btQuaternion rotation = transform.getRotation();
+			btVector3 axis = rotation.getAxis();
+			btScalar angle = rotation.getAngle();
+			
+			al_rotate_transform_3d( &dst, axis.x(), axis.y(), axis.z(), angle );
+			al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
+		}
+		
+		btVector3 origin = -parentTransformation.getOrigin();
+		
+		btScalar x, y, z;
+		parentTransformation.getRotation().getEulerZYX( z, y, x );
+			
+		al_translate_transform_3d( &dst, -pos.x()*locationScale.x(), -pos.y()*locationScale.y(), -pos.z()*locationScale.z() );
+		al_translate_transform_3d( &dst, origin.x(), origin.y(), origin.z() );
+		al_rotate_transform_3d( &dst, 0, 1, 0, rot.y()-y );
+		al_rotate_transform_3d( &dst, 1, 0, 0, rot.x()+x );
+		al_rotate_transform_3d( &dst, 0, 0, 1, rot.z()+z );
+		
+		al_use_transform( &dst );
+	}
 }
 
 void Camera::SetCameraTransform( btTransform transform )
 {
 	parentTransformation = transform;
+}
+
+glm::mat4 Camera::GetModelMatrix() const
+{
+	return modelTransform;
+}
+
+glm::mat4 Camera::GetViewMatrix() const
+{
+	return viewTransform;
 }
 
 Camera::Camera()

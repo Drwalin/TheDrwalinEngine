@@ -64,7 +64,7 @@ SmartPtr<Object> Object::GetThis()
 	{
 		if( engine )
 		{
-			thisPtr = engine->GetObject( name );
+			thisPtr = engine->GetObject( std::string(name) );
 		}
 		else
 		{

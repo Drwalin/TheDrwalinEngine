@@ -20,7 +20,7 @@ void Event::Init()
 void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 {
 	
-	SmartPtr<Object> player = engine->GetObject( "Player" );
+	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
 	if( player )
 	{
 		Character * character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
@@ -37,7 +37,7 @@ void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 
 void Event::KeyPressedEvent( int keyCode )
 {
-	SmartPtr<Object> player = engine->GetObject( "Player" );
+	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
 	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;
 	Character * character = NULL;
@@ -85,7 +85,7 @@ void Event::KeyPressedEvent( int keyCode )
 
 void Event::KeyReleasedEvent( int keyCode )
 {
-	SmartPtr<Object> player = engine->GetObject( "Player" );
+	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
 	Character * character = NULL;
 	if( player )
 		character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
@@ -116,7 +116,7 @@ void Event::KeyReleasedEvent( int keyCode )
 
 void Event::KeyHoldedEvent( int keyCode )
 {
-	SmartPtr<Object> player = engine->GetObject( "Player" );
+	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
 	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;
 	Character * character = NULL;
@@ -130,7 +130,7 @@ void Event::KeyHoldedEvent( int keyCode )
 	case MOUSE_MIDDLE:
 		if( character )
 		{
-			temp = engine->GetObject( "Box" );
+			temp = engine->GetObject( std::string("Box") );
 			if( temp )
 			{
 				character->EventRotateCameraToLookAtPoint( temp->GetLocation(), true );

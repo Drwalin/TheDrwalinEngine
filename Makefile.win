@@ -6,7 +6,6 @@ LIBRARYPATH = ./src/lib
 BINARYPATH = ./bin-win
 BULLETINCLUDEPATH = C:/mingw-w64/mingw64/include/bullet
 BULLETLIBPATH = C:\mingw-w64\mingw64\lib\bullet
-STANDARINCLUDEPATH = 
 LIBPNGPATH = ./lib
 
 SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp Texture.cpp VBO.cpp CustomCollisionData.cpp CollisionShapeManager.cpp SmartPtr.cpp

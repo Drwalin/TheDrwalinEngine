@@ -3,8 +3,10 @@
 HEADERPATH = ./src/css
 SOURCEPATH = ./src/mtd
 LIBRARYPATH = ./src/lib
-BINARYPATH = ./bin
-BULLETINCLUDEPATH = /usr/local/include/bullet
+BINARYPATH = ./bin-win
+BULLETINCLUDEPATH = C:/mingw-w64/mingw64/include/bullet
+BULLETLIBPATH = C:\mingw-w64\mingw64\lib\bullet
+STANDARINCLUDEPATH = 
 LIBPNGPATH = ./lib
 
 SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp Texture.cpp VBO.cpp CustomCollisionData.cpp CollisionShapeManager.cpp SmartPtr.cpp
@@ -23,10 +25,10 @@ GAMEOBJECTS = $(addprefix $(BINARYPATH)/,$(GAMEOBJECTS_))
 OBJECTS += $(GAMEOBJECTS)
 
 
-EXECUTABLE = main
+EXECUTABLE = main.exe
 
-CFLAGS = -m64 -s -Ofast -std=c++11 -I$(HEADERPATH) -I$(BULLETINCLUDEPATH) -I$(LIBRARYPATH) -w
-LIBS = -lm -lpthread -lSM -lICE -lX11 -lXext -lXcursor -lXpm -lXi -lXinerama -lXrandr -lGL -lGLU -lpng16 -lz -lpulse-simple -lpulse -lasound -lopenal -lfreetype -lallegro_monolith-static -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath
+CFLAGS = -m64 -s -Ofast -std=c++11 -I$(HEADERPATH) -L$(BULLETLIBPATH) -I$(BULLETINCLUDEPATH) -I$(LIBRARYPATH) -w
+LIBS = -lm -lpthread -lfreetype "C:/mingw-w64/mingw64/lib/allegro/liballegro_monolith.dll.a" -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath
 CC = g++
 
 

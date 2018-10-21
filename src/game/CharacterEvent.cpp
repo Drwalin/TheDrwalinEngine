@@ -10,7 +10,6 @@
 
 void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
 {
-//	DEBUG(1);
 }
 
 void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
@@ -47,7 +46,6 @@ void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold 
 
 void Character::EventOnObjectEndOverlapp( Object * other )
 {
-//	DEBUG(1);
 }
 
 void Character::EventJump()

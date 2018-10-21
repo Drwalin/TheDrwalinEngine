@@ -7,8 +7,6 @@
 
 void Object::NextOverlappingFrame()
 {
-//	DEBUG(std::to_string(1)+" - " + name)
-	
 	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
 	{
 		if( overlappingInCurrentFrame.find( *it ) == overlappingInCurrentFrame.end() )
@@ -23,7 +21,6 @@ void Object::NextOverlappingFrame()
 
 void Object::OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold )
 {
-//	DEBUG(name + std::string(" + ") + other->name );
 	if( perisstentManifold )
 	{
 		if( other )

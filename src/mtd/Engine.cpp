@@ -18,7 +18,6 @@ inline void Engine::UpdateObjectOverlaps()
 	if( dispacher )
 	{
 		int numberOfManifolds = dispacher->getNumManifolds();
-//		DEBUG( std::string("Number of manifolds: ") + std::to_string( numberOfManifolds ) );
 		for( int i = 0; i < numberOfManifolds; ++i )
 		{
 			btPersistentManifold * contactManifold =  dispacher->getManifoldByIndexInternal(i);
@@ -34,19 +33,6 @@ inline void Engine::UpdateObjectOverlaps()
 					
 					if( b->IsDynamic() )
 						b->OverlapWithObject( a, contactManifold );
-					
-					/*
-					SmartPtr<Object> A = GetObject( a->GetName() );
-					SmartPtr<Object> B = GetObject( b->GetName() );
-					
-					if( A && B )
-					{
-						if( A->IsDynamic() )
-							A->OverlapWithObject( B, contactManifold );
-						if( B->IsDynamic() )
-							B->OverlapWithObject( A, contactManifold );
-					}
-					*/
 				}
 				else
 				{
@@ -157,8 +143,6 @@ void Engine::ParallelToDrawTick( const float deltaTime )
 
 void Engine::Tick( const float deltaTime )
 {
-//	DEBUG(1)
-	
 	UpdateObjects( deltaTime );
 	
 	float time = al_get_time();

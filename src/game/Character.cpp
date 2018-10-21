@@ -8,7 +8,6 @@
 
 void Character::NextOverlappingFrame()
 {
-//	DEBUG(1)
 	Object::NextOverlappingFrame();
 	if( isInAir )
 		lastTimeInAir = al_get_time();

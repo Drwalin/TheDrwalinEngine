@@ -163,9 +163,9 @@ void Character::ApplyImpactDamage( const float damage, const float impetus, btVe
 
 
 
-void Character::Draw()
+void Character::Draw( const glm::mat4 & cameraMatrix )
 {
-	Object::Draw();
+	Object::Draw( cameraMatrix );
 }
 
 Character::Character( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :

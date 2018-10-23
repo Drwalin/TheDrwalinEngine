@@ -30,6 +30,8 @@ class VBO
 {
 private:
 	
+	std::vector<int>arrayOfShaderLocations;
+	
 	SmartPtr<Texture> texture;
 	SmartPtr<Shader> shader;
 	
@@ -58,7 +60,7 @@ public:
 	void SetShader( SmartPtr<Shader> shader );
 	SmartPtr<Shader> GetShader();
 	
-	void Draw( Engine * engine ) const;
+	void Draw( const glm::mat4 & transformMatrix );
 	
 	void Destroy();
 	

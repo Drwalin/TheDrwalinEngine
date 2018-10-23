@@ -11,9 +11,9 @@ void Player::Tick( const float deltaTime )
 	Character::Tick( deltaTime );
 }
 
-void Player::Draw()
+void Player::Draw( const glm::mat4 & cameraMatrix )
 {
-	Character::Draw();
+	Character::Draw( cameraMatrix );
 }
 
 Player::Player( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :

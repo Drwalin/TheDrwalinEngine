@@ -5,6 +5,8 @@
 #include <Object.h>
 #include <Engine.h>
 
+#include <Math.hpp>
+
 void Object::NextOverlappingFrame()
 {
 	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
@@ -173,12 +175,11 @@ SmartPtr<btRigidBody> Object::GetBody()
 	return body;
 }
 
-void Object::Draw()
+void Object::Draw( const glm::mat4 & cameraMatrix )
 {
 	if( model )
 	{
-		engine->GetCamera()->SetWorldTransform( GetTransform(), scale );
-		model->Draw();
+		model->Draw( cameraMatrix * Math::GetMatrix( this->GetTransform(), this->scale ) );
 	}
 }
 

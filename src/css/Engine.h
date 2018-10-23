@@ -56,6 +56,8 @@ private:
 	
 public:
 	
+	static const int SHADER_TRANSFORMATION_MATRIX_LOCATION = 0;
+	
 	class RayTraceData
 	{
 	public:

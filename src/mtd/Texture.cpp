@@ -10,7 +10,7 @@ bool Texture::Load( std::string file, int mode )
 	this->file = file;
 	this->mode = mode;
 	al_set_new_bitmap_flags( ( (mode&Texture::LINEAR) ? (ALLEGRO_MIN_LINEAR|ALLEGRO_MAG_LINEAR) : 0 ) | ( (mode&Texture::MIPMAP) ? (ALLEGRO_MIPMAP) : 0 ) );
-	bitmap = al_load_bitmap( file.c_str() );
+	bitmapz = al_load_bitmap( file.c_str() );
 	if( bitmap )
 	{
 		textureID = al_get_opengl_texture( bitmap );
@@ -18,18 +18,20 @@ bool Texture::Load( std::string file, int mode )
 		{
 			glBindTexture( GL_TEXTURE_2D, textureID );
 			
-			
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 			
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (mode&Texture::LINEAR) ? GL_LINEAR : GL_NEAREST );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (mode&Texture::LINEAR) ? GL_LINEAR : GL_NEAREST );
 			
-			//glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, GetWidth(), GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image );
-			
 			if( mode & Texture::MIPMAP )
+			{
 				glGenerateMipmap( GL_TEXTURE_2D );
+			}
 			
+			float aniso = 0.0f;
+			glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso );
 			
 			glBindTexture( GL_TEXTURE_2D, 0 );
 		}

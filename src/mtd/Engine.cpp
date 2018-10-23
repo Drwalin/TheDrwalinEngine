@@ -602,6 +602,8 @@ void Engine::Draw3D()
 	if( cameraParent )
 		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
 	
+	glm::mat4 cameraMatrix = ( GetWindow()->Get3DProjectionTransform() ) * ( GetCamera()->GetViewMatrix() );
+	
 	GetCamera()->UpdateViewPlanes();
 	
 	for( auto it = object.begin(); it != object.end(); ++it )
@@ -610,7 +612,7 @@ void Engine::Draw3D()
 		{
 			if( GetCamera()->IsObjectInView( it->second ) )
 			{
-				it->second->Draw();
+				it->second->Draw( cameraMatrix );
 			}
 		}
 	}

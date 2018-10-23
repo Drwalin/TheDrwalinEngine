@@ -5,11 +5,11 @@
 #include <Model.h>
 #include <Engine.h>
 
-void Model::Draw()
+void Model::Draw( const glm::mat4 & transformMatrix )
 {
 	for( int i = 0; i < vbo.size(); ++i )
 	{
-		vbo[i].Draw( engine );
+		vbo[i].Draw( transformMatrix );
 	}
 }
 

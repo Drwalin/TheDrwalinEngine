@@ -109,7 +109,7 @@ SmartPtr<Shader> VBO::GetShader()
 	return shader;
 }
 
-void VBO::Draw( Engine * engine ) const
+void VBO::Draw( const glm::mat4 & transformMatrix )
 {
 	if( generated )
 	{
@@ -118,49 +118,33 @@ void VBO::Draw( Engine * engine ) const
 		
 		if( shader )
 		{
-			shader->Use();
+			if( arrayOfShaderLocations.size() < 2 )
+			{
+				arrayOfShaderLocations.resize( 2 );
+				arrayOfShaderLocations[0] = -1;
+				arrayOfShaderLocations[1] = -1;
+			}
 			
-			glm::mat4 model(1.0f), view(1.0f), projection(1.0f);
+			shader->Use();
 			
 			if( texture )
 			{
 				texture->Use( 0 );
-				shader->SetInt( shader->GetUniformLocation( "texture0" ), 0 );
+				if( arrayOfShaderLocations[0] < 0 )
+					arrayOfShaderLocations[0] = shader->GetUniformLocation( "texture0" );
+				shader->SetInt( arrayOfShaderLocations[0], 0 );
 			}
 			else
 			{
 				DEBUG( "No texture" );
 			}
 			
-			//GLint modelLoc = shader->GetUniformLocation( "model" );
-			//GLint viewLoc = shader->GetUniformLocation( "view" );
-			//GLint projLoc = shader->GetUniformLocation( "projection" );
-			
-			if( engine )
+			if( arrayOfShaderLocations[1] < 0 )
 			{
-				//shader->SetMat4( projLoc, engine->GetWindow()->Get3DProjectionTransform() );
-				projection = engine->GetWindow()->Get3DProjectionTransform();
-				
-				SmartPtr<Camera> camera = engine->GetCamera();
-				if( camera )
-				{
-					//shader->SetMat4( viewLoc, camera->GetViewMatrix() );
-					view = camera->GetViewMatrix();
-					//shader->SetMat4( modelLoc, camera->GetModelMatrix() );
-					model = camera->GetModelMatrix();
-				}
-				else
-				{
-					DEBUG( "No camera" );
-				}
-			}
-			else
-			{
-				DEBUG( "No engine" );
+				arrayOfShaderLocations[1] = shader->GetUniformLocation( "transformMatrix" );
 			}
 			
-			GLint matrixLoc = shader->GetUniformLocation( "transformMatrix" );
-			shader->SetMat4( matrixLoc, projection * view * model );		// projection * view * model
+			shader->SetMat4( arrayOfShaderLocations[1], transformMatrix );		// projection * view * model
 		}
 		else
 		{
@@ -168,11 +152,16 @@ void VBO::Draw( Engine * engine ) const
 		}
 		
 		glDrawArrays( type, 0, vertices.size() );
+		
+		glBindVertexArray( 0 );
+		glBindBuffer( GL_ARRAY_BUFFER, 0 );
 	}
 }
 
 void VBO::Destroy()
 {
+	arrayOfShaderLocations.clear();
+	arrayOfShaderLocations.shrink_to_fit();
 	if( generated )
 	{
 		glDeleteVertexArrays( 1, &vaoID );

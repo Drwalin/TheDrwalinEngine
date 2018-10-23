@@ -222,7 +222,22 @@ void Event::KeyHoldedEvent( int keyCode )
 
 void Event::StringToEnterEvent( std::string str )
 {
-	return;
+	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
+	SmartPtr<Object> temp;
+	btVector3 begin, end, point, normal;
+	Character * character = NULL;
+	if( player )
+		character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
+	
+	if( str == "Rel" )
+	{
+		fprintf( stderr, "\n StringToEnterEvent( %s ); ", str.c_str() );
+		engine->GetCamera()->SetRotation( btVector3( 0, 0, 0 ) );
+		if( character )
+		{
+			character->SetCameraRotation( btVector3( 0, 0, 0 ) );
+		}
+	}
 }
 
 Event::Event()

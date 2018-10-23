@@ -41,7 +41,7 @@ private:
 	
 public:
 	
-	void Draw();
+	void Draw( const glm::mat4 & transformMatrix );
 	
 	static bool SaveMeshFile( std::string meshFileName, bool containPhysicsBool, float friction, float restitution, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, std::map < std::string, std::string > & materialTexture );
 	static void RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 min, btVector3 max, bool scaleToSize = false, btVector3 size = btVector3(1,1,1), Engine * engine = NULL, const std::map < std::string, std::string > & materialTexture = std::map<std::string,std::string>() );

@@ -7,6 +7,9 @@
 #include <LinearMath/btQuaternion.h>
 #include <btBulletDynamicsCommon.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <string>
 #include <set>
 
@@ -82,7 +85,7 @@ public:
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );
 	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal );
 	
-	virtual void Draw();
+	virtual void Draw( const glm::mat4 & cameraMatrix );
 	
 	void SetModel( SmartPtr<Model> model );
 	

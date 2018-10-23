@@ -5,6 +5,8 @@
 #include <Camera.h>
 #include <Object.h>
 
+#include <Math.hpp>
+
 bool Camera::IsObjectInView( SmartPtr<Object> object )
 {
 	if( object )
@@ -27,8 +29,8 @@ void Camera::UpdateViewPlanes()		// need to use basicWindow for y/x bitmap size 
 	
 	normal[4] = -GetForwardVector().normalized();
 	
-	normal[0] = GetRightVector().normalized() + normal[4];
-	normal[1] = -GetRightVector().normalized() + normal[4];
+	normal[0] = ( GetRightVector().normalized() * 0.75f ) + normal[4];
+	normal[1] = -( GetRightVector().normalized() * 0.75f ) + normal[4];
 	normal[2] = GetUpVector().normalized() + normal[4];
 	normal[3] = -GetUpVector().normalized() + normal[4];
 	
@@ -216,6 +218,7 @@ void Camera::Rotate( btVector3 src )
 void Camera::SetWorldTransform( btTransform transform, btVector3 scale )
 {
 	{
+		/*
 		btVector3 origin = transform.getOrigin();
 		btQuaternion rotation = transform.getRotation();
 		btVector3 axis = rotation.getAxis().normalized();
@@ -223,8 +226,10 @@ void Camera::SetWorldTransform( btTransform transform, btVector3 scale )
 		
 		modelTransform = glm::mat4(1.0f);
 		modelTransform = glm::scale( modelTransform, glm::vec3( scale.x(), scale.y(), scale.z() ) );
+		modelTransform = glm::translate( modelTransform, glm::vec3( origin.x(), origin.y(), origin.z() ) );
 		modelTransform = glm::rotate( modelTransform, angle, glm::vec3( axis.x(), axis.y(), axis.z() ) );
-		modelTransform = glm::translate( -modelTransform, glm::vec3( origin.x(), origin.y(), origin.z() ) );
+		*/
+		modelTransform = Math::GetMatrix( transform, scale );
 	}
 	
 	{
@@ -233,13 +238,10 @@ void Camera::SetWorldTransform( btTransform transform, btVector3 scale )
 		parentTransformation.getRotation().getEulerZYX( z, y, x );
 		
 		viewTransform = glm::mat4(1.0f);
-		viewTransform = glm::rotate( viewTransform, rot.x()+x, glm::vec3( 0, 0, 1 ) );
-		viewTransform = glm::rotate( viewTransform, rot.y()-y, glm::vec3( 1, 0, 0 ) );
-		viewTransform = glm::rotate( viewTransform, rot.z()+z, glm::vec3( 0, 1, 0 ) );
-		viewTransform = glm::translate( viewTransform, glm::vec3( pos.x()*locationScale.x(), pos.y()*locationScale.y(), pos.z()*locationScale.z() ) );		// ??
-		viewTransform = glm::translate( viewTransform, glm::vec3( origin.x(), origin.y(), origin.z() ) );
-		
-		
+		viewTransform = glm::rotate( viewTransform, rot.z(), glm::vec3( 0, 0, 1 ) );
+		viewTransform = glm::rotate( viewTransform, rot.x()+x, glm::vec3( 1, 0, 0 ) );
+		viewTransform = glm::rotate( viewTransform, rot.y()+y, glm::vec3( 0, 1, 0 ) );
+		viewTransform = glm::translate( viewTransform, -glm::vec3( pos.x()*locationScale.x(), pos.y()*locationScale.y(), pos.z()*locationScale.z() ) - glm::vec3( origin.x(), origin.y(), origin.z() ) );		// ??
 	}
 	
 	if( false )
@@ -286,10 +288,21 @@ glm::mat4 Camera::GetModelMatrix() const
 
 glm::mat4 Camera::GetViewMatrix() const
 {
-	return viewTransform;
+	btVector3 origin = parentTransformation.getOrigin();
+	btScalar x, y, z;
+	parentTransformation.getRotation().getEulerZYX( z, y, x );
+	
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::rotate( view, rot.z(), glm::vec3( 0, 0, 1 ) );
+	view = glm::rotate( view, rot.x()+x, glm::vec3( 1, 0, 0 ) );
+	view = glm::rotate( view, rot.y()+y, glm::vec3( 0, 1, 0 ) );
+	view = glm::translate( view, -glm::vec3( pos.x()*locationScale.x(), pos.y()*locationScale.y(), pos.z()*locationScale.z() ) - glm::vec3( origin.x(), origin.y(), origin.z() ) );		// ??
+	
+	return view;
 }
 
 Camera::Camera()
+	: viewTransform(1.0f), modelTransform(1.0f)
 {
 	pos = btVector3(0,0,0);
 	rot = btVector3(0,0,0);

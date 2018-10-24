@@ -160,11 +160,12 @@ void BasicWindow::LoadIconFromFile( const char * iconFile )
 
 bool BasicWindow::CreateDisplay( const char * windowName, int width, int height, bool fullscreen )
 {
-//	al_set_new_display_flags( ALLEGRO_RESIZABLE );
 	al_set_new_display_flags( ALLEGRO_OPENGL );
+	al_set_new_display_option( ALLEGRO_COMPATIBLE_DISPLAY, 0, ALLEGRO_SUGGEST );
+	al_set_new_display_option( ALLEGRO_CAN_DRAW_INTO_BITMAP, 0, ALLEGRO_REQUIRE );
 	al_set_new_display_option( ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST );
-	al_set_new_display_option( ALLEGRO_SUPPORT_NPOT_BITMAP, 0, ALLEGRO_REQUIRE) ;
-	al_set_new_window_position( 350, 200 );
+	al_set_new_display_option( ALLEGRO_SUPPORT_NPOT_BITMAP, 0, ALLEGRO_REQUIRE );
+	al_set_new_window_position( 150, 100 );
 //	al_set_new_display_option( ALLEGRO_VSYNC, 1, ALLEGRO_SUGGEST );
 	
 	if( fullscreen )

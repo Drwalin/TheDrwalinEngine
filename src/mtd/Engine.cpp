@@ -347,7 +347,7 @@ SmartPtr<Texture> Engine::GetTexture( std::string name )
 	{
 		SmartPtr<Texture> tex;
 		tex = new Texture;
-		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP ) == false )
+		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP, this ) == false )
 		{
 			DEBUG( name + ": not done" );
 			tex.Delete();
@@ -606,6 +606,9 @@ void Engine::Draw3D()
 	
 	GetCamera()->UpdateViewPlanes();
 	
+	//glEnable( GL_ALPHA_TEST );
+	//glAlphaFunc( GL_LESS, 0.5 );
+	
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
@@ -657,10 +660,15 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	
 	glewExperimental = GL_TRUE;
-	if( glewInit() != GLEW_OK )
+	int err;
+	if( ( err = glewInit() ) != GLEW_OK )
 	{
-	    std::cerr << "\n Failed to initialize GLEW! ";
+		fprintf( stderr, "\n Faild to initialize GLEW: %s", glewGetErrorString( err ) );
 	    return;
+	}
+	else
+	{
+		fprintf( stderr, "\n Current GL version: %s", glGetString( GL_VERSION ) );
 	}
 	
 	LoadCoreShader();

@@ -26,6 +26,9 @@ private:
 	int mode;
 	unsigned int textureID;
 	
+	void GenerateMipmaps( class Engine * engine );
+	unsigned int OpenGLtextureInit( ALLEGRO_BITMAP * bmap );
+	
 public:
 	std::string file;
 	
@@ -33,7 +36,7 @@ public:
 	const static int LINEAR = 1;
 	const static int MIPMAP = 2;
 	
-	bool Load( std::string file, int mode );
+	bool Load( std::string file, int mode, class Engine * engine );
 	int GetWidth();
 	int GetHeight();
 	
@@ -42,7 +45,6 @@ public:
 	
 	void Destroy();
 	
-	Texture( SmartPtr<Texture> other );
 	Texture();
 	~Texture();
 };

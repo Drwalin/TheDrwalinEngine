@@ -131,7 +131,7 @@ void VBO::Draw( const glm::mat4 & transformMatrix )
 			{
 				texture->Use( 0 );
 				if( arrayOfShaderLocations[0] < 0 )
-					arrayOfShaderLocations[0] = shader->GetUniformLocation( "texture0" );
+					arrayOfShaderLocations[0] = shader->GetUniformLocation( ( std::string("texture0") ).c_str() );
 				shader->SetInt( arrayOfShaderLocations[0], 0 );
 			}
 			else
@@ -155,6 +155,7 @@ void VBO::Draw( const glm::mat4 & transformMatrix )
 		
 		glBindVertexArray( 0 );
 		glBindBuffer( GL_ARRAY_BUFFER, 0 );
+		glUseProgram( 0 );
 	}
 }
 

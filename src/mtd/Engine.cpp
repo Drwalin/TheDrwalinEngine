@@ -347,7 +347,7 @@ SmartPtr<Texture> Engine::GetTexture( std::string name )
 	{
 		SmartPtr<Texture> tex;
 		tex = new Texture;
-		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP, this ) == false )
+		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP ) == false )
 		{
 			DEBUG( name + ": not done" );
 			tex.Delete();
@@ -465,10 +465,11 @@ void Engine::Draw2D()
 	*/
 	
 	window->output->SetWorkSpace( 5, 10, 80, 80 );
-	window->output->Goto( 5, 10 );
+	window->output->Goto( 5, 12 );
 	window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
 	window->output->Print( "DeltaTime: " );
-	window->output->Print( window->GetDeltaTime() );
+	window->output->Print( window->GetDeltaTime() * 1000.0f );
+	window->output->Print( "ms" );
 	
 	
 	//window->output->SetWorkSpace( 5, 10, 80, 80 );
@@ -496,7 +497,7 @@ void Engine::Draw2D()
 	window->output->Print( "\nPlayer velocity 2D: " );
 	window->output->Print( btVector3( GetObject("Player")->GetBody()->getLinearVelocity().x(), 0, GetObject("Player")->GetBody()->getLinearVelocity().z() ).length() );
 	
-	if( false )
+	//if( false )
 	{
 		window->output->Print( "\n\nPointing at object: " );
 		SmartPtr<Object> player = this->GetObject("Player");
@@ -517,7 +518,7 @@ void Engine::Draw2D()
 		}
 	}
 	
-	if( false )
+	//if( false )
 	{
 		window->output->Print( "\ncollisionShape: " );
 		window->output->Print( int(collisionShapeManager->collisionShape.size()) );
@@ -538,59 +539,86 @@ void Engine::Draw2D()
 		window->output->Print( int(collisionShapeManager->customCollisionShapeName.size()) );
 	}
 	
-	if( false )
+	//if( false )
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
 		
+		float wholeDrawTime = window->GetWholeDrawTime();
 		float skippedTime = window->GetSkippedTime();
+		float eventTime = window->GetEventGenerationTime();
 		float sumTime = /*guiDrawTime + sceneDrawTime + physicsSimulationTime +*/ window->GetDeltaTime();
-		float otherTime = sumTime - ( guiDrawTime + sceneDrawTime + physicsSimulationTime + skippedTime );
+		float otherTime = sumTime - ( wholeDrawTime /*guiDrawTime + sceneDrawTime*/ + physicsSimulationTime + skippedTime + eventTime );
 		float step = sumTime / 40;
 		float t;
 		
-		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
+		
+		
+		
+		
+		
+		
 		window->output->Goto( 5, 2 );
+		
+		window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
+		window->output->Print( "flipDisplayTime...: " );
+		window->output->Print( ( wholeDrawTime - guiDrawTime - sceneDrawTime ) * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 2 );
+		for( t = 0.0f + guiDrawTime + sceneDrawTime; t < wholeDrawTime; t += step )
+			window->output->Print( "#" );
+		
+		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
+		window->output->Print( "\nguiDrawTime: " );
+		window->output->Print( guiDrawTime * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 3 );
 		for( t = 0.0f; t < guiDrawTime; t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 0, 255, 0 ) );
+		window->output->Print( "\nsceneDrawTime: " );
+		window->output->Print( sceneDrawTime * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 4 );
 		for( t = 0.0f; t < sceneDrawTime; t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
+		window->output->Print( "\nphysicsSimulationTime: " );
+		window->output->Print( physicsSimulationTime * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 5 );
 		for( t = 0.0f; t < physicsSimulationTime; t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 255, 255, 255 ) );
+		window->output->Print( "\nskippedTime: " );
+		window->output->Print( skippedTime * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 6 );
 		for( t = 0.0f; t < skippedTime; t += step )
 			window->output->Print( "#" );
 		
-		window->output->SetColor( al_map_rgb( 128, 128, 128 ) );
-		for( t = 0.0f; t < otherTime; t += step )
+		window->output->SetColor( al_map_rgb( 255, 0, 255 ) );
+		window->output->Print( "\neventGenerationTime: " );
+		window->output->Print( eventTime * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 7 );
+		for( t = 0.0f; t < eventTime; t += step )
 			window->output->Print( "#" );
 		
-		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
-		window->output->Print( "\n guiDrawTime: " );
-		window->output->Print( guiDrawTime );
-		
-		window->output->SetColor( al_map_rgb( 0, 255, 0 ) );
-		window->output->Print( "\n sceneDrawTime: " );
-		window->output->Print( sceneDrawTime );
-		
-		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
-		window->output->Print( "\n physicsSimulationTime: " );
-		window->output->Print( physicsSimulationTime );
-		
-		window->output->SetColor( al_map_rgb( 255, 255, 255 ) );
-		window->output->Print( "\n skippedTime: " );
-		window->output->Print( skippedTime );
-		
 		window->output->SetColor( al_map_rgb( 128, 128, 128 ) );
-		window->output->Print( "\n otherTime: " );
-		window->output->Print( otherTime );
+		window->output->Print( "\notherTime: " );
+		window->output->Print( otherTime * 1000.0f );
+		window->output->Print( "ms" );
+		window->output->Goto( 42, 8 );
+		for( t = 0.0f; t < otherTime; t += step )
+			window->output->Print( "#" );
 	}
 	
 	DrawCrosshair();
+	
+	window->output->Flush();
 	
 	guiDrawTime = al_get_time() - time;
 }
@@ -646,19 +674,27 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	Destroy();
 	event = new Event;
 	world = new World;
+	DEBUG(312)
 	window = new Window;
+	DEBUG(2)
 	world->Init();
+	DEBUG(3)
 	window->Init( this, windowName, iconFile, width, height, fullscreen );
+	DEBUG(4)
 	window->SetEventResponser( event );
+	DEBUG(5)
 	event->Init();
+	DEBUG(6)
 	event->SetEngine( this );
 	
+	DEBUG(1)
 	window->HideMouse();
 	window->LockMouse();
 	
 	collisionShapeManager = new CollisionShapeManager;
 	
 	
+	DEBUG(2)
 	glewExperimental = GL_TRUE;
 	int err;
 	if( ( err = glewInit() ) != GLEW_OK )
@@ -670,7 +706,11 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	{
 		fprintf( stderr, "\n Current GL version: %s", glGetString( GL_VERSION ) );
 	}
+	DEBUG(3)
 	
+	window->output->Init();
+	
+	DEBUG(4)
 	LoadCoreShader();
 	
 	//window->UseParallelThreadToDraw();

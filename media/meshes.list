@@ -1,0 +1,22 @@
+./media/Models/Sphere.obj
+./media/Models/Sphere.phmesh
+true 1 1 1
+./media/Models/m4a1.obj
+./media/Models/m4a1.phmesh
+true 1.4 0.6 0.15
+./media/Models/Brick.obj
+./media/Models/Brick.phmesh
+true 0.7 0.4 0.3
+./media/Models/Crate01.obj
+./media/Models/Crate01.phmesh
+true 1 1 1
+./media/Models/ConcreetBrick.obj
+./media/Models/ConcreetBrick.phmesh
+true 0.7 0.4 0.3
+./media/AmadeusMap/as_oilrig.obj
+./media/AmadeusMap/as_oilrig.phmesh
+false
+./media/Models/Plane.obj
+./media/Models/Plane.phmesh
+false 400 1 400
+

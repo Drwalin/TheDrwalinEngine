@@ -36,7 +36,7 @@ public:
 	const static int LINEAR = 1;
 	const static int MIPMAP = 2;
 	
-	bool Load( std::string file, int mode, class Engine * engine );
+	bool Load( std::string file, int mode );
 	int GetWidth();
 	int GetHeight();
 	

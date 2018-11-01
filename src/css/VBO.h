@@ -37,11 +37,12 @@ private:
 	
 	int vertexSize;
 	bool generated;
-	unsigned int vaoID, vboID;
+	unsigned vaoID, vboID;
 	std::vector < unsigned char > vertices;
 	GLenum type;
 	
 	friend class Model;
+	friend class TextPrinter;
 	
 public:
 	

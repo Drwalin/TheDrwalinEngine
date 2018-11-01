@@ -50,10 +50,15 @@ void Window::Draw2D()
 
 void Window::Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, bool fullscreen )
 {
+	DEBUG(1)
 	Destroy();
+	DEBUG(2)
 	BasicWindow::Init( windowName, iconFile, width, height, fullscreen );
+	DEBUG(3)
 	output->SetBasicWindow( this );
+	DEBUG(4)
 	output->ClearWorkspaceBorders();
+	DEBUG(5)
 	this->engine = engine;
 }
 
@@ -65,9 +70,14 @@ void Window::Destroy()
 
 Window::Window()
 {
+	DEBUG(0)
 	engine = NULL;
+	DEBUG(1)
 	camera = new Camera;
+	DEBUG(2)
 	output = new TextPrinter;
+	DEBUG(3)
+	output->SetBasicWindow( this );
 }
 
 Window::~Window()

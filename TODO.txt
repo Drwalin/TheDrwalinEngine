@@ -1,0 +1,100 @@
+
+/*
+Legend:
+	-		not done
+	?		does it need to be?
+	+		done
+	...		working on
+*/
+
+TODO:
+	Threads:
+	{
++		Using parallel thread for physics calculation when drawing
+-		Loadin map in parallel thread to everything
+	}
+	
+	Graphic:
+	{
+?		Ogre3d
+-		Model LOD system:
+		{
+-			18 textures drawn from each sides of model and only one can be drawn at a time (closest foto to looking direction as sprite)
+-			Lower detailed than full model but more detaild than one sprite
+		}
++		Make faster drawing GUI (drawing strings on screen)
+?		Animations
+?		Light
+?		Particle system
+	}
+	
+	Terrain:
+	{
+-		Height map model/object
+?		Fractal map model/object
+	}
+	
+	Map system:
+	{
+...		Little (like in Half-Life)
+		{
+-			Cheking for errors
+		}
+-		Openworld
+	}
+	
+?	Path finding for AI
+	
+	Get rid of errors:
+	{
+...		'segmentation fault' when exiting after adding|deleting objects in world
+...		'segmentation fault' when destroying object ( very rare )
+	}
+	
+-	Add sound engine:
+	{
+-		Play sound on collision between objects
+-		Play sound on sliding
+	}
+	
+?	Add objects physics destruction into smaller pieces
+	
+	Object:
+	{
++		Was collision in last frame
++		Events on object overlap (begin, tick, end)
+	}
+	
+	Character:
+	{
+		Need update point:
+		{
++			isInAir
+-			Does character can stand up
+		}
+	}
+	
+	Event class should call Object::Event (or something differnt to cause object movement):
+	{
+		Character::Event:
+		{
++			Jump
++			Crouch
++			Stand Up
+				// Walk and Run are excluding their selfs
++			Start Run
++			Stop Run
++			Start Walk
++			Stop Walk
++			Move in direction
++			Rotate camera by
++			Rote to looking at point
+		}
+	}
+	
++	Make Object class virtual:
+	{
++		Add Tick method to Object class available to derivate
+	}
+	
+	

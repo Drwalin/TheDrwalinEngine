@@ -26,6 +26,16 @@ void ParallelThreadFunctionToDraw( BasicWindow * window )
 }
 
 
+float BasicWindow::GetEventGenerationTime() const
+{
+	return eventsTime;
+}
+
+float BasicWindow::GetWholeDrawTime() const
+{
+	return wholeDrawTime;
+}
+
 bool BasicWindow::IsParallelToDrawTickInUse()
 {
 	return useParallelThreadToDraw.load();
@@ -161,12 +171,13 @@ void BasicWindow::LoadIconFromFile( const char * iconFile )
 bool BasicWindow::CreateDisplay( const char * windowName, int width, int height, bool fullscreen )
 {
 	al_set_new_display_flags( ALLEGRO_OPENGL );
-	al_set_new_display_option( ALLEGRO_COMPATIBLE_DISPLAY, 0, ALLEGRO_SUGGEST );
-	al_set_new_display_option( ALLEGRO_CAN_DRAW_INTO_BITMAP, 0, ALLEGRO_REQUIRE );
+	al_set_new_display_option( ALLEGRO_SINGLE_BUFFER, 1, ALLEGRO_REQUIRE );
+	//al_set_new_display_option( ALLEGRO_COMPATIBLE_DISPLAY, 0, ALLEGRO_SUGGEST );
+	//al_set_new_display_option( ALLEGRO_CAN_DRAW_INTO_BITMAP, 0, ALLEGRO_REQUIRE );
 	al_set_new_display_option( ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST );
 	al_set_new_display_option( ALLEGRO_SUPPORT_NPOT_BITMAP, 0, ALLEGRO_REQUIRE );
 	al_set_new_window_position( 150, 100 );
-//	al_set_new_display_option( ALLEGRO_VSYNC, 1, ALLEGRO_SUGGEST );
+	//al_set_new_display_option( ALLEGRO_VSYNC, 1, ALLEGRO_SUGGEST );
 	
 	if( fullscreen )
 		al_set_new_display_flags( ALLEGRO_FULLSCREEN_WINDOW );
@@ -201,7 +212,7 @@ void BasicWindow::InitTransforms()
 	
 	al_copy_transform( &projection2DTransform, al_get_current_projection_transform() );
 	
-	CreatePerspectiveTransform( 0.1, 100000.0 );
+	CreatePerspectiveTransform( 0.1, 10000.0 );
 }
 
 bool BasicWindow::InitAllegro()
@@ -317,10 +328,15 @@ void BasicWindow::QueueQuit()
 
 void BasicWindow::AlDraw()
 {
-	if( IsParallelToDrawTickInUse() )
-		parallelThreadToDrawContinue.store( true );
+	float time__ = float(clock())/1000.0f;//al_get_time();
 	
-	Use2DSpace();
+	if( IsParallelToDrawTickInUse() )
+	{
+		DEBUG(0)
+		parallelThreadToDrawContinue.store( true );
+	}
+	
+//	Use2DSpace();
 	al_clear_to_color( al_map_rgb( 0, 0, 0 ) );
 	
 	Use3DSpace();
@@ -329,20 +345,29 @@ void BasicWindow::AlDraw()
 	
 	Draw3D();
 	
-	Use2DSpace();
+//	Use2DSpace();
 	Draw2D();
 	
-	al_flip_display();
+	//glFinish();
+	//glFlush();
+	//al_flip_display();
 	
 	if( IsParallelToDrawTickInUse() )
+	{
+		DEBUG(1)
 		while( parallelThreadToDrawContinue.load() )
 			al_rest( 0.001 );
+	}
+	
+	wholeDrawTime = /*al_get_time()*/float(clock())/1000.0f - time__;
 }
 
 
 extern "C" ALLEGRO_MOUSE_STATE mouseLastFrame;
 void BasicWindow::AlTick()
 {
+	AlDraw();
+	
 	UpdateKeyboard();
 	
 	if( lockMouse )
@@ -356,11 +381,13 @@ void BasicWindow::AlTick()
 	
 	Tick( deltaTime );
 	
-	AlDraw();
+	glFlush();
 }
 
 void BasicWindow::GenerateEvents()
 {
+	float time = al_get_time();
+	
 	for( int keyCode = 1; keyCode < MOUSE_AFTER_LAST_BUTTON; ++keyCode )
 	{
 		if( keyCode == ALLEGRO_KEY_MAX )
@@ -398,6 +425,8 @@ void BasicWindow::GenerateEvents()
 			eventResponser->MouseMoveEvent( GetMouseX(), GetMouseY(), GetMouseWheelPos(), GetMousedX(), GetMousedY(), GetMouseWheelDelta() );
 		}
 	}
+	
+	eventsTime = al_get_time() - time;
 }
 
 void BasicWindow::SetEventResponser( EventResponser * eventResponser )
@@ -414,6 +443,9 @@ EventResponser * BasicWindow::GetEventResponser()
 BasicWindow::BasicWindow() :
 	useParallelThreadToDraw(false)
 {
+	eventsTime = 0.01f;
+	wholeDrawTime = 0.01f;
+	
 	quitWhenPossible = false;
 	
 	ALLEGRO_TRANSFORM projection2DTransform;

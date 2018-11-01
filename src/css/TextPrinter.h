@@ -4,6 +4,10 @@
 
 #include <allegro5/allegro.h>
 
+#include <Texture.h>
+#include <VBO.h>
+#include <Shader.h>
+
 #include <string>
 
 #include <cstdio>
@@ -12,16 +16,27 @@ class TextPrinter
 {
 private:
 	
+	float windowX, windowY;
+	
 	class BasicWindow * basicWindow;
 	
 	ALLEGRO_COLOR currentTextColor;
 	int currentCursorX, currentCursorY;
 	int leftWorkspaceBorder, rightWorkspaceBorder, upWorkspaceBorder, downWorkspaceBorder;
 	
+	VBO * vbo;
+	Texture * font;
+	Shader * shader;
+	
 	void CorrectCursorPosition();
 	void CorrectWorkspaceBorder();
 	
+	void AddCharacter( const float x, const float y, const unsigned char sign );
+	
 public:
+	
+	void Flush();
+	void Init();
 	
 	void SetBasicWindow( BasicWindow * basicWindow );
 	

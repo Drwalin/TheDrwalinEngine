@@ -90,7 +90,8 @@ int Shader::Load( const char * vertexPath, const char * geometryPath, const char
 		glGetShaderiv( geometry, GL_COMPILE_STATUS, &success );
 		if ( !success )
 		{
-			glGetShaderInfoLog( geometry, 512, NULL, infoLog );
+			int a;
+			glGetShaderInfoLog( geometry, 512, &a, infoLog );
 			fprintf( stderr, "\n ERROR::SHADER::GEOMETRY::COMPILATION_FAILED\n %c", infoLog );
 			return 2;
 		}
@@ -104,7 +105,8 @@ int Shader::Load( const char * vertexPath, const char * geometryPath, const char
 	glGetShaderiv( vertex, GL_COMPILE_STATUS, &success );
 	if ( !success )
 	{
-		glGetShaderInfoLog( vertex, 512, NULL, infoLog );
+		int a;
+		glGetShaderInfoLog( vertex, 512, &a, infoLog );
 		fprintf( stderr, "\n ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %c", infoLog );
 		return 3;
 	}
@@ -117,7 +119,8 @@ int Shader::Load( const char * vertexPath, const char * geometryPath, const char
 	glGetShaderiv( fragment, GL_COMPILE_STATUS, &success );
 	if ( !success )
 	{
-		glGetShaderInfoLog( fragment, 512, NULL, infoLog );
+		int a;
+		glGetShaderInfoLog( fragment, 512, &a, infoLog );
 		fprintf( stderr, "\n ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %c", infoLog );
 		return 4;
 	}

@@ -52,6 +52,8 @@ private:
 	float zNear, zFar;
 	float deltaTime;
 	float skippedTime;
+	float eventsTime;
+	float wholeDrawTime;
 	
 	bool lockMouse;
 	
@@ -71,6 +73,9 @@ protected:
 	StringToEnter * stringToEnter;
 	
 public:
+	
+	float GetEventGenerationTime() const;
+	float GetWholeDrawTime() const;
 	
 	glm::mat4 Get3DProjectionTransform() const;
 	

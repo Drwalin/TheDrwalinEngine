@@ -3,7 +3,6 @@
 #define TEXTURE_CPP
 
 #include <Texture.h>
-#include <Engine.h>
 
 unsigned int Texture::OpenGLtextureInit( ALLEGRO_BITMAP * bmap )
 {
@@ -38,7 +37,7 @@ unsigned int Texture::OpenGLtextureInit( ALLEGRO_BITMAP * bmap )
 	return 0;
 }
 
-bool Texture::Load( std::string file, int mode, class Engine * engine )
+bool Texture::Load( std::string file, int mode )
 {
 	Destroy();
 	this->file = file;

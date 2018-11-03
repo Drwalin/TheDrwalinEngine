@@ -27,14 +27,12 @@ public:
 	SmartPtr<Camera> camera;
 	TextPrinter * output;
 	
-	void Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, bool fullscreen = false );
+	void Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, EventResponser * eventResponser, bool fullscreen = false );
 	
 	virtual void ParallelToDrawTick( const float deltaTime ) override;
 	
 	virtual void Tick( const float deltaTime ) override;
-	virtual void Draw3D() override;
 	float GetSmoothFps();
-	virtual void Draw2D() override;
 	
 	void Destroy();
 	

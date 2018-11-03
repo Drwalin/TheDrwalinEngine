@@ -2,16 +2,10 @@
 #ifndef STRING_TO_ENTER_H
 #define STRING_TO_ENTER_H
 
+#include <irrlicht\irrlicht.h>
+
 #include <string>
 #include <map>
-
-#include <Keyboard.h>
-
-enum UpdateStringToEnterActions
-{
-	ACTION_STRING_TO_ENTER_HOLDED,
-	ACTION_STRING_TO_ENTER_PRESSED
-};
 
 class StringToEnter
 {
@@ -23,13 +17,18 @@ private:
 	int currentPosition;
 	std::map < int, float > cooldownToUseKey;
 	
+	unsigned charactersLimit;
+	
+	void InsertSign( char sign );
+	
 public:
+	
+	void SetCharactersLimit( unsigned value );
 	
 	void SetBasicWindow( class BasicWindow * basicWindow );
 	
-	void InsertSign( char sign );
-	void InsertKey( int keyCode, bool capsLock, bool isShift );
-	void Update( int keyCode, int action );
+	void PressKey( const irr::SEvent::SKeyInput & key );
+	
 	void Clear();
 	std::string GetCurrent();
 	

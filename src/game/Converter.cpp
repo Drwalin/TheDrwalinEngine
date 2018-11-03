@@ -6,6 +6,7 @@
 
 bool Convert( std::string objFile, std::string meshFile, bool scale, btVector3 size )
 {
+	/*
 	if( !std::ifstream(meshFile).good() )
 	{
 		if( Model::ConvertObjToMesh( objFile, meshFile, true, 0.5, 0.0, scale, size ) == false )
@@ -18,6 +19,7 @@ bool Convert( std::string objFile, std::string meshFile, bool scale, btVector3 s
 			DEBUG( std::string("Mesh converted: ") + objFile + " -> " + meshFile );
 		}
 	}
+	*/
 	return true;
 }
 

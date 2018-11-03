@@ -2,7 +2,7 @@
 #ifndef TIME_COUNTER_H
 #define TIME_COUNTER_H
 
-#include <allegro5/allegro.h>
+#include <ctime>
 
 #include <vector>
 

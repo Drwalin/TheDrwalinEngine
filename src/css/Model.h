@@ -2,10 +2,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_font.h>
-#include <allegro5/allegro_primitives.h>
-#include <allegro5/allegro_image.h>
+#include <irrlicht\irrlicht.h>
 
 #include <LinearMath/btVector3.h>
 #include <btBulletDynamicsCommon.h>
@@ -23,7 +20,6 @@
 #include <AR.hpp>
 #include <SmartPtr.h>
 
-#include <VBO.h>
 #include <CustomCollisionData.h>
 
 class Engine;
@@ -32,7 +28,15 @@ class Model
 {
 private:
 	
-	std::vector < VBO > vbo;
+	struct Face
+	{
+		unsigned a, b, c;
+		btVector3 normal;
+	};
+	
+	irr::scene::IAnimatedMesh * mesh;
+	std::map < int, irr::video::SMaterial > materials;
+	
 	Engine * engine;
 	
 	btVector3 minAABB, maxAABB;
@@ -41,17 +45,19 @@ private:
 	
 public:
 	
-	void Draw( const glm::mat4 & transformMatrix );
+	btVector3 GetScale() const;
 	
-	static bool SaveMeshFile( std::string meshFileName, bool containPhysicsBool, float friction, float restitution, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, std::map < std::string, std::string > & materialTexture );
-	static void RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 min, btVector3 max, bool scaleToSize = false, btVector3 size = btVector3(1,1,1), Engine * engine = NULL, const std::map < std::string, std::string > & materialTexture = std::map<std::string,std::string>() );
-	static bool LoadMtl( std::string mtlFileName, std::map < std::string, std::string > & materialTexture );
-	static bool LoadObj( std::string objFileName, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 & min, btVector3 & max );
-	static bool ConvertObjToMesh( std::string objFileName, std::string meshFile, bool containPhysicsBool, float friction = 0.5f, float restitution = 0.0f, bool scaleToSize = false, btVector3 size = btVector3(1,1,1) );
+	void SetMaterialsToNode( irr::scene::ISceneNode * node );
+	
+	btVector3 GetInertia() const;
+	
+	irr::scene::IAnimatedMesh * GetMesh();
+	
+	bool LoadMaterialsFromMTL( std::string mtlFileName );
+	
+	bool LoadCustomCollisionShapeFromObj( std::string objFileName );
 	
 	bool LoadFromObj( Engine * engine, std::string objFileName );
-	bool loadFromMeshFile( Engine * engine, std::string meshFileName );
-	bool LoadFromFile( Engine * engine, std::string fileName );
 	
 	SmartPtr<CustomCollisionShapeData> GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices = 0.0311 );
 	void NullCustomCollisionShape();

@@ -7,6 +7,9 @@
 #include <Engine.h>
 
 #include <Debug.h>
+#include <Math.hpp>
+
+#include <ctime>
 
 void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
 {
@@ -29,12 +32,12 @@ void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold 
         if( normal.y() < 0.0 )
         	normal.m_floats[1] = -(normal.m_floats[1]);
         
-        if( acos( normal.dot( btVector3(0,1,0) ) ) < ALLEGRO_PI * 40.0f / 180.0f )
+        if( acos( normal.dot( btVector3(0,1,0) ) ) < Math::PI * 40.0f / 180.0f )
         {
         	if( point.y() < GetBottomY() )
         	{
         		isInAir = false;
-        		if( al_get_time() - lastTimeInAir > engine->GetDeltaTime()*2.0f )
+        		if( (float(clock())/1000.0f) - lastTimeInAir > engine->GetDeltaTime()*2.0f )
         		{
 					body->setDamping( 0.8, 0.0 );
 					body->setFriction( 0.8 );
@@ -55,9 +58,9 @@ void Character::EventJump()
 	{
 		if( body )
 		{
-			if( al_get_time() - lastJumpedMoment > 0.08f )
+			if( (float(clock())/1000.0f) - lastJumpedMoment > 0.08f )
 			{
-				lastJumpedMoment = al_get_time();
+				lastJumpedMoment = (float(clock())/1000.0f);
 				body->applyCentralImpulse( GetJumpVelocity() );
 			}
 		}
@@ -188,7 +191,7 @@ void Character::EventRotateCameraToLookAtPoint( const btVector3 & worldPoint, bo
 	
 	if( smooth )
 	{
-		cameraRotation += dstCameraRotation * engine->GetDeltaTime() * 3.11f * ALLEGRO_PI;
+		cameraRotation += dstCameraRotation * engine->GetDeltaTime() * 3.11f * Math::PI;
 	}
 	else
 	{

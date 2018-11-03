@@ -275,20 +275,16 @@ SmartPtr<T>::~SmartPtr()
 
 #include <Object.h>
 #include <Model.h>
-#include <Texture.h>
 #include <Camera.h>
-#include <Shader.h>
 
 template class SmartPtr<btTriangleIndexVertexArray>;
 template class SmartPtr<CustomCollisionShapeData>;
 template class SmartPtr<btCollisionObject>;
 template class SmartPtr<btCollisionShape>;
 template class SmartPtr<btRigidBody>;
-template class SmartPtr<Texture>;
 template class SmartPtr<Object>;
 template class SmartPtr<Camera>;
 template class SmartPtr<Model>;
-template class SmartPtr<Shader>;
 
 #endif
 

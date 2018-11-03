@@ -84,6 +84,20 @@ void Object::Tick( const float deltaTime )
 	{
 		previousTransform = currentTransform;
 		body->getMotionState()->getWorldTransform( currentTransform );
+		
+		if( sceneNode )
+		{
+			{
+				btVector3 vec = currentTransform.getOrigin();
+				sceneNode->setPosition( irr::core::vector3d<float>( vec.x(), vec.y(), vec.z() ) );
+			}
+			
+			{
+				float a[3];
+				currentTransform.getRotation().getEulerZYX( a[0], a[1], a[2] );
+				sceneNode->setRotation( irr::core::vector3d<float>( a[0], a[1], a[2] ) );
+			}
+		}
 	}
 	
 	if( currentTransform.getOrigin().y() < -1000.0 )
@@ -152,8 +166,11 @@ void Object::SetScale( btVector3 scale )
 		body->activate( true );
 		body->getCollisionShape()->setLocalScaling( scale );
 		engine->GetWorld()->UpdateColliderForObject( body );
-		CalculateRadius();
 		body->activate( true );
+	}
+	if( sceneNode )
+	{
+		sceneNode->setScale( irr::core::vector3d<float>( scale.x(), scale.y(), scale.z() ) );
 	}
 }
 
@@ -175,19 +192,6 @@ SmartPtr<btRigidBody> Object::GetBody()
 	return body;
 }
 
-void Object::Draw( const glm::mat4 & cameraMatrix )
-{
-	if( model )
-	{
-		model->Draw( cameraMatrix * Math::GetMatrix( this->GetTransform(), this->scale ) );
-	}
-}
-
-void Object::SetModel( SmartPtr<Model> model )
-{
-	this->model = model;
-}
-
 btVector3 Object::GetLocation() const
 {
 	if( body )
@@ -197,33 +201,6 @@ btVector3 Object::GetLocation() const
 		return transform.getOrigin();
 	}
 	return btVector3();
-}
-
-float Object::GetRadius()
-{
-	return boundingSphereRadius;
-}
-
-void Object::CalculateRadius()
-{
-	if( body )
-	{
-		btVector3 min, max, origin;
-		body->getAabb( min, max );
-		origin = GetLocation();
-		min = (min-origin).absolute();
-		max = (max-origin).absolute();
-		
-		for(int i = 0; i < 3; ++i )
-			if( min.m_floats[i] > max.m_floats[i] )
-				max.m_floats[i] = min.m_floats[i];
-		
-		boundingSphereRadius = max.length();
-	}
-	else
-	{
-		boundingSphereRadius = 0.01f;
-	}
 }
 
 void Object::SetRayTraceChannel( int src )
@@ -241,6 +218,37 @@ std::string Object::GetName() const
 	return name;
 }
 
+void Object::SetModel( SmartPtr<Model> model )
+{
+	if( engine )
+	{
+		if( engine->GetWindow() )
+		{
+			if( sceneNode )
+			{
+				engine->GetWindow()->sceneManager->addToDeletionQueue( sceneNode );
+				sceneNode = NULL;
+			}
+			
+			this->model = NULL;
+			
+			if( model )
+			{
+				if( model->GetMesh() )
+				{
+					this->model = model;
+					sceneNode = engine->GetWindow()->sceneManager->addAnimatedMeshSceneNode( model->GetMesh() );
+					model->SetMaterialsToNode( sceneNode );
+					
+					
+					btVector3 vec = scale * model->GetScale();
+					sceneNode->setScale( irr::core::vector3d<float>( vec.x(), vec.y(), vec.z() ) );
+				}
+			}
+		}
+	}
+}
+
 Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :
 	mass(mass_)
 {
@@ -248,10 +256,9 @@ Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, S
 	this->engine = engine;
 	this->name = name;
 	this->body = body;
-	model = NULL;
 	scale = btVector3(1,1,1);
-	CalculateRadius();
 	rayTraceChannel = Engine::RayTraceChannel::COLLIDING | Engine::RayTraceChannel::NOT_TRANSPARENT;
+	sceneNode = NULL;
 }
 
 Object::Object() :
@@ -260,12 +267,27 @@ Object::Object() :
 	engine = NULL;
 	name = "";
 	scale = btVector3(1,1,1);
-	boundingSphereRadius = 1.0f;
 	rayTraceChannel = Engine::RayTraceChannel::COLLIDING | Engine::RayTraceChannel::NOT_TRANSPARENT;
+	sceneNode = NULL;
 }
 
 Object::~Object()
 {
+	if( sceneNode )
+	{
+		if( engine )
+		{
+			if( engine->GetWindow() )
+			{
+				if( engine->GetWindow()->sceneManager )
+				{
+					engine->GetWindow()->sceneManager->addToDeletionQueue( sceneNode );
+				}
+			}
+		}
+		sceneNode = NULL;
+	}
+	
 	if( collisionShape )
 	{
 		engine->GetCollisionShapeManager()->RemoveShape( collisionShape );
@@ -288,7 +310,6 @@ Object::~Object()
 	
 	name = "";
 	scale = btVector3(0,0,0);
-	boundingSphereRadius = 0.0f;
 	mass = 0.0f;
 }
 

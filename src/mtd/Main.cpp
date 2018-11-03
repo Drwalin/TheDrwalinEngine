@@ -10,6 +10,8 @@
 
 #include "../game/Player.h"
 
+#include <cassert>
+
 int main()
 {
 	DEBUG(1)
@@ -20,7 +22,7 @@ int main()
 	
 	
 	Engine * engine = new Engine;
-	engine->Init( "Engine 0.0.0", NULL, 800, 600, false );
+	engine->Init( "Engine 0.0.2", NULL, 800, 600, false );
 	
 	LoadMeshes( "media/loadMeshes.list", engine );
 	
@@ -54,7 +56,8 @@ int main()
 	
 	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
 	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
-	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10 )->SetModel( engine->GetModel("m4a1") );
+	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10, engine->GetModel("m4a1")->GetInertia() )->SetModel( engine->GetModel("m4a1") );
+	engine->GetObject( "m4a1" )->SetScale( 1.4, 0.6, 0.15 );
 	
 	
 	for( int i = 0; i < 0; ++i )
@@ -75,7 +78,7 @@ int main()
 	
 	
 	DEBUG( std::string("Loading cpu time: ") + std::to_string(float(clock())/float(CLOCKS_PER_SEC)) );
-	DEBUG( std::string("Loading time: ") + std::to_string(al_get_time()) );
+	DEBUG( std::string("Loading time: ") + std::to_string(float(clock())/1000.0f) );
 	
 	engine->BeginLoop();
 	

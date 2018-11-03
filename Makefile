@@ -1,6 +1,6 @@
 
 LIBS = -lm -lpthread -lfreetype
-include lin.mk
+include win.mk
 
 
 HEADERPATH = ./src/css
@@ -8,7 +8,7 @@ SOURCEPATH = ./src/mtd
 LIBRARYPATH = ./src/lib
 LIBPNGPATH = ./lib
 
-SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Keyboard.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp Texture.cpp VBO.cpp CustomCollisionData.cpp CollisionShapeManager.cpp SmartPtr.cpp Shader.cpp TimeCounter.cpp
+SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp CustomCollisionData.cpp CollisionShapeManager.cpp SmartPtr.cpp TimeCounter.cpp EventReceiverIrrlicht.cpp
 OBJECTS_ = $(SOURCES_:.cpp=.o)
 SOURCES = $(addprefix $(SOURCEPATH)/,$(SOURCES_))
 OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))
@@ -25,7 +25,7 @@ OBJECTS += $(GAMEOBJECTS)
 
 
 CFLAGS += -m64 -s -Ofast -std=c++11 -I$(HEADERPATH) -I$(LIBRARYPATH) -w
-LIBS += -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath
+LIBS += -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -lIrrlicht
 CC = g++
 
 

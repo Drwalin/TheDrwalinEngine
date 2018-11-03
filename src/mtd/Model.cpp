@@ -5,75 +5,32 @@
 #include <Model.h>
 #include <Engine.h>
 
-void Model::Draw( const glm::mat4 & transformMatrix )
+void Model::SetMaterialsToNode( irr::scene::ISceneNode * node )
 {
-	for( int i = 0; i < vbo.size(); ++i )
+	for( auto it = materials.begin(); it != materials.end(); ++it )
 	{
-		vbo[i].Draw( transformMatrix );
+		node->getMaterial( it->first ) = it->second;
 	}
 }
 
-void Model::RescaleAndMove( std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 min, btVector3 max, bool scaleToSize, btVector3 size, Engine * engine, const std::map < std::string, std::string > & materialTexture )
+irr::scene::IAnimatedMesh * Model::GetMesh()
 {
-	for( int i = 0; i < 3; ++i )
-		if( min.m_floats[i] > max.m_floats[i] )
-			std::swap( min.m_floats[0], max.m_floats[0] );
-	
-	btVector3 scale = size / ( max - min );
-	btVector3 move = ( min + max ) * (-0.5f);
-	
-//	float currentTextureWidth, currentTextureHeight;
-	int i = 0;
-	for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it, ++i )
-	{
-		/*
-		currentTextureWidth = currentTextureHeight = 1.0f;
-		if( engine && materialTexture.size() )
-		{
-			SmartPtr<Texture> texture = engine->GetTexture( materialTexture.at( it->first ) );
-			if( texture )
-			{
-				currentTextureWidth = texture->GetWidth();
-				currentTextureHeight = texture->GetHeight();
-				texture = NULL;
-			}
-		}
-		*/
-		
-		for( int j = 0; j < it->second.size(); ++j )
-		{
-			it->second[j].x += move.x();
-			it->second[j].y += move.y();
-			it->second[j].z += move.z();
-			if( scaleToSize )
-			{
-				it->second[j].x *= scale.x();
-				it->second[j].y *= scale.y();
-				it->second[j].z *= scale.z();
-			}
-			
-			/*
-			it->second[j].v = 1.0 - it->second[j].v;
-			
-			it->second[j].u *= currentTextureWidth;
-			it->second[j].v *= currentTextureHeight;
-			*/
-		}
-	}
+	return mesh;
 }
 
-bool Model::LoadObj( std::string objFileName, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, btVector3 & min, btVector3 & max )
+bool Model::LoadCustomCollisionShapeFromObj( std::string objFileName )
 {
+	std::vector < btVector3 > vertices;
+	std::vector < Model::Face > faces;
+	
 	std::ifstream file( objFileName );
 	
 	if( file.good() )
 	{
+		std::vector < AR<float,3> > vn;
 		std::vector < AR<float,3> > v;
-		std::vector < AR<float,2> > vt;
 		std::string line, text;
-			char sign;
-		
-		std::vector < ALLEGRO_VERTEX > * currentMaterial = NULL;
+		char sign;
 		
 		while( !file.eof() )
 		{
@@ -98,27 +55,31 @@ bool Model::LoadObj( std::string objFileName, std::map < std::string, std::vecto
 				sstream >> v.back()[1];
 				sstream >> v.back()[2];
 				
+				vertices.resize( vertices.size() + 1 );
+				vertices.back() = btVector3( v.back()[0], v.back()[1], v.back()[2] );
+				
 				if( v.size() == 1 )
 				{
-					min = btVector3( v.back()[0], v.back()[1], v.back()[2] );
-					max = min;
+					minAABB = btVector3( v.back()[0], v.back()[1], v.back()[2] );
+					maxAABB = minAABB;
 				}
 				else
 				{
 					for( int i = 0; i < 3; ++i )
 					{
-						if( min.m_floats[i] > v.back()[i] )
-							min.m_floats[i] = v.back()[i];
-						if( max.m_floats[i] < v.back()[i] )
-							max.m_floats[i] = v.back()[i];
+						if( minAABB.m_floats[i] > v.back()[i] )
+							minAABB.m_floats[i] = v.back()[i];
+						if( maxAABB.m_floats[i] < v.back()[i] )
+							maxAABB.m_floats[i] = v.back()[i];
 					}
 				}
 			}
-			else if( text == "vt" )
+			else if( text == "vn" )
 			{
-				vt.resize( vt.size() + 1 );
-				sstream >> vt.back()[0];
-				sstream >> vt.back()[1];
+				vn.resize( vn.size() + 1 );
+				sstream >> vn.back()[0];
+				sstream >> vn.back()[1];
+				sstream >> vn.back()[2];
 			}
 			else if( text == "f" )
 			{
@@ -145,44 +106,61 @@ bool Model::LoadObj( std::string objFileName, std::map < std::string, std::vecto
 					}
 				}
 				
+				
 				if( temp.size() >= 3 )
 				{
-					int f[3][2];
-					int i;
-					const static ALLEGRO_COLOR c = al_map_rgb(255,255,255);
-					f[0][0] = temp[0][0];
-					f[0][1] = temp[0][1];
-					for( i = 2; i < temp.size(); ++i )
+					for( unsigned i = 2; i < temp.size(); ++i )
 					{
-						f[1][0] = temp[i-1][0];
-						f[1][1] = temp[i-1][1];
-						f[2][0] = temp[i][0];
-						f[2][1] = temp[i][1];
+						btVector3 normal( vn[temp[0][2]][0], vn[temp[0][2]][1], vn[temp[0][2]][2] );
+						normal += btVector3( vn[temp[i][2]][0], vn[temp[i][2]][1], vn[temp[i][2]][2] );
+						normal += btVector3( vn[temp[i-1][2]][0], vn[temp[i-1][2]][1], vn[temp[i-1][2]][2] );
 						
-						currentMaterial->resize( currentMaterial->size() + 3 );
+						faces.resize( faces.size() + 1 );
+						faces.back().a = temp[0][0];
+						faces.back().b = temp[i][0];
+						faces.back().c = temp[i-1][0];
 						
-						currentMaterial->operator[]( currentMaterial->size()-3 ) = (ALLEGRO_VERTEX){ v[f[0][0]][0], v[f[0][0]][1], v[f[0][0]][2], vt[f[0][1]][0], (vt[f[0][1]][1]), c };
-						currentMaterial->operator[]( currentMaterial->size()-2 ) = (ALLEGRO_VERTEX){ v[f[1][0]][0], v[f[1][0]][1], v[f[1][0]][2], vt[f[1][1]][0], (vt[f[1][1]][1]), c };
-						currentMaterial->operator[]( currentMaterial->size()-1 ) = (ALLEGRO_VERTEX){ v[f[2][0]][0], v[f[2][0]][1], v[f[2][0]][2], vt[f[2][1]][0], (vt[f[2][1]][1]), c };
+						btVector3 a, b;
+						a = vertices[faces.back().a] - vertices[faces.back().b];
+						b = vertices[faces.back().a] - vertices[faces.back().c];
+						
+						faces.back().normal = a.cross( b ).normalized();
+						
+						if( faces.back().normal.dot( normal ) < 0.0f )
+						{
+							faces.back().normal *= -1.0f;
+						}
 					}
 				}
 			}
-			else if( text == "usemtl" )
-			{
-				text = "";
-				sstream >> text;
-				trianglesMaterial[text].resize( trianglesMaterial[text].size() + 1 );
-				currentMaterial = &(trianglesMaterial[text]);
-				currentMaterial->resize( currentMaterial->size() - 1 );
-			}
 		}
-		
-		return true;/////////////////////////////////////////////////////// check number of triangles
 	}
-	return false;
+	else
+	{
+		return false;
+	}
+	
+	// calculate all physics data
+	{
+		//std::vector < btVector3 > vertices;
+		//std::vector < Model::Face > faces;
+		
+		collisionShapeData = new CustomCollisionShapeData;
+		collisionShapeData->vertices = vertices;
+		collisionShapeData->indices.resize( faces.size() * 3 );
+		
+		for( int i = 0; i < faces.size(); ++i )
+		{
+			collisionShapeData->indices[(i*3)+0] = faces[i].a;
+			collisionShapeData->indices[(i*3)+1] = faces[i].b;
+			collisionShapeData->indices[(i*3)+2] = faces[i].c;
+		}
+	}
+	
+	return true;
 }
 
-bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::string > & materialTexture )
+bool Model::LoadMaterialsFromMTL( std::string mtlFileName )
 {
 	std::ifstream file( mtlFileName );
 	
@@ -198,7 +176,10 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 	
 	if( file.good() )
 	{
-		std::string line, text, currentMaterial;
+		int currentMaterial = -1;
+		
+		materials.clear();
+		std::string line, text;
 		
 		while( !file.eof() )
 		{
@@ -216,14 +197,18 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 			sstream >> text;
 			if( text == "newmtl" )
 			{
-				currentMaterial = "";
-				sstream >> currentMaterial;
+				++currentMaterial;
 			}
 			else if( text == "map_Kd" )
 			{
 				text = "";
 				sstream >> text;
-				materialTexture[currentMaterial] = path + text;
+				
+				irr::video::SMaterial material;
+			    material.setTexture( 0, engine->GetWindow()->videoDriver->getTexture( (path+text).c_str() ) );
+			    material.Lighting = false;
+			    material.NormalizeNormals = true;
+			    materials[currentMaterial] = material;
 			}
 		}
 		
@@ -231,124 +216,17 @@ bool Model::LoadMtl( std::string mtlFileName, std::map < std::string, std::strin
 	}
 	
 	return false;
-}
-
-bool Model::SaveMeshFile( std::string meshFileName, bool containPhysicsBool, float friction, float restitution, std::map < std::string, std::vector < ALLEGRO_VERTEX > > & trianglesMaterial, std::map < std::string, std::string > & materialTexture )
-{
-	std::ofstream file( meshFileName, std::ofstream::binary );
-	
-	int temp;
-	
-	if( file.good() )
-	{
-		int numberOfVBOs = trianglesMaterial.size();
-		file.write( (const char*)&numberOfVBOs, sizeof(int) );
-		
-		for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it )
-		{
-			int stringSize = materialTexture[it->first].size();
-			file.write( (const char*)&stringSize, sizeof(int) );
-			file.write( (const char*)materialTexture[it->first].c_str(), stringSize );
-			
-			int numberOfVertices = it->second.size();
-			file.write( (const char*)&numberOfVertices, sizeof(int) );
-			for( int i = 0; i < numberOfVertices; ++i )
-			{
-				file.write( (const char*)&(it->second[i].x), sizeof(float) );
-				file.write( (const char*)&(it->second[i].y), sizeof(float) );
-				file.write( (const char*)&(it->second[i].z), sizeof(float) );
-				file.write( (const char*)&(it->second[i].u), sizeof(float) );
-				file.write( (const char*)&(it->second[i].v), sizeof(float) );
-			}
-		}
-		
-		char containPhysics = containPhysicsBool ? 'A' : 0;
-		file.write( &containPhysics, sizeof(char) );
-		
-		if( containPhysicsBool )
-		{
-			CustomCollisionShapeData collisionShapeData;
-			{
-				float acceptableDistanceToJoinVertices = 0.0311 * 1.5;
-				float squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
-				int currentIndex = 0;
-				
-				for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it )
-				{
-					for( int j = 0; j < it->second.size(); ++j, ++currentIndex )
-					{
-						int k;
-						for( k = 0; k < collisionShapeData.vertices.size(); ++k )
-						{
-							if( btVector3( it->second[j].x, it->second[j].y, it->second[j].z ).distance2( collisionShapeData.vertices[k] ) < squareAcceptableDistance )
-							{
-								break;
-							}
-						}
-						
-						collisionShapeData.indices.resize( collisionShapeData.indices.size() + 1 );
-						collisionShapeData.indices.back() = k;
-						if( k >= collisionShapeData.vertices.size() )
-						{
-							collisionShapeData.vertices.resize( collisionShapeData.vertices.size() + 1 );
-							collisionShapeData.vertices.back() = btVector3( it->second[j].x, it->second[j].y, it->second[j].z );
-						}
-					}
-				}
-			}
-			
-			{
-				int numberOfVertices = collisionShapeData.vertices.size();
-				int numberOfIndices = collisionShapeData.indices.size();
-				
-				file.write( (const char*)&friction, sizeof(float) );
-				file.write( (const char*)&restitution, sizeof(float) );
-				file.write( (const char*)&numberOfVertices, sizeof(int) );
-				file.write( (const char*)&numberOfIndices, sizeof(int) );
-				
-				for( int i = 0; i < numberOfVertices; ++i )
-					file.write( (const char*)&(collisionShapeData.vertices[i]), sizeof(float) * 3 );
-				
-				file.write( (const char*)&(collisionShapeData.indices.front()), sizeof(int) * numberOfIndices );
-			}
-		}
-		else
-		{
-			
-		}
-		
-		return true;
-	}
-	return false;
-}
-
-bool Model::ConvertObjToMesh( std::string objFileName, std::string meshFileName, bool containPhysicsBool, float friction, float restitution, bool scaleToSize, btVector3 size )
-{
-	if( objFileName.size() < 5 )
-		return false;
-	
-	std::string mtlFileName = objFileName;
-	
-	mtlFileName.resize( mtlFileName.size()-3 );
-	mtlFileName += "mtl";
-	
-	btVector3 min, max;
-	
-	std::map < std::string, std::string > materialTexture;
-	std::map < std::string, std::vector < ALLEGRO_VERTEX > > trianglesMaterial;
-	
-	Model::LoadMtl( mtlFileName, materialTexture );
-	Model::LoadObj( objFileName, trianglesMaterial, min, max );
-	
-	Model::RescaleAndMove( trianglesMaterial, min, max, scaleToSize, size );
-	
-	return Model::SaveMeshFile( meshFileName, containPhysicsBool, friction, restitution, trianglesMaterial, materialTexture );
 }
 
 bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 {
 	Destroy();
 	
+	if( engine == NULL )
+		return false;
+	
+	mesh = engine->GetWindow()->sceneManager->getMesh( objFileName.c_str() );
+	
 	if( objFileName.size() < 5 )
 		return false;
 	
@@ -358,223 +236,16 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	mtlFileName.resize( mtlFileName.size()-3 );
 	mtlFileName += "mtl";
 	
-	std::map < std::string, std::string > materialTexture;
-	std::map < std::string, std::vector < ALLEGRO_VERTEX > > trianglesMaterial;
+	LoadMaterialsFromMTL( mtlFileName );
 	
-	Model::LoadMtl( mtlFileName, materialTexture );
-	if( Model::LoadObj( objFileName, trianglesMaterial, minAABB, maxAABB ) == false )
-	{
-		DEBUG(1);
-		return false;
-	}
-	
-	Model::RescaleAndMove( trianglesMaterial, minAABB, maxAABB, false, btVector3(), engine, materialTexture );
-	
-	vbo.resize( trianglesMaterial.size() );
-	
-	int i = 0;
-	for( auto it = trianglesMaterial.begin(); it != trianglesMaterial.end(); ++it, ++i )
-	{
-		vbo[i].Destroy();
-		vbo[i].ClearVertices();
-		vbo[i].SetVertexSize( sizeof(ALLEGRO_VERTEX) );
-		if( engine )
-		{
-			vbo[i].SetTexture( engine->GetTexture( materialTexture[it->first] ) );
-			vbo[i].SetShader( engine->GetShader( "Core" ) );
-		}
-		if( !vbo[i].GetTexture() )
-			DEBUG( std::string( "Texture not exist" ) );
-		if( !vbo[i].GetShader() )
-			DEBUG( std::string( "Shader do not exist" ) );
-		vbo[i].AddVertices( &(it->second.front()), it->second.size() );
-		vbo[i].Generate( engine, GL_TRIANGLES );
-	}
+	LoadCustomCollisionShapeFromObj( objFileName );
 	
 	return true;
 }
 
-bool Model::loadFromMeshFile( Engine * engine, std::string meshFileName )
-{
-	Destroy();
-	
-	this->engine = engine;
-	
-	std::ifstream file( meshFileName, std::ifstream::binary );
-	
-	if( file.good() )
-	{
-//		float currentTextureWidth, currentTextureHeight;
-		
-		int numberOfVBOs;
-		file.read( (char*)&numberOfVBOs, sizeof(int) );
-		
-		vbo.resize( numberOfVBOs );
-		
-		ALLEGRO_COLOR color = al_map_rgb( 255, 255, 255 );
-		
-		for( int i = 0; i < numberOfVBOs; ++i )
-		{
-//			currentTextureWidth = currentTextureHeight = 1.0f;
-			
-			int bytesPerTextureName;
-			int numberOfVertices;
-			
-			file.read( (char*)&bytesPerTextureName, sizeof(int) );
-			
-			char textureFileNameWithPath[bytesPerTextureName+1];
-			
-			file.read( textureFileNameWithPath, bytesPerTextureName );
-			textureFileNameWithPath[bytesPerTextureName] = 0;
-			
-			vbo[i].Destroy();
-			vbo[i].ClearVertices();
-			vbo[i].SetVertexSize( sizeof(ALLEGRO_VERTEX) );
-			
-			if( engine )
-			{
-				SmartPtr<Texture> texture = engine->GetTexture( textureFileNameWithPath );
-				/*
-				if( texture )
-				{
-					currentTextureWidth = texture->GetWidth();
-					currentTextureHeight = texture->GetHeight();
-				}
-				*/
-				vbo[i].SetTexture( texture );
-				vbo[i].SetShader( engine->GetShader( "Core" ) );
-			}
-			
-			if( !vbo[i].GetTexture() )
-				DEBUG( std::string( "Texture not exist" ) );
-			if( !vbo[i].GetShader() )
-				DEBUG( std::string( "Shader do not exist" ) );
-			
-			file.read( (char*)&numberOfVertices, sizeof(int) );
-				
-			vbo[i].vertices.resize( numberOfVertices*sizeof(ALLEGRO_VERTEX) );
-			
-			for( int j = 0; j < numberOfVertices; ++j )
-			{
-				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x), sizeof(float) );
-				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y), sizeof(float) );
-				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z), sizeof(float) );
-				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].u), sizeof(float) );
-				file.read( (char*)&(((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].v), sizeof(float) );
-				/*
-				vbo[i].vertices[j].u *= currentTextureWidth;
-				vbo[i].vertices[j].v *= currentTextureHeight;
-				*/
-				((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].color = color;
-				if( i == 0 && j == 0 )
-				{
-					minAABB = maxAABB = btVector3( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z );
-				}
-				else
-				{
-					btVector3 temp( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z );
-					for( int k = 0; k < 3; ++k )
-					{
-						if( minAABB.m_floats[k] > temp.m_floats[k] )
-							minAABB.m_floats[k] = temp.m_floats[k];
-						if( maxAABB.m_floats[k] < temp.m_floats[k] )
-							maxAABB.m_floats[k] = temp.m_floats[k];
-					}
-				}
-			}
-			
-			vbo[i].Generate( engine, GL_TRIANGLES );
-		}
-		
-		if( !file )
-		{
-			Destroy();
-			return false;
-		}
-		
-		char containPhysics = 0;
-		file.read( &containPhysics, sizeof(char) );
-		
-		if( containPhysics != 0 )
-		{
-			collisionShapeData = new CustomCollisionShapeData;
-			
-			float friction = 0.5f;
-			float restitution = 0.0f;
-			int numberOfVertices = 0;
-			int numberOfIndices = 0;
-			
-			file.read( (char*)&friction, sizeof(float) );
-			file.read( (char*)&restitution, sizeof(float) );
-			file.read( (char*)&numberOfVertices, sizeof(int) );
-			file.read( (char*)&numberOfIndices, sizeof(int) );
-			
-			if( !file )
-			{
-				collisionShapeData.Delete();
-				return true;
-			}
-			
-			collisionShapeData->friction = friction;
-			collisionShapeData->restitution = restitution;
-			collisionShapeData->vertices.resize( numberOfVertices );
-			collisionShapeData->indices.resize( numberOfIndices );
-			
-			for( int i = 0; i < numberOfVertices; ++i )
-			{
-				file.read( (char*)&(collisionShapeData->vertices[i]), sizeof(float) * 3 );
-				if( !file )
-				{
-					collisionShapeData.Delete();
-					return true;
-				}
-			}
-			
-			file.read( (char*)&(collisionShapeData->indices.front()), sizeof(int) * numberOfIndices );
-			if( !file )
-			{
-				collisionShapeData.Delete();
-				return true;
-			}
-		}
-		
-		return true;
-	}
-	
-	return false;
-}
-
-bool Model::LoadFromFile( Engine * engine, std::string fileName )
-{
-	Destroy();
-	
-	this->engine = engine;
-	
-	std::string extension;
-	int i;
-	for( i = fileName.size()-1; i > 0; --i )
-		if( fileName[i-1] == '.' )
-			break;
-	
-	if( i == 0 )
-		return false;
-	
-	extension = (fileName.c_str() + i);
-	
-	if( extension == "obj" )
-	{
-		return LoadFromObj( engine, fileName );
-	}
-	else if( extension == "phmesh" )
-	{
-		return loadFromMeshFile( engine, fileName );
-	}
-	
-	return false;
-}
-
 SmartPtr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices )
 {
+	/*
 	if( !collisionShapeData )
 	{
 		float squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
@@ -605,7 +276,13 @@ SmartPtr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acc
 			}
 		}
 	}
+	*/
 	return collisionShapeData;
+}
+
+btVector3 Model::GetInertia() const
+{
+	return minAABB + maxAABB;
 }
 
 void Model::NullCustomCollisionShape()
@@ -615,24 +292,31 @@ void Model::NullCustomCollisionShape()
 
 void Model::Destroy()
 {
-	for( int i = 0; i < vbo.size(); ++i )
-		vbo[i].Destroy();
-	vbo.clear();
-	vbo.shrink_to_fit();
+	if( mesh )
+	{
+		mesh->drop();
+		mesh = NULL;
+	}
 	collisionShapeData = NULL;
 }
 
 Model::Model( const Model * other )
 {
+	mesh = NULL;
 	if( other )
 	{
-		vbo = other->vbo;
-		engine = other->engine;;
+		mesh = other->mesh;
+		materials = other->materials;
+		engine = other->engine;
+		collisionShapeData = other->collisionShapeData;
+		minAABB = other->minAABB;
+		maxAABB = other->maxAABB;
 	}
 }
 
 Model::Model()
 {
+	mesh = NULL;
 	engine = NULL;
 }
 

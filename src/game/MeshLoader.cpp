@@ -4,6 +4,8 @@
 
 #include "Header.h"
 
+#include <cassert>
+
 void LoadMeshes( std::string loadMeshesListFile, Engine * engine )
 {
 	std::ifstream file( loadMeshesListFile );

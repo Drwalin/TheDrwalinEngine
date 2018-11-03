@@ -16,8 +16,6 @@ public:
 	//virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal ) override;
 	//virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal ) override;
 	
-	virtual void Draw( const glm::mat4 & cameraMatrix ) override;
-	
 	Player( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ );
 	Player();
 	~Player();

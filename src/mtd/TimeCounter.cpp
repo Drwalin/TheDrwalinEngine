@@ -27,13 +27,13 @@ float TimeCounter::GetSmoothTime() const
 void TimeCounter::SubscribeStart()
 {
 	array.resize( array.size() + 1 );
-	array.back().begin = al_get_time();
+	array.back().begin = float(clock())/1000.0f;
 	array.back().end = array.back().begin;
 }
 
 void TimeCounter::SubscribeEnd()
 {
-	array.back().end = al_get_time();
+	array.back().end = float(clock())/1000.0f;
 	
 	if( array.size() )
 	{

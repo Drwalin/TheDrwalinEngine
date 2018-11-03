@@ -12,6 +12,7 @@
 
 namespace Math
 {
+	const float PI = 3.14159265359f;
 	
 	inline glm::vec3 GetVec( const btVector3 & src )
 	{

@@ -17,12 +17,6 @@ void Window::Tick( const float deltaTime )
 		engine->Tick( deltaTime );
 }
 
-void Window::Draw3D()
-{
-	if( engine )
-		engine->Draw3D();
-}
-
 float Window::GetSmoothFps()
 {
 	static float last_fps = 0;
@@ -42,18 +36,12 @@ float Window::GetSmoothFps()
 	return last_fps;
 }
 
-void Window::Draw2D()
-{
-	if( engine )
-		engine->Draw2D();
-}
-
-void Window::Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, bool fullscreen )
+void Window::Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, EventResponser * eventResponser, bool fullscreen )
 {
 	DEBUG(1)
 	Destroy();
 	DEBUG(2)
-	BasicWindow::Init( windowName, iconFile, width, height, fullscreen );
+	BasicWindow::Init( windowName, iconFile, width, height, eventResponser, fullscreen );
 	DEBUG(3)
 	output->SetBasicWindow( this );
 	DEBUG(4)

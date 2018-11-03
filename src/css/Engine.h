@@ -19,10 +19,8 @@
 #include <Event.h>
 #include <World.h>
 #include <Window.h>
-#include <Texture.h>
 #include <Model.h>
 #include <Object.h>
-#include <Shader.h>
 
 #include <CollisionShapeManager.h>
 
@@ -35,8 +33,6 @@ private:
 	Event * event;
 	CollisionShapeManager * collisionShapeManager;
 	
-	std::map < std::string, SmartPtr<Shader> > shader;
-	std::map < std::string, SmartPtr<Texture> > texture;
 	std::map < std::string, SmartPtr<Model> > model;
 	std::map < std::string, SmartPtr<Object> > object;
 	
@@ -54,7 +50,7 @@ private:
 	inline void UpdateObjectOverlaps();
 	inline void UpdateObjects( const float deltaTime );
 	
-	void LoadCoreShader();
+	friend class Event;
 	
 public:
 	
@@ -83,10 +79,6 @@ public:
 	
 public:
 	
-	bool LoadShader( const std::string & name, const std::string & vs, const std::string & gs, const std::string & fs );
-	SmartPtr<Shader> GetShader( const std::string & name );
-	void DestroyShader( const std::string & name );
-	
 	void QueueObjectToDestroy( SmartPtr<Object> ptr );
 	void QueueObjectToDestroy( const std::string & name );
 	
@@ -114,7 +106,6 @@ public:
 	bool SetCustomModelName( std::string name, SmartPtr<Model> mdl );
 	
 	SmartPtr<Model> LoadModel( std::string name );
-	SmartPtr<Texture> GetTexture( std::string name );
 	SmartPtr<Model> GetModel( std::string name );
 	SmartPtr<Object> GetObject( std::string name );
 	
@@ -125,9 +116,6 @@ public:
 	int CalculateNumberOfSimulationsPerFrame( const float deltaTime );
 	void Tick( const float deltaTime );
 	void ParallelToDrawTick( const float deltaTime );
-	
-	void Draw2D();
-	void Draw3D();
 	
 	void Init( const char * windowName, const char * iconFile, int width, int height, bool fullscreen = false );
 	

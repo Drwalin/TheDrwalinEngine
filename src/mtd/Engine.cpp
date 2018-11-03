@@ -3,7 +3,8 @@
 #define ENGINE_CPP
 
 #include <Engine.h>
-#include <Shader.h>
+
+#include <cassert>
 
 inline void Engine::UpdateObjectOverlaps()
 {
@@ -69,6 +70,9 @@ inline void Engine::UpdateObjects( const float deltaTime )
 			it->second->Tick( deltaTime );
 		}
 	}
+	
+	if( cameraParent )
+		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
 }
 
 void Engine::QueueObjectToDestroy( SmartPtr<Object> ptr )
@@ -192,63 +196,6 @@ void Engine::AttachCameraToObject( std::string name, btVector3 location )
 	GetCamera()->SetPos( location );
 }
 
-bool Engine::LoadShader( const std::string & name, const std::string & vs, const std::string & gs, const std::string & fs )
-{
-	if( shader.find( name ) != shader.end() )
-	{
-		DEBUG( std::string("Trying to redefine shader: ") + name );
-		return false;
-	}
-	else
-	{
-		SmartPtr<Shader> prog;
-		prog = new Shader();
-		if( prog )
-		{
-			if( prog->Load( vs.c_str(), gs.c_str(), fs.c_str() ) == 0 )
-			{
-				shader[name] = prog;
-				return true;
-			}
-			else
-			{
-				DEBUG( std::string("Unable to load shader: ") + name + " -> ( " + vs + ", " + ( gs.size() > 0 ? ( gs + ", " ) : "" ) + fs + " )" );
-			}
-			prog.Delete();
-		}
-		else
-		{
-			DEBUG( std::string("Unable to allocate smart pointer for shader") );
-		}
-	}
-	DEBUG( "Unknown error" );
-	return false;
-}
-
-SmartPtr<Shader> Engine::GetShader( const std::string & name )
-{
-	auto it = shader.find( name );
-	if( it != shader.end() )
-	{
-		return it->second;
-	}
-	DEBUG( std::string( "Unable to find shader: " ) + name );
-	return SmartPtr<Shader>();
-}
-
-void Engine::DestroyShader( const std::string & name )
-{
-	auto it = shader.find( name );
-	if( it != shader.end() )
-	{
-		shader.erase( name );
-	}
-	else
-	{
-		DEBUG( std::string("Trying to destroy unexisting shader: ") + name );
-	}
-}
-
 bool Engine::SetCustomModelName( std::string name, SmartPtr<Model> mdl )
 {
 	auto it = model.find( name );
@@ -274,7 +221,7 @@ SmartPtr<Model> Engine::LoadModel( std::string name )
 	{
 		SmartPtr<Model> mdl;
 		mdl = new Model;
-		if( mdl->LoadFromFile( this, name ) == false )
+		if( mdl->LoadFromObj( this, name ) == false )
 		{
 			mdl.Delete();
 			return SmartPtr<Model>();
@@ -286,38 +233,6 @@ SmartPtr<Model> Engine::LoadModel( std::string name )
 		}
 	}
 	return SmartPtr<Model>();
-}
-
-SmartPtr<Texture> Engine::GetTexture( std::string name )
-{
-	auto it = texture.find( name );
-	if( it != texture.end() )
-	{
-		if( it->second )
-		{
-			return it->second;
-		}
-		else
-			texture.erase( it );
-	}
-	else
-	{
-		SmartPtr<Texture> tex;
-		tex = new Texture;
-		if( tex->Load( name, Texture::LINEAR | Texture::MIPMAP ) == false )
-		{
-			DEBUG( name + ": not done" );
-			tex.Delete();
-			return SmartPtr<Texture>();
-		}
-		else
-		{
-			texture[name] = tex;
-			return tex;
-		}
-	}
-	DEBUG( name + ": not done" );
-	return SmartPtr<Texture>();
 }
 
 SmartPtr<Model> Engine::GetModel( std::string name )
@@ -391,37 +306,10 @@ void Engine::DeleteObject( std::string name )
 
 
 
-void Engine::DrawCrosshair()
-{
-	return;
-	
-	float width, height;
-	width = window->GetWidth();
-	height = window->GetHeight();
-	
-	float midx = width/2.0, midy = height/2.0;
-	
-	ALLEGRO_COLOR color = al_map_rgba( 230, 110, 5, 128 );
-	
-	float a = 2, b = 3;
-	
-	al_draw_line( midx-a, midy-b, midx+a, midy-b, color, 2.0 );
-	al_draw_line( midx-a, midy+b, midx+a, midy+b, color, 2.0 );
-	
-	al_draw_line( midx-b, midy-a, midx-b, midy+a, color, 2.0 );
-	al_draw_line( midx+b, midy-a, midx+b, midy+a, color, 2.0 );
-}
-
+/*
 void Engine::Draw2D()
 {
 	guiDrawTime.SubscribeStart();
-	
-	/*
-	output.SetColor( al_map_rgb( 255, 255, 255 ) );
-	output.SetWorkSpace( 20, 20, this->GetMaxBorderWidth()-20, this->GetMaxBorderHeight()-20 );
-	output.Goto( 1, 1 );
-	output.Print( this->GetCurrentStringToEnter().c_str() );
-	*/
 	
 	window->output->SetWorkSpace( 5, 10, 80, 80 );
 	window->output->Goto( 5, 12 );
@@ -436,17 +324,7 @@ void Engine::Draw2D()
 	//window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
 	window->output->Print( "\nFPS: " );
 	window->output->Print( window->GetSmoothFps() );
-	/*
-	window->output->Print( "\n" );
-	window->output->Print( (int)al_get_time() );
 	
-	window->output->Print( "\n\nCamera position: " );
-	window->output->Print( window->camera->GetLocation().x() );
-	window->output->Print( " : " );
-	window->output->Print( window->camera->GetLocation().y() );
-	window->output->Print( " : " );
-	window->output->Print( window->camera->GetLocation().z() );
-	*/
 	window->output->Print( "\nObjects: " );
 	window->output->Print( int(object.size()) );
 	
@@ -506,7 +384,7 @@ void Engine::Draw2D()
 		float skippedTime = window->GetSkippedTime().GetSmoothTime();
 		float eventTime = window->GetEventGenerationTime().GetSmoothTime();
 		float flipDisplayTime = window->GetFlipDisplayTime().GetSmoothTime();
-		float sumTime = /*guiDrawTime + sceneDrawTime + physicsSimulationTime +*/ window->GetDeltaTime();
+		float sumTime = window->GetDeltaTime();
 		float otherTime = sumTime - ( flipDisplayTime + guiDrawTime.GetSmoothTime() + sceneDrawTime.GetSmoothTime() + physicsSimulationTime.GetSmoothTime() + skippedTime + eventTime );
 		float step = sumTime / 40;
 		float t;
@@ -580,50 +458,12 @@ void Engine::Draw2D()
 	guiDrawTime.SubscribeEnd();
 }
 
-void Engine::Draw3D()
-{
-	sceneDrawTime.SubscribeStart();
-	
-	if( cameraParent )
-		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
-	
-	glm::mat4 cameraMatrix = ( GetWindow()->Get3DProjectionTransform() ) * ( GetCamera()->GetViewMatrix() );
-	
-	GetCamera()->UpdateViewPlanes();
-	
-	//glEnable( GL_ALPHA_TEST );
-	//glAlphaFunc( GL_LESS, 0.5 );
-	
-	for( auto it = object.begin(); it != object.end(); ++it )
-	{
-		if( it->second )
-		{
-			if( GetCamera()->IsObjectInView( it->second ) )
-			{
-				it->second->Draw( cameraMatrix );
-			}
-		}
-	}
-	
-	sceneDrawTime.SubscribeEnd();
-}
+*/
 
 void Engine::BeginLoop()
 {
 	pausePhysics = false;
 	window->BeginLoop();
-}
-
-void Engine::LoadCoreShader()
-{
-	if( this->LoadShader( "Core", "media\\Shaders\\core.vs", "", "media\\Shaders\\core.fs" ) )
-	{
-		
-	}
-	else
-	{
-		DEBUG( "Unable to load core shader" );
-	}
 }
 
 void Engine::Init( const char * windowName, const char * iconFile, int width, int height, bool fullscreen )
@@ -636,39 +476,31 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	DEBUG(2)
 	world->Init();
 	DEBUG(3)
-	window->Init( this, windowName, iconFile, width, height, fullscreen );
-	DEBUG(4)
-	window->SetEventResponser( event );
+	window->Init( this, windowName, iconFile, width, height, event, fullscreen );
 	DEBUG(5)
 	event->Init();
 	DEBUG(6)
 	event->SetEngine( this );
 	
-	DEBUG(1)
+	DEBUG(7)
 	window->HideMouse();
 	window->LockMouse();
 	
 	collisionShapeManager = new CollisionShapeManager;
 	
-	
-	DEBUG(2)
-	glewExperimental = GL_TRUE;
-	int err;
-	if( ( err = glewInit() ) != GLEW_OK )
-	{
-		fprintf( stderr, "\n Faild to initialize GLEW: %s", glewGetErrorString( err ) );
-	    return;
-	}
-	else
-	{
-		fprintf( stderr, "\n Current GL version: %s", glGetString( GL_VERSION ) );
-	}
-	DEBUG(3)
+	DEBUG(8)
 	
 	window->output->Init();
 	
-	DEBUG(4)
-	LoadCoreShader();
+	DEBUG(9)
+	
+	if( GetCamera() == NULL )
+	{
+		window->camera = new Camera;
+	}
+	
+	window->camera->sceneNode = window->sceneManager->addCameraSceneNode();
+	
 	
 	//window->UseParallelThreadToDraw();
 }
@@ -698,17 +530,6 @@ void Engine::Destroy()
 		}
 	}
 	model.clear();
-	
-	for( auto it = texture.begin(); it != texture.end(); ++it )
-	{
-		if( it->second )
-		{
-			assert( it->second );
-			it->second->Destroy();
-			it->second.Delete();
-		}
-	}
-	texture.clear();
 	
 	if( window )
 	{

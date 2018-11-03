@@ -2,13 +2,12 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <irrlicht\irrlicht.h>
+
 #include <LinearMath/btVector3.h>
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btQuaternion.h>
 #include <btBulletDynamicsCommon.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <string>
 #include <set>
@@ -31,11 +30,12 @@ protected:
 	btTransform currentTransform;
 	btTransform previousTransform;
 	
+	SmartPtr<Model> model;
+	irr::scene::IAnimatedMeshSceneNode *sceneNode;
 	SmartPtr<btCollisionShape> collisionShape;
 	SmartPtr<btRigidBody> body;
-	SmartPtr<Model> model;
+	
 	btVector3 scale;
-	float boundingSphereRadius;
 	
 	int rayTraceChannel;
 	
@@ -66,9 +66,6 @@ public:
 	void SetRayTraceChannel( int src );
 	int GetRayTraceChannel();
 	
-	float GetRadius();
-	void CalculateRadius();
-	
 	void SetScale( btVector3 scale );
 	btVector3 GetScale();
 	
@@ -84,8 +81,6 @@ public:
 	virtual void Tick( const float deltaTime );
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );
 	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal );
-	
-	virtual void Draw( const glm::mat4 & cameraMatrix );
 	
 	void SetModel( SmartPtr<Model> model );
 	

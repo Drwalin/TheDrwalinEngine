@@ -5,12 +5,15 @@
 #include "Character.h"
 
 #include <Debug.h>
+#include <Math.hpp>
+
+#include <ctime>
 
 void Character::NextOverlappingFrame()
 {
 	Object::NextOverlappingFrame();
 	if( isInAir )
-		lastTimeInAir = al_get_time();
+		lastTimeInAir = float(clock())/1000.0f;
 	isInAir = true;
 	body->setDamping( 0.1, 0.0 );
 	body->setFriction( 0.0 );
@@ -79,15 +82,15 @@ btVector3 Character::GetJumpVelocity() const
 
 void Character::CorrectCameraRotation()
 {
-	if( cameraRotation.m_floats[0] < -ALLEGRO_PI*0.5f )
-		cameraRotation.m_floats[0] = -ALLEGRO_PI*0.5f;
-	else if( cameraRotation.m_floats[0] > ALLEGRO_PI*0.5f )
-		cameraRotation.m_floats[0] = ALLEGRO_PI*0.5f;
+	if( cameraRotation.m_floats[0] < -Math::PI*0.5f )
+		cameraRotation.m_floats[0] = -Math::PI*0.5f;
+	else if( cameraRotation.m_floats[0] > Math::PI*0.5f )
+		cameraRotation.m_floats[0] = Math::PI*0.5f;
 	
-	while( cameraRotation.m_floats[1] >= ALLEGRO_PI * 2.0f )
-		cameraRotation.m_floats[1] -= ALLEGRO_PI * 2.0f;
+	while( cameraRotation.m_floats[1] >= Math::PI * 2.0f )
+		cameraRotation.m_floats[1] -= Math::PI * 2.0f;
 	while( cameraRotation.m_floats[1] < 0.0f )
-		cameraRotation.m_floats[1] += ALLEGRO_PI * 2.0f;
+		cameraRotation.m_floats[1] += Math::PI * 2.0f;
 }
 
 void Character::SetCamera( SmartPtr<Camera> camera )
@@ -163,10 +166,6 @@ void Character::ApplyImpactDamage( const float damage, const float impetus, btVe
 
 
 
-void Character::Draw( const glm::mat4 & cameraMatrix )
-{
-	Object::Draw( cameraMatrix );
-}
 
 Character::Character( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :
 	Object( engine, name, body, collisionShape, mass_ ),

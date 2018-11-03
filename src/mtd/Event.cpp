@@ -6,6 +6,7 @@
 #include <Window.h>
 #include <Engine.h>
 #include "../game/Character.h"
+#include <irrlicht\irrlicht.h>
 
 void Event::SetEngine( class Engine * engine )
 {
@@ -19,14 +20,13 @@ void Event::Init()
 
 void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 {
-	
 	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
 	if( player )
 	{
 		Character * character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
 		if( character )
 		{
-			character->EventRotateCameraBy( btVector3( float(dy)/80.0, float(dx)/80.0, 0.0 ) * 0.5f );
+			character->EventRotateCameraBy( btVector3( float(dy)/80.0, float(dx)/80.0, 0.0 ) );
 		}
 	}
 }
@@ -46,36 +46,40 @@ void Event::KeyPressedEvent( int keyCode )
 	
 	switch( keyCode )
 	{
-	case ALLEGRO_KEY_ESCAPE:
+	case irr::KEY_ESCAPE:
 		window->QueueQuit();
 		break;
 		
-	case ALLEGRO_KEY_P:
+	case irr::KEY_KEY_T:
+		fprintf( stderr, "\n Number of objects: %i ", int(engine->object.size()) );
+		break;
+		
+	case irr::KEY_KEY_P:
 		if( engine->GetWindow()->IsMouseLocked() )
 			engine->GetWindow()->UnlockMouse();
 		else
 			engine->GetWindow()->LockMouse();
 		break;
 		
-	case ALLEGRO_KEY_LSHIFT:
+	case irr::KEY_LSHIFT:
 		if( character )
 			character->EventBeginRun();
 		break;
-	case ALLEGRO_KEY_LCTRL:
+	case irr::KEY_LCONTROL:
 		if( character )
 			character->EventCrouch();
 		break;
-	case ALLEGRO_KEY_ALT:
+	case irr::KEY_MENU:
 		if( character )
 			character->EventBeginStravage();
 		break;
 		
-	case MOUSE_LEFT:
+	case irr::KEY_LBUTTON:
 		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ ), true, 20.0 );
 		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 16.0 );
 		temp->SetModel( engine->GetModel( "Crate01" ) );
 		break;
-	case MOUSE_RIGHT:
+	case irr::KEY_RBUTTON:
 		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
 		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 		temp->SetModel( engine->GetModel( "Sphere" ) );
@@ -92,20 +96,20 @@ void Event::KeyReleasedEvent( int keyCode )
 	
 	switch( keyCode )
 	{
-	case ALLEGRO_KEY_ESCAPE:
+	case irr::KEY_ESCAPE:
 		window->QueueQuit();
 		break;
 		
 		
-	case ALLEGRO_KEY_LSHIFT:
+	case irr::KEY_LSHIFT:
 		if( character )
 			character->EventStopRun();
 		break;
-	case ALLEGRO_KEY_LCTRL:
+	case irr::KEY_LCONTROL:
 		if( character )
 			character->EventStandUp();
 		break;
-	case ALLEGRO_KEY_ALT:
+	case irr::KEY_MENU:
 		if( character )
 			character->EventStopStravage();
 		break;
@@ -127,7 +131,7 @@ void Event::KeyHoldedEvent( int keyCode )
 	
 	switch( keyCode )
 	{
-	case MOUSE_MIDDLE:
+	case irr::KEY_MBUTTON:
 		if( character )
 		{
 			temp = engine->GetObject( std::string("Box") );
@@ -138,17 +142,17 @@ void Event::KeyHoldedEvent( int keyCode )
 		}
 		break;
 		
-	case ALLEGRO_KEY_SPACE:
+	case irr::KEY_SPACE:
 		if( character )
 			character->EventJump();
 		break;
 		
-	case ALLEGRO_KEY_ESCAPE:
+	case irr::KEY_ESCAPE:
 		window->QueueQuit();
 		break;
 		
 		/*
-	case MOUSE_LEFT:
+	case irr::KEY_LBUTTON:
 		begin = engine->GetCamera()->GetLocation();
 		end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
 		temp = engine->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
@@ -160,9 +164,9 @@ void Event::KeyHoldedEvent( int keyCode )
 		*/
 		
 		
-	case ALLEGRO_KEY_BACKSPACE:
-	case ALLEGRO_KEY_DELETE:
-		if( keyCode == ALLEGRO_KEY_DELETE )
+	case irr::KEY_BACK:
+	case irr::KEY_DELETE:
+		if( keyCode == irr::KEY_DELETE )
 		{
 			begin = engine->GetCamera()->GetLocation();
 			end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
@@ -184,36 +188,36 @@ void Event::KeyHoldedEvent( int keyCode )
 		}
 		break;
 		
-	case ALLEGRO_KEY_UP:
+	case irr::KEY_UP:
 		if( character )
 			character->EventRotateCameraBy( btVector3( -window->GetDeltaTime(), 0.0, 0.0 ) * 2.0 );
 		break;
-	case ALLEGRO_KEY_DOWN:
+	case irr::KEY_DOWN:
 		if( character )
 			character->EventRotateCameraBy( btVector3( window->GetDeltaTime(), 0.0, 0.0 ) * 2.0 );
 		break;
-	case ALLEGRO_KEY_RIGHT:
+	case irr::KEY_RIGHT:
 		if( character )
 			character->EventRotateCameraBy( btVector3( 0.0, window->GetDeltaTime(), 0.0 ) * 2.0 );
 		break;
-	case ALLEGRO_KEY_LEFT:
+	case irr::KEY_LEFT:
 		if( character )
 			character->EventRotateCameraBy( btVector3( 0.0, -window->GetDeltaTime(), 0.0 ) * 2.0 );
 		break;
 		
-	case ALLEGRO_KEY_W:
+	case irr::KEY_KEY_W:
 		if( character )
 			character->EventMoveInDirection( character->GetFlatForwardVector(), true );
 		break;
-	case ALLEGRO_KEY_A:
+	case irr::KEY_KEY_A:
 		if( character )
 			character->EventMoveInDirection( character->GetFlatLeftVector(), true );
 		break;
-	case ALLEGRO_KEY_S:
+	case irr::KEY_KEY_S:
 		if( character )
 			character->EventMoveInDirection( -character->GetFlatForwardVector(), true );
 		break;
-	case ALLEGRO_KEY_D:
+	case irr::KEY_KEY_D:
 		if( character )
 			character->EventMoveInDirection( -character->GetFlatLeftVector(), true );
 		break;

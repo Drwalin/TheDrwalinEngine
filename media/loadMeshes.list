@@ -1,15 +1,15 @@
-./media/Models/Sphere.phmesh
+./media/Models/Sphere.obj
 Sphere
-./media/Models/Plane.phmesh
+./media/Models/Plane.obj
 Plane
-./media/Models/Brick.phmesh
+./media/Models/Brick.obj
 Brick
-./media/Models/m4a1.phmesh
+./media/Models/m4a1.obj
 m4a1
-./media/Models/ConcreetBrick.phmesh
+./media/Models/ConcreetBrick.obj
 ConcreetBrick
-./media/Models/Crate01.phmesh
+./media/Models/Crate01.obj
 Crate01
-./media/AmadeusMap/as_oilrig.phmesh
+./media/AmadeusMap/as_oilrig.obj
 as_oilrig
 

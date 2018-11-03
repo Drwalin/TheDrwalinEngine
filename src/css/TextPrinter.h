@@ -2,15 +2,17 @@
 #ifndef TEXT_PRINTER_H
 #define TEXT_PRINTER_H
 
-#include <allegro5/allegro.h>
-
-#include <Texture.h>
-#include <VBO.h>
-#include <Shader.h>
-
 #include <string>
 
 #include <cstdio>
+
+struct Color
+{
+	unsigned char r, g, b, a;
+	Color();
+	Color( unsigned char r, unsigned char g, unsigned char b );
+	Color( unsigned char r, unsigned char g, unsigned char b, unsigned char a );
+};
 
 class TextPrinter
 {
@@ -20,13 +22,9 @@ private:
 	
 	class BasicWindow * basicWindow;
 	
-	ALLEGRO_COLOR currentTextColor;
+	Color currentTextColor;
 	int currentCursorX, currentCursorY;
 	int leftWorkspaceBorder, rightWorkspaceBorder, upWorkspaceBorder, downWorkspaceBorder;
-	
-	VBO * vbo;
-	Texture * font;
-	Shader * shader;
 	
 	void CorrectCursorPosition();
 	void CorrectWorkspaceBorder();
@@ -40,7 +38,7 @@ public:
 	
 	void SetBasicWindow( BasicWindow * basicWindow );
 	
-	void SetColor( ALLEGRO_COLOR color );
+	void SetColor( Color color );
 	int GetMaxBorderWidth();
 	int GetMaxBorderHeight();
 	void Print( const std::string & str );

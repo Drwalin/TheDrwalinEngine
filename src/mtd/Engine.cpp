@@ -54,8 +54,6 @@ inline void Engine::UpdateObjectOverlaps()
 
 inline void Engine::UpdateObjects( const float deltaTime )
 {
-	//float time = al_get_time();
-	
 	while( !objectsQueuedToDestroy.empty() )
 	{
 		DeleteObject( objectsQueuedToDestroy.front() );
@@ -71,8 +69,6 @@ inline void Engine::UpdateObjects( const float deltaTime )
 			it->second->Tick( deltaTime );
 		}
 	}
-	
-	//updateObjectTime = al_get_time() - time;
 }
 
 void Engine::QueueObjectToDestroy( SmartPtr<Object> ptr )
@@ -144,16 +140,16 @@ void Engine::ParallelToDrawTick( const float deltaTime )
 
 void Engine::Tick( const float deltaTime )
 {
-	UpdateObjects( deltaTime );
+	physicsSimulationTime.SubscribeStart();
 	
-	float time = al_get_time();
+	UpdateObjects( deltaTime );
 	
 	if( !pausePhysics )
 	{
 		world->Tick( deltaTime, CalculateNumberOfSimulationsPerFrame( deltaTime ) );		/////////////////////////////////////////////////////////////////////////
 	}
 	
-	physicsSimulationTime = al_get_time() - time;
+	physicsSimulationTime.SubscribeEnd();
 }
 
 SmartPtr<Camera> Engine::GetCamera() const
@@ -251,45 +247,6 @@ void Engine::DestroyShader( const std::string & name )
 	{
 		DEBUG( std::string("Trying to destroy unexisting shader: ") + name );
 	}
-}
-
-void Engine::DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size )
-{
-	ALLEGRO_VERTEX vtx[8] = {
-		/*   x   y   z   u   v  c  */
-		{ -size.x(), -size.y(), -size.z(), 64, 64, color },
-		{ -size.x(), -size.y(),  size.z(), 64,  0, color },
-		{  size.x(), -size.y(), -size.z(),  0, 64, color },
-		{  size.x(), -size.y(),  size.z(), 64,  0, color },
-		{ -size.x(),  size.y(), -size.z(), 64, 64, color },
-		{ -size.x(),  size.y(),  size.z(), 64,  0, color },
-		{  size.x(),  size.y(), -size.z(),  0, 64, color },
-		{  size.x(),  size.y(),  size.z(),  0,  0, color },
-	};
-	
-	int indices[] = {
-		0, 1, 2,
-		1, 2, 3,
-		
-		4, 5, 6,
-		5, 6, 7,
-		
-		0, 1, 4,
-		1, 4, 5,
-		
-		2, 3, 6,
-		3, 6, 7,
-		
-		0, 2, 4,
-		2, 4, 6,
-		
-		1, 3, 5,
-		3, 5, 7
-	};
-	
-	window->camera->SetWorldTransform( transform, btVector3(1,1,1) );
-	SmartPtr<Texture> tex = GetTexture("media/Textures/DebugTexturte.png");
-	al_draw_indexed_prim( vtx, NULL, tex ? tex->GetBitmapPtr() : NULL, indices, 6*3*2, ALLEGRO_PRIM_TRIANGLE_LIST );
 }
 
 bool Engine::SetCustomModelName( std::string name, SmartPtr<Model> mdl )
@@ -436,6 +393,8 @@ void Engine::DeleteObject( std::string name )
 
 void Engine::DrawCrosshair()
 {
+	return;
+	
 	float width, height;
 	width = window->GetWidth();
 	height = window->GetHeight();
@@ -455,7 +414,7 @@ void Engine::DrawCrosshair()
 
 void Engine::Draw2D()
 {
-	float time = al_get_time();
+	guiDrawTime.SubscribeStart();
 	
 	/*
 	output.SetColor( al_map_rgb( 255, 255, 255 ) );
@@ -543,16 +502,14 @@ void Engine::Draw2D()
 	{
 		window->output->SetWorkSpace( 5, 2, 80, 80 );
 		
-		float wholeDrawTime = window->GetWholeDrawTime();
-		float skippedTime = window->GetSkippedTime();
-		float eventTime = window->GetEventGenerationTime();
+		float wholeDrawTime = window->GetWholeDrawTime().GetSmoothTime();
+		float skippedTime = window->GetSkippedTime().GetSmoothTime();
+		float eventTime = window->GetEventGenerationTime().GetSmoothTime();
+		float flipDisplayTime = window->GetFlipDisplayTime().GetSmoothTime();
 		float sumTime = /*guiDrawTime + sceneDrawTime + physicsSimulationTime +*/ window->GetDeltaTime();
-		float otherTime = sumTime - ( wholeDrawTime /*guiDrawTime + sceneDrawTime*/ + physicsSimulationTime + skippedTime + eventTime );
+		float otherTime = sumTime - ( flipDisplayTime + guiDrawTime.GetSmoothTime() + sceneDrawTime.GetSmoothTime() + physicsSimulationTime.GetSmoothTime() + skippedTime + eventTime );
 		float step = sumTime / 40;
 		float t;
-		
-		
-		
 		
 		
 		
@@ -561,34 +518,34 @@ void Engine::Draw2D()
 		
 		window->output->SetColor( al_map_rgb( 0, 255, 255 ) );
 		window->output->Print( "flipDisplayTime...: " );
-		window->output->Print( ( wholeDrawTime - guiDrawTime - sceneDrawTime ) * 1000.0f );
+		window->output->Print( flipDisplayTime * 1000.0f );
 		window->output->Print( "ms" );
 		window->output->Goto( 42, 2 );
-		for( t = 0.0f + guiDrawTime + sceneDrawTime; t < wholeDrawTime; t += step )
+		for( t = 0.0f; t < flipDisplayTime; t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 255, 0, 0 ) );
 		window->output->Print( "\nguiDrawTime: " );
-		window->output->Print( guiDrawTime * 1000.0f );
+		window->output->Print( guiDrawTime.GetSmoothTime() * 1000.0f );
 		window->output->Print( "ms" );
 		window->output->Goto( 42, 3 );
-		for( t = 0.0f; t < guiDrawTime; t += step )
+		for( t = 0.0f; t < guiDrawTime.GetSmoothTime(); t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 0, 255, 0 ) );
 		window->output->Print( "\nsceneDrawTime: " );
-		window->output->Print( sceneDrawTime * 1000.0f );
+		window->output->Print( sceneDrawTime.GetSmoothTime() * 1000.0f );
 		window->output->Print( "ms" );
 		window->output->Goto( 42, 4 );
-		for( t = 0.0f; t < sceneDrawTime; t += step )
+		for( t = 0.0f; t < sceneDrawTime.GetSmoothTime(); t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 0, 0, 255 ) );
 		window->output->Print( "\nphysicsSimulationTime: " );
-		window->output->Print( physicsSimulationTime * 1000.0f );
+		window->output->Print( physicsSimulationTime.GetSmoothTime() * 1000.0f );
 		window->output->Print( "ms" );
 		window->output->Goto( 42, 5 );
-		for( t = 0.0f; t < physicsSimulationTime; t += step )
+		for( t = 0.0f; t < physicsSimulationTime.GetSmoothTime(); t += step )
 			window->output->Print( "#" );
 		
 		window->output->SetColor( al_map_rgb( 255, 255, 255 ) );
@@ -616,16 +573,16 @@ void Engine::Draw2D()
 			window->output->Print( "#" );
 	}
 	
-	DrawCrosshair();
+//	DrawCrosshair();
 	
 	window->output->Flush();
 	
-	guiDrawTime = al_get_time() - time;
+	guiDrawTime.SubscribeEnd();
 }
 
 void Engine::Draw3D()
 {
-	float time = al_get_time();
+	sceneDrawTime.SubscribeStart();
 	
 	if( cameraParent )
 		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
@@ -648,7 +605,7 @@ void Engine::Draw3D()
 		}
 	}
 	
-	sceneDrawTime = al_get_time() - time;
+	sceneDrawTime.SubscribeEnd();
 }
 
 void Engine::BeginLoop()
@@ -794,10 +751,6 @@ Engine::Engine()
 	window = NULL;
 	pausePhysics = true;
 	collisionShapeManager = NULL;
-	
-	guiDrawTime = 0.01;
-	sceneDrawTime = 0.01;
-	physicsSimulationTime = 0.01;
 }
 
 Engine::~Engine()

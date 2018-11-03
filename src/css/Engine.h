@@ -42,7 +42,9 @@ private:
 	
 	std::queue < std::string > objectsQueuedToDestroy;
 	
-	float guiDrawTime, sceneDrawTime, physicsSimulationTime;
+	TimeCounter guiDrawTime;
+	TimeCounter sceneDrawTime;
+	TimeCounter physicsSimulationTime;
 	
 	SmartPtr<Object> cameraParent;
 	
@@ -97,8 +99,6 @@ public:
 	
 	void PauseSimulation();
 	void ResumeSimulation();
-	
-	void DrawBox( ALLEGRO_COLOR color, btTransform transform, btVector3 size );
 	
 	SmartPtr<Camera> GetCamera() const;
 	SmartPtr<Object> GetCameraParent() const;

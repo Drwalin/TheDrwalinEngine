@@ -25,15 +25,24 @@ void ParallelThreadFunctionToDraw( BasicWindow * window )
 	}
 }
 
+TimeCounter BasicWindow::GetFlipDisplayTime() const
+{
+	return flipDisplayTime;
+}
 
-float BasicWindow::GetEventGenerationTime() const
+TimeCounter BasicWindow::GetEventGenerationTime() const
 {
 	return eventsTime;
 }
 
-float BasicWindow::GetWholeDrawTime() const
+TimeCounter BasicWindow::GetWholeDrawTime() const
 {
 	return wholeDrawTime;
+}
+
+TimeCounter BasicWindow::GetSkippedTime() const
+{
+	return skippedTime;
 }
 
 bool BasicWindow::IsParallelToDrawTickInUse()
@@ -58,11 +67,6 @@ void BasicWindow::ShutDownParallelThreadToDraw()
 		useParallelThreadToDraw.store( false );
 		parallelThreadToDraw.join();
 	}
-}
-
-float BasicWindow::GetSkippedTime()
-{
-	return skippedTime;
 }
 
 unsigned BasicWindow::GetWidth()
@@ -135,7 +139,7 @@ void BasicWindow::Use3DSpace()
 	al_set_target_bitmap( al_get_backbuffer( display ) );
 	al_set_render_state( ALLEGRO_DEPTH_TEST, 1 );
 	al_set_render_state( ALLEGRO_DEPTH_FUNCTION, ALLEGRO_RENDER_LESS );
-	al_set_blender( ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA );
+	//al_set_blender( ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA );
 	al_use_projection_transform( &projection3DTransform );
 	
 	ALLEGRO_TRANSFORM transform;
@@ -171,7 +175,7 @@ void BasicWindow::LoadIconFromFile( const char * iconFile )
 bool BasicWindow::CreateDisplay( const char * windowName, int width, int height, bool fullscreen )
 {
 	al_set_new_display_flags( ALLEGRO_OPENGL );
-	al_set_new_display_option( ALLEGRO_SINGLE_BUFFER, 1, ALLEGRO_REQUIRE );
+	//al_set_new_display_option( ALLEGRO_SINGLE_BUFFER, 1, ALLEGRO_REQUIRE );
 	//al_set_new_display_option( ALLEGRO_COMPATIBLE_DISPLAY, 0, ALLEGRO_SUGGEST );
 	//al_set_new_display_option( ALLEGRO_CAN_DRAW_INTO_BITMAP, 0, ALLEGRO_REQUIRE );
 	al_set_new_display_option( ALLEGRO_DEPTH_SIZE, 16, ALLEGRO_SUGGEST );
@@ -304,18 +308,16 @@ void BasicWindow::OneLoopFullTick()
 	/*
 	if( al_get_time() - beginTime < 1.0/60.0 )
 	{
-		skippedTime = (1.0/60.0) - (al_get_time() - beginTime);
+		skippedTime.SubscribeStart();
 		al_rest( skippedTime );
+		skippedTime.SubscribeEnd();
 	}
-	else
 	*/
-	{
-		skippedTime = 0.0;
-	}
 }
 
 void BasicWindow::BeginLoop()
 {
+	Use3DSpace();
 	quitWhenPossible = false;
 	while( !quitWhenPossible )
 		OneLoopFullTick();
@@ -328,7 +330,12 @@ void BasicWindow::QueueQuit()
 
 void BasicWindow::AlDraw()
 {
-	float time__ = float(clock())/1000.0f;//al_get_time();
+	flipDisplayTime.SubscribeStart();
+	//glFlush();
+	al_flip_display();
+	flipDisplayTime.SubscribeEnd();
+	
+	wholeDrawTime.SubscribeStart();
 	
 	if( IsParallelToDrawTickInUse() )
 	{
@@ -339,7 +346,7 @@ void BasicWindow::AlDraw()
 //	Use2DSpace();
 	al_clear_to_color( al_map_rgb( 0, 0, 0 ) );
 	
-	Use3DSpace();
+//	Use3DSpace();
 	al_clear_to_color( al_map_rgb( 0, 0, 0 ) );
 	al_clear_depth_buffer( zFar );
 	
@@ -359,15 +366,13 @@ void BasicWindow::AlDraw()
 			al_rest( 0.001 );
 	}
 	
-	wholeDrawTime = /*al_get_time()*/float(clock())/1000.0f - time__;
+	wholeDrawTime.SubscribeStart();
 }
 
 
 extern "C" ALLEGRO_MOUSE_STATE mouseLastFrame;
 void BasicWindow::AlTick()
 {
-	AlDraw();
-	
 	UpdateKeyboard();
 	
 	if( lockMouse )
@@ -381,12 +386,12 @@ void BasicWindow::AlTick()
 	
 	Tick( deltaTime );
 	
-	glFlush();
+	AlDraw();
 }
 
 void BasicWindow::GenerateEvents()
 {
-	float time = al_get_time();
+	eventsTime.SubscribeStart();
 	
 	for( int keyCode = 1; keyCode < MOUSE_AFTER_LAST_BUTTON; ++keyCode )
 	{
@@ -426,7 +431,7 @@ void BasicWindow::GenerateEvents()
 		}
 	}
 	
-	eventsTime = al_get_time() - time;
+	eventsTime.SubscribeEnd();
 }
 
 void BasicWindow::SetEventResponser( EventResponser * eventResponser )
@@ -443,9 +448,6 @@ EventResponser * BasicWindow::GetEventResponser()
 BasicWindow::BasicWindow() :
 	useParallelThreadToDraw(false)
 {
-	eventsTime = 0.01f;
-	wholeDrawTime = 0.01f;
-	
 	quitWhenPossible = false;
 	
 	ALLEGRO_TRANSFORM projection2DTransform;
@@ -457,7 +459,6 @@ BasicWindow::BasicWindow() :
 	zNear = 0.01;
 	zFar = 1000.0;
 	deltaTime = 0.01;
-	skippedTime = 0.0;
 	
 	lockMouse = false;
 	

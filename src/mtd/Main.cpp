@@ -12,6 +12,8 @@
 
 int main()
 {
+	DEBUG(1)
+	
 	ConvertMeshes( "media/meshes.list" );
 	
 	srand( time( NULL ) );

@@ -32,6 +32,8 @@
 #include <StringToEnter.h>
 #include <TextPrinter.h>
 
+#include <TimeCounter.h>
+
 void ParallelThreadFunctionToDraw( class BasicWindow * window );
 
 class BasicWindow
@@ -51,9 +53,11 @@ private:
 	ALLEGRO_FONT * font;
 	float zNear, zFar;
 	float deltaTime;
-	float skippedTime;
-	float eventsTime;
-	float wholeDrawTime;
+	
+	TimeCounter skippedTime;
+	TimeCounter eventsTime;
+	TimeCounter wholeDrawTime;
+	TimeCounter flipDisplayTime;
 	
 	bool lockMouse;
 	
@@ -74,8 +78,10 @@ protected:
 	
 public:
 	
-	float GetEventGenerationTime() const;
-	float GetWholeDrawTime() const;
+	TimeCounter GetFlipDisplayTime() const;
+	TimeCounter GetEventGenerationTime() const;
+	TimeCounter GetWholeDrawTime() const;
+	TimeCounter GetSkippedTime() const;
 	
 	glm::mat4 Get3DProjectionTransform() const;
 	
@@ -83,7 +89,6 @@ public:
 	void ShutDownParallelThreadToDraw();
 	bool IsParallelToDrawTickInUse();
 	
-	float GetSkippedTime();
 	
 	EventResponser * GetEventResponser();
 	void SetEventResponser( EventResponser * eventResponser );

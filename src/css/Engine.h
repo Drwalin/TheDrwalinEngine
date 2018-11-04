@@ -14,7 +14,7 @@
 #include <queue>
 
 #include <Debug.h>
-#include <SmartPtr.h>
+#include <memory>
 
 #include <Event.h>
 #include <World.h>
@@ -33,8 +33,8 @@ private:
 	Event * event;
 	CollisionShapeManager * collisionShapeManager;
 	
-	std::map < std::string, SmartPtr<Model> > model;
-	std::map < std::string, SmartPtr<Object> > object;
+	std::map < std::string, std::shared_ptr<Model> > model;
+	std::map < std::string, std::shared_ptr<Object> > object;
 	
 	std::queue < std::string > objectsQueuedToDestroy;
 	
@@ -42,7 +42,7 @@ private:
 	TimeCounter sceneDrawTime;
 	TimeCounter physicsSimulationTime;
 	
-	SmartPtr<Object> cameraParent;
+	std::shared_ptr<Object> cameraParent;
 	
 	bool pausePhysics;
 	
@@ -62,7 +62,7 @@ public:
 		float distance;
 		btVector3 begin, end;
 		btVector3 point, normal;
-		SmartPtr<Object> object;
+		std::shared_ptr<Object> object;
 		bool operator < ( const RayTraceData & other ) const;
 		RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id );
 		RayTraceData();
@@ -79,10 +79,10 @@ public:
 	
 public:
 	
-	void QueueObjectToDestroy( SmartPtr<Object> ptr );
+	void QueueObjectToDestroy( std::shared_ptr<Object> ptr );
 	void QueueObjectToDestroy( const std::string & name );
 	
-	SmartPtr<Object> RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < SmartPtr<Object> > & ignoreObjects );
+	std::shared_ptr<Object> RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < std::shared_ptr<Object> > & ignoreObjects );
 	
 	float GetDeltaTime();
 	
@@ -92,22 +92,22 @@ public:
 	void PauseSimulation();
 	void ResumeSimulation();
 	
-	SmartPtr<Camera> GetCamera() const;
-	SmartPtr<Object> GetCameraParent() const;
+	std::shared_ptr<Camera> GetCamera() const;
+	std::shared_ptr<Object> GetCameraParent() const;
 	
 	CollisionShapeManager * GetCollisionShapeManager();
 	
 	template < class T >
-	SmartPtr<Object> AddObject( std::string name, SmartPtr<btCollisionShape> shape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );
+	std::shared_ptr<Object> AddObject( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );
 	template < class T >
-	SmartPtr<Object> AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
+	std::shared_ptr<Object> AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
 	
 	void AttachCameraToObject( std::string name, btVector3 location );
-	bool SetCustomModelName( std::string name, SmartPtr<Model> mdl );
+	bool SetCustomModelName( std::string name, std::shared_ptr<Model> mdl );
 	
-	SmartPtr<Model> LoadModel( std::string name );
-	SmartPtr<Model> GetModel( std::string name );
-	SmartPtr<Object> GetObject( std::string name );
+	std::shared_ptr<Model> LoadModel( std::string name );
+	std::shared_ptr<Model> GetModel( std::string name );
+	std::shared_ptr<Object> GetObject( std::string name );
 	
 	std::string GetAvailableObjectName( std::string name );
 	

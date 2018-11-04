@@ -12,7 +12,7 @@
 
 #include <ctime>
 
-#include <SmartPtr.h>
+#include <memory>
 
 class Event : public EventResponser
 {

@@ -5,7 +5,7 @@
 #include "Engine.h"
 
 template < class T >
-SmartPtr<Object> Engine::AddObject( std::string name, SmartPtr<btCollisionShape> shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
+std::shared_ptr<Object> Engine::AddObject( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
 {
 	if( shape && object.find(name) == object.end() )
 	{
@@ -15,31 +15,41 @@ SmartPtr<Object> Engine::AddObject( std::string name, SmartPtr<btCollisionShape>
 			mass = 0;
 		
 		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
-		SmartPtr<btRigidBody> rigidBody;
-		rigidBody = new btRigidBody( mass, motionState, (btCollisionShape*)shape.GetPtr(), inertia );
+		std::shared_ptr<btRigidBody> rigidBody( new btRigidBody( mass, motionState, (btCollisionShape*)shape.get(), inertia ) );
 		world->AddBody( name, rigidBody );
 		rigidBody->setDamping( 0.2, 0.1 );
 		rigidBody->setFriction( 0.2 );
 		
-		SmartPtr<Object> obj;
-		obj = new T( this, name, rigidBody, shape, mass );
+		std::shared_ptr<Object> obj( new T( this, name, rigidBody, shape, mass ) );
 		object[name] = obj;
 		
-		rigidBody->setUserPointer( (void*)obj.GetPtr() );
+		rigidBody->setUserPointer( (void*)obj.get() );
 		
 		return obj;
 	}
-	return SmartPtr<Object>();
+	
+	if( !shape )
+	{
+		DEBUG( "Shape = NULL" );
+	}
+	
+	
+	if( object.find(name) != object.end() )
+	{
+		DEBUG( ( std::string( "Trying to spawn object whit name that exist: " ) + name ) );
+	}
+	
+	return std::shared_ptr<Object>();
 }
 
 template < class T >
-SmartPtr<Object> Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
+std::shared_ptr<Object> Engine::AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass )
 {
 	if( object.find(name) == object.end() )
 	{
 		std::string shapeName = collisionShapeManager->GetFirstAvailableName( name );
-		SmartPtr<btCollisionShape> shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
-		SmartPtr<Object> obj = AddObject<T>( name, shape, transform, true, mass, btVector3(0,0,0) );
+		std::shared_ptr<btCollisionShape> shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
+		std::shared_ptr<Object> obj = AddObject<T>( name, shape, transform, true, mass, btVector3(0,0,0) );
 		if( obj )
 		{
 			obj->GetBody()->setAngularFactor( btVector3( 0, 0, 0 ) );
@@ -54,7 +64,7 @@ SmartPtr<Object> Engine::AddCharacter( std::string name, btScalar width, btScala
 		}
 		return obj;
 	}
-	return SmartPtr<Object>();
+	return std::shared_ptr<Object>();
 }
 
 #endif

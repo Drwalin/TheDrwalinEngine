@@ -30,7 +30,7 @@ void LoadMeshes( std::string loadMeshesListFile, Engine * engine )
 					customName.resize( customName.size() - 1 );
 			}
 			
-			SmartPtr<Model> ptr = engine->LoadModel( meshFile );
+			std::shared_ptr<Model> ptr = engine->LoadModel( meshFile );
 			assert( (bool)ptr );
 			if( ptr )
 			{

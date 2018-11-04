@@ -93,7 +93,7 @@ void Character::CorrectCameraRotation()
 		cameraRotation.m_floats[1] += Math::PI * 2.0f;
 }
 
-void Character::SetCamera( SmartPtr<Camera> camera )
+void Character::SetCamera( std::shared_ptr<Camera> camera )
 {
 	this->camera = camera;
 }
@@ -167,7 +167,7 @@ void Character::ApplyImpactDamage( const float damage, const float impetus, btVe
 
 
 
-Character::Character( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :
+Character::Character( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ ) :
 	Object( engine, name, body, collisionShape, mass_ ),
 	cameraRotation(0,0,0), cameraLocation(0,0,0),
 	defaultVelocity(4.5), jumpHeight(1.1), height(1.75),

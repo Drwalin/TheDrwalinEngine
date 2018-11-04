@@ -56,9 +56,9 @@ void World::Tick( btScalar deltaTime, int count )
 		dynamicsWorld->stepSimulation( deltaTime );
 }
 
-void World::UpdateColliderForObject( SmartPtr<btRigidBody> body )
+void World::UpdateColliderForObject( std::shared_ptr<btRigidBody> body )
 {
-	dynamicsWorld->getCollisionWorld()->updateSingleAabb( (btCollisionObject*)body.GetPtr() );
+	dynamicsWorld->getCollisionWorld()->updateSingleAabb( (btCollisionObject*)body.get() );
 }
 
 btVector3 World::GetGravity()
@@ -77,7 +77,7 @@ void World::Init()
 	dynamicsWorld->setGravity( btVector3(0, -9.81, 0) );
 }
 
-bool World::AddBody( std::string name, SmartPtr<btRigidBody> body )
+bool World::AddBody( std::string name, std::shared_ptr<btRigidBody> body )
 {
 	if( body )
 	{
@@ -88,7 +88,7 @@ bool World::AddBody( std::string name, SmartPtr<btRigidBody> body )
 		}
 		else
 		{
-			dynamicsWorld->addRigidBody( (btRigidBody*)body.GetPtr() );
+			dynamicsWorld->addRigidBody( (btRigidBody*)body.get() );
 			object[name] = body;
 			return true;
 		}
@@ -105,7 +105,7 @@ void World::RemoveBody( std::string name )
 		{
 			ActivateAll();
 			it->second->activate( true );
-			dynamicsWorld->removeRigidBody( (btRigidBody*)(it->second.GetPtr()) );
+			dynamicsWorld->removeRigidBody( (btRigidBody*)(it->second.get()) );
 		}
 		object.erase( it );
 	}
@@ -117,7 +117,7 @@ void World::RemoveBodys()
 	{
 		if( it->second )
 		{
-			dynamicsWorld->removeRigidBody( (btRigidBody*)(it->second.GetPtr()) );
+			dynamicsWorld->removeRigidBody( (btRigidBody*)(it->second.get()) );
 		}
 	}
 	object.clear();

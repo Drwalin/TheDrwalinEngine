@@ -15,8 +15,8 @@ inline std::string methodName( const std::string& prettyFunction )
 }
 #define __METHOD_NAME__ (methodName<int>(__PRETTY_FUNCTION__))
 
-#define DEBUG( x ) std::cerr << "\n " << __METHOD_NAME__ << "(" << x << ")";
-#define DEBUG_( x ) std::cerr << "\n " << __PRETTY_FUNCTION__ << "(" << x << ")";
+#define DEBUG( x ) std::cerr << "\n " << __METHOD_NAME__ << "(" << (x) << ")";
+#define DEBUG_( x ) std::cerr << "\n " << __PRETTY_FUNCTION__ << "(" << (x) << ")";
 
 #endif
 

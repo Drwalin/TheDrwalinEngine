@@ -14,7 +14,7 @@
 
 #include <string>
 
-#include <SmartPtr.h>
+#include <memory>
 
 class Window : public BasicWindow
 {
@@ -24,7 +24,7 @@ private:
 	
 public:
 	
-	SmartPtr<Camera> camera;
+	std::shared_ptr<Camera> camera;
 	TextPrinter * output;
 	
 	void Init( Engine * engine, const char * windowName, const char * iconFile, int width, int height, EventResponser * eventResponser, bool fullscreen = false );

@@ -61,7 +61,7 @@ Window::Window()
 	DEBUG(0)
 	engine = NULL;
 	DEBUG(1)
-	camera = new Camera;
+	camera = std::shared_ptr<Camera>( new Camera );
 	DEBUG(2)
 	output = new TextPrinter;
 	DEBUG(3)
@@ -71,7 +71,7 @@ Window::Window()
 Window::~Window()
 {
 	Destroy();
-	camera.Delete();
+	camera.reset();
 	camera = NULL;
 	delete output;
 	output = NULL;

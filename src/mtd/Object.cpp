@@ -118,7 +118,7 @@ void Object::EventOnObjectEndOverlapp( Object * other )
 {
 }
 
-SmartPtr<Object> Object::GetThis()
+std::shared_ptr<Object> Object::GetThis()
 {
 	if( !thisPtr )
 	{
@@ -128,7 +128,7 @@ SmartPtr<Object> Object::GetThis()
 		}
 		else
 		{
-			DEBUG("Error creating SmartPtr Object::thisPtr ");
+			DEBUG("Error creating std::shared_ptr Object::thisPtr ");
 		}
 	}
 	return thisPtr;
@@ -233,7 +233,7 @@ btTransform Object::GetTransform()
 	return transform;
 }
 
-SmartPtr<btRigidBody> Object::GetBody()
+std::shared_ptr<btRigidBody> Object::GetBody()
 {
 	return body;
 }
@@ -264,7 +264,7 @@ std::string Object::GetName() const
 	return name;
 }
 
-void Object::SetModel( SmartPtr<Model> model )
+void Object::SetModel( std::shared_ptr<Model> model )
 {
 	if( engine )
 	{
@@ -293,7 +293,7 @@ void Object::SetModel( SmartPtr<Model> model )
 	}
 }
 
-Object::Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :
+Object::Object( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ ) :
 	mass(mass_)
 {
 	this->collisionShape = collisionShape;
@@ -349,7 +349,7 @@ Object::~Object()
 		body->setCollisionShape( NULL );
 		
 		assert( body );
-		body.Delete();
+		body.reset();
 	}
 	
 	name = "";

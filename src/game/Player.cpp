@@ -11,7 +11,7 @@ void Player::Tick( const float deltaTime )
 	Character::Tick( deltaTime );
 }
 
-Player::Player( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ ) :
+Player::Player( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ ) :
 	Character( engine, name, body, collisionShape, mass_ )
 {
 }

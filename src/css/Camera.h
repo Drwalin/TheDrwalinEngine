@@ -7,7 +7,7 @@
 #include <LinearMath/btQuaternion.h>
 
 #include <Debug.h>
-#include <SmartPtr.h>
+#include <memory>
 
 #include <Object.h>
 

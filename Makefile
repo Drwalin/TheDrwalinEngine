@@ -8,7 +8,7 @@ SOURCEPATH = ./src/mtd
 LIBRARYPATH = ./src/lib
 LIBPNGPATH = ./lib
 
-SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp CustomCollisionData.cpp CollisionShapeManager.cpp SmartPtr.cpp TimeCounter.cpp EventReceiverIrrlicht.cpp
+SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp CustomCollisionData.cpp CollisionShapeManager.cpp TimeCounter.cpp EventReceiverIrrlicht.cpp
 OBJECTS_ = $(SOURCES_:.cpp=.o)
 SOURCES = $(addprefix $(SOURCEPATH)/,$(SOURCES_))
 OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))

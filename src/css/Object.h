@@ -13,7 +13,7 @@
 #include <set>
 
 #include <Debug.h>
-#include <SmartPtr.h>
+#include <memory>
 
 #include <Model.h>
 
@@ -30,10 +30,10 @@ protected:
 	btTransform currentTransform;
 	btTransform previousTransform;
 	
-	SmartPtr<Model> model;
+	std::shared_ptr<Model> model;
 	irr::scene::IAnimatedMeshSceneNode *sceneNode;
-	SmartPtr<btCollisionShape> collisionShape;
-	SmartPtr<btRigidBody> body;
+	std::shared_ptr<btCollisionShape> collisionShape;
+	std::shared_ptr<btRigidBody> body;
 	
 	btVector3 scale;
 	
@@ -44,7 +44,7 @@ protected:
 	std::set< Object* > overlappingInPreviousFrame;
 	std::set< Object* > overlappingInCurrentFrame;
 	
-	SmartPtr<Object> thisPtr;
+	std::shared_ptr<Object> thisPtr;
 	
 	void UpdateTransformSceneNode();
 	
@@ -58,7 +58,7 @@ public:
 	void Move( const btVector3 & move );
 	void Rotate( const btQuaternion & quat );
 	
-	SmartPtr<Object> GetThis();
+	std::shared_ptr<Object> GetThis();
 	
 	
 	void SetMass( float mass );
@@ -78,7 +78,7 @@ public:
 	btTransform GetTransform();
 	btVector3 GetLocation() const;
 	
-	SmartPtr<btRigidBody> GetBody();
+	std::shared_ptr<btRigidBody> GetBody();
 	
 	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold );
 	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold );
@@ -88,9 +88,9 @@ public:
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );
 	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal );
 	
-	void SetModel( SmartPtr<Model> model );
+	void SetModel( std::shared_ptr<Model> model );
 	
-	Object( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ );
+	Object( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ );
 	Object();
 	~Object();
 };

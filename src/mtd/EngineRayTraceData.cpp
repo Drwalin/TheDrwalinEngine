@@ -44,7 +44,7 @@ Engine::RayTraceData::RayTraceData() :
 {
 }
 
-SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < SmartPtr<Object> > & ignoreObjects )
+std::shared_ptr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < std::shared_ptr<Object> > & ignoreObjects )
 {
 	point = normal = btVector3(0,0,0);
 	
@@ -52,7 +52,7 @@ SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, 
 	world->GetDynamicsWorld()->rayTest( begin, end, rayTraceResult );
 	if( rayTraceResult.hasHit() )
 	{
-		std::set < SmartPtr<Object> > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?
+		std::set < std::shared_ptr<Object> > ignoreObjectsSet( ignoreObjects.begin(), ignoreObjects.end() );		// does it sort it?
 		std::set < RayTraceData > objects;
 		
 		for( int i = 0; i < rayTraceResult.m_collisionObjects.size(); ++i )
@@ -75,7 +75,7 @@ SmartPtr<Object> Engine::RayTrace( btVector3 begin, btVector3 end, int channel, 
 			return objects.begin()->object;
 		}
 	}
-	SmartPtr<Object> ret;
+	std::shared_ptr<Object> ret;
 	return ret;
 }
 

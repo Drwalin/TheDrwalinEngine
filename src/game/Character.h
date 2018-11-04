@@ -30,7 +30,7 @@ protected:
 	WalkMode walkMode;
 	WalkMode previousWalkMode;
 	
-	SmartPtr<Camera> camera;
+	std::shared_ptr<Camera> camera;
 	
 	float lastTimeInAir;
 	
@@ -47,7 +47,7 @@ public:
 	
 	static btTransform MakeTransformFromEuler( const btVector3 & euler );
 	
-	void SetCamera( SmartPtr<Camera> camera );
+	void SetCamera( std::shared_ptr<Camera> camera );
 	
 	
 	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
@@ -82,7 +82,7 @@ public:
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal ) override;
 	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal ) override;
 	
-	Character( Engine * engine, std::string name, SmartPtr<btRigidBody> body, SmartPtr<btCollisionShape> collisionShape, float mass_ );
+	Character( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ );
 	Character();
 	~Character();
 };

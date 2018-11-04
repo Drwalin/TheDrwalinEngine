@@ -75,7 +75,7 @@ inline void Engine::UpdateObjects( const float deltaTime )
 		GetCamera()->SetCameraTransform( cameraParent->GetTransform() );
 }
 
-void Engine::QueueObjectToDestroy( SmartPtr<Object> ptr )
+void Engine::QueueObjectToDestroy( std::shared_ptr<Object> ptr )
 {
 	if( ptr )
 		objectsQueuedToDestroy.push( ptr->GetName() );
@@ -156,12 +156,12 @@ void Engine::Tick( const float deltaTime )
 	physicsSimulationTime.SubscribeEnd();
 }
 
-SmartPtr<Camera> Engine::GetCamera() const
+std::shared_ptr<Camera> Engine::GetCamera() const
 {
 	return window->camera;
 }
 
-SmartPtr<Object> Engine::GetCameraParent() const
+std::shared_ptr<Object> Engine::GetCameraParent() const
 {
 	return cameraParent;
 }
@@ -196,7 +196,7 @@ void Engine::AttachCameraToObject( std::string name, btVector3 location )
 	GetCamera()->SetPos( location );
 }
 
-bool Engine::SetCustomModelName( std::string name, SmartPtr<Model> mdl )
+bool Engine::SetCustomModelName( std::string name, std::shared_ptr<Model> mdl )
 {
 	auto it = model.find( name );
 	if( it == model.end() )
@@ -207,7 +207,7 @@ bool Engine::SetCustomModelName( std::string name, SmartPtr<Model> mdl )
 	return false;
 }
 
-SmartPtr<Model> Engine::LoadModel( std::string name )
+std::shared_ptr<Model> Engine::LoadModel( std::string name )
 {
 	auto it = model.find( name );
 	if( it != model.end() )
@@ -219,12 +219,11 @@ SmartPtr<Model> Engine::LoadModel( std::string name )
 	}
 	else
 	{
-		SmartPtr<Model> mdl;
-		mdl = new Model;
+		std::shared_ptr<Model> mdl( new Model );
 		if( mdl->LoadFromObj( this, name ) == false )
 		{
-			mdl.Delete();
-			return SmartPtr<Model>();
+			mdl.reset();
+			return std::shared_ptr<Model>();
 		}
 		else
 		{
@@ -232,10 +231,10 @@ SmartPtr<Model> Engine::LoadModel( std::string name )
 			return mdl;
 		}
 	}
-	return SmartPtr<Model>();
+	return std::shared_ptr<Model>();
 }
 
-SmartPtr<Model> Engine::GetModel( std::string name )
+std::shared_ptr<Model> Engine::GetModel( std::string name )
 {
 	auto it = model.find( name );
 	if( it != model.end() )
@@ -251,12 +250,11 @@ SmartPtr<Model> Engine::GetModel( std::string name )
 	}
 	else
 	{
-		SmartPtr<Model> mdl;
-		mdl = new Model;
+		std::shared_ptr<Model> mdl( new Model );
 		if( mdl->LoadFromObj( this, name ) == false )
 		{
-			mdl.Delete();
-			return SmartPtr<Model>();
+			mdl.reset();
+			return std::shared_ptr<Model>();
 		}
 		else
 		{
@@ -264,11 +262,11 @@ SmartPtr<Model> Engine::GetModel( std::string name )
 			return mdl;
 		}
 	}
-	SmartPtr<Model> ret;
+	std::shared_ptr<Model> ret;
 	return ret;
 }
 
-SmartPtr<Object> Engine::GetObject( std::string name )
+std::shared_ptr<Object> Engine::GetObject( std::string name )
 {
 	auto it = object.find( name );
 	if( it != object.end() )
@@ -282,7 +280,7 @@ SmartPtr<Object> Engine::GetObject( std::string name )
 			object.erase( it );
 		}
 	}
-	SmartPtr<Object> ret;
+	std::shared_ptr<Object> ret;
 	return ret;
 }
 
@@ -297,7 +295,7 @@ void Engine::DeleteObject( std::string name )
 		if( it->second )
 		{
 			world->RemoveBody( name );
-			it->second.Delete();
+			it->second.reset();
 		}
 		
 		object.erase( it );
@@ -337,13 +335,13 @@ void Engine::Draw2D()
 	//if( false )
 	{
 		window->output->Print( "\n\nPointing at object: " );
-		SmartPtr<Object> player = this->GetObject("Player");
+		std::shared_ptr<Object> player = this->GetObject("Player");
 		btVector3 begin, end, point, normal;
 		
 		begin = this->GetCamera()->GetLocation();
 		end = begin + ( this->GetCamera()->GetForwardVector() * 100.0 );
 		
-		SmartPtr<Object> temp = this->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
+		std::shared_ptr<Object> temp = this->RayTrace( begin, end, Engine::RayTraceChannel::COLLIDING, point, normal, { player } );
 		
 		if( temp )
 		{
@@ -496,7 +494,7 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	if( GetCamera() == NULL )
 	{
-		window->camera = new Camera;
+		window->camera = std::shared_ptr<Camera>( new Camera );
 	}
 	
 	window->camera->sceneNode = window->sceneManager->addCameraSceneNode();
@@ -515,7 +513,7 @@ void Engine::Destroy()
 		{
 			assert( it->second );
 			world->RemoveBody( it->first );
-			it->second.Delete();
+			it->second.reset();
 		}
 	}
 	object.clear();
@@ -526,7 +524,7 @@ void Engine::Destroy()
 		{
 			assert( it->second );
 			it->second->Destroy();
-			it->second.Delete();
+			it->second.reset();
 		}
 	}
 	model.clear();

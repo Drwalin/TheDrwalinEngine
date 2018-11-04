@@ -6,41 +6,41 @@
 
 #include <Debug.h>
 
-SmartPtr<btCollisionShape> CustomCollisionShapeData::GetTriangleShape()
+std::shared_ptr<btCollisionShape> CustomCollisionShapeData::GetTriangleShape()
 {
 	if( !triangleShape )
 	{
 		if( !triangleData )
 		{
-			triangleData = new btTriangleIndexVertexArray( indices.size() / 3, &indices.front(), sizeof(int) * 3, vertices.size(), vertices.front().m_floats, sizeof(btVector3) );
+			triangleData = std::shared_ptr<btTriangleIndexVertexArray>( new btTriangleIndexVertexArray( indices.size() / 3, &indices.front(), sizeof(int) * 3, vertices.size(), vertices.front().m_floats, sizeof(btVector3) ) );
 			if( !triangleData )
 			{
 				return triangleShape;
 			}
 		}
-		triangleShape = new btBvhTriangleMeshShape( (btStridingMeshInterface*)(triangleData.GetPtr()), true, true );
+		triangleShape = std::shared_ptr<btBvhTriangleMeshShape>( new btBvhTriangleMeshShape( (btStridingMeshInterface*)(triangleData.get()), true, true ) );
 	}
 	return triangleShape;
 }
 
-SmartPtr<btCollisionShape> CustomCollisionShapeData::GetConvexShape()
+std::shared_ptr<btCollisionShape> CustomCollisionShapeData::GetConvexShape()
 {
 	if( !convexShape )
 	{
-		convexShape = new btConvexHullShape( vertices.front().m_floats, vertices.size(), sizeof(btVector3) );
+		convexShape = std::shared_ptr<btConvexHullShape>( new btConvexHullShape( vertices.front().m_floats, vertices.size(), sizeof(btVector3) ) );
 	}
 	return convexShape;
 }
 
 void CustomCollisionShapeData::DestroyTriangleShape()
 {
-	triangleShape.Delete();
-	triangleData.Delete();
+	triangleShape.reset();
+	triangleData.reset();
 }
 
 void CustomCollisionShapeData::DestroyConvexShape()
 {
-	convexShape.Delete();
+	convexShape.reset();
 }
 
 CustomCollisionShapeData::CustomCollisionShapeData()

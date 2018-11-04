@@ -4,7 +4,7 @@
 #include <Engine.h>
 
 #include <Debug.h>
-#include <SmartPtr.h>
+#include <memory>
 
 #include "../game/Header.h"
 
@@ -28,19 +28,19 @@ int main()
 	
 	
 	
-	SmartPtr<Model> sphere = engine->GetModel( "Sphere" );
-	SmartPtr<Model> crate01 = engine->GetModel( "Crate01" );
-	SmartPtr<Model> mapModel = engine->GetModel( /*"Plane" );*/"as_oilrig" );
+	std::shared_ptr<Model> sphere = engine->GetModel( "Sphere" );
+	std::shared_ptr<Model> crate01 = engine->GetModel( "Crate01" );
+	std::shared_ptr<Model> mapModel = engine->GetModel( /*"Plane" );*/"as_oilrig" );
 	assert( mapModel );
 	
 	
 	
-	SmartPtr<btCollisionShape> mapShape = engine->GetCollisionShapeManager()->CreateCustomShape( "Map triangle collision mesh", mapModel, CollisionShapeManager::SHAPE_TYPE_TRIANGLE );
+	std::shared_ptr<btCollisionShape> mapShape = engine->GetCollisionShapeManager()->CreateCustomShape( "Map triangle collision mesh", mapModel, CollisionShapeManager::SHAPE_TYPE_TRIANGLE );
 	assert( mapShape );
 	
 	
 	
-	SmartPtr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-20,-20) ), false );
+	std::shared_ptr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-20,-20,-20) ), false );
 	map->SetModel( mapModel );
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
@@ -72,9 +72,9 @@ int main()
 	
 	
 	
-	SmartPtr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-22,10,0) ), 15.0 );
+	std::shared_ptr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-22,10,0) ), 15.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
-	((Character*)(player.GetPtr()))->SetCamera( engine->GetCamera() );
+	((Character*)(player.get()))->SetCamera( engine->GetCamera() );
 	
 	
 	

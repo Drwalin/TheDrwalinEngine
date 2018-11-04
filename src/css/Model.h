@@ -18,7 +18,7 @@
 
 #include <Debug.h>
 #include <AR.hpp>
-#include <SmartPtr.h>
+#include <memory>
 
 #include <CustomCollisionData.h>
 
@@ -41,7 +41,7 @@ private:
 	
 	btVector3 minAABB, maxAABB;
 	
-	SmartPtr<CustomCollisionShapeData> collisionShapeData;
+	std::shared_ptr<CustomCollisionShapeData> collisionShapeData;
 	
 public:
 	
@@ -55,7 +55,7 @@ public:
 	
 	bool LoadFromObj( Engine * engine, std::string objFileName );
 	
-	SmartPtr<CustomCollisionShapeData> GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices = 0.0311 );
+	std::shared_ptr<CustomCollisionShapeData> GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices = 0.0311 );
 	void NullCustomCollisionShape();
 	
 	void Destroy();

@@ -5,7 +5,7 @@
 #include <Model.h>
 #include <Engine.h>
 
-#include <SmartPtr.h>
+#include <memory>
 
 #include <sstream>
 #include <fstream>

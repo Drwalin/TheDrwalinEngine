@@ -139,7 +139,7 @@ bool Model::LoadCustomCollisionShapeFromObj( std::string objFileName )
 	
 	// calculate all physics data
 	{
-		collisionShapeData = new CustomCollisionShapeData;
+		collisionShapeData = std::shared_ptr<CustomCollisionShapeData>( new CustomCollisionShapeData );
 		collisionShapeData->vertices = vertices;
 		collisionShapeData->indices.resize( faces.size() * 3 );
 		
@@ -177,7 +177,7 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	return true;
 }
 
-SmartPtr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices )
+std::shared_ptr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices )
 {
 	/*
 	if( !collisionShapeData )

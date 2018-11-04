@@ -12,7 +12,7 @@
 #include <map>
 #include <string>
 
-#include <SmartPtr.h>
+#include <memory>
 
 class World
 {
@@ -24,7 +24,7 @@ private:
 	btSequentialImpulseConstraintSolver * solver;
 	btDiscreteDynamicsWorld * dynamicsWorld;
 	
-	std::map < std::string, SmartPtr<btRigidBody> > object;
+	std::map < std::string, std::shared_ptr<btRigidBody> > object;
 	
 	std::string currentActivator;
 	int activateAll;
@@ -37,13 +37,13 @@ public:
 	
 	btDiscreteDynamicsWorld * GetDynamicsWorld();
 	
-	void UpdateColliderForObject( SmartPtr<btRigidBody> body );
+	void UpdateColliderForObject( std::shared_ptr<btRigidBody> body );
 	
 	btVector3 GetGravity();
 	
 	void Tick( btScalar deltaTime, int count = 0 );
 	
-	bool AddBody( std::string name, SmartPtr<btRigidBody> body );
+	bool AddBody( std::string name, std::shared_ptr<btRigidBody> body );
 	
 	void RemoveBody( std::string name );
 	void RemoveBodys();

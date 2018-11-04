@@ -10,20 +10,18 @@ btTransform Camera::GetTransform() const
 {
 	return btTransform
 		(
-			parentTransformation.getRotation() *
-			btQuaternion( btVector3(0,1,0), rot.y() ) *
-			btQuaternion( btVector3(1,0,0), rot.x() ) *
-			btQuaternion( btVector3(0,0,1), rot.z() ),
+			GetRotation(),
 			GetLocation()
 		);
 }
 
 btQuaternion Camera::GetRotation() const
 {
-	return parentTransformation.getRotation() *
+	return 
 			btQuaternion( btVector3(0,1,0), rot.y() ) *
 			btQuaternion( btVector3(1,0,0), rot.x() ) *
-			btQuaternion( btVector3(0,0,1), rot.z() );
+			btQuaternion( btVector3(0,0,1), rot.z() ) *
+			parentTransformation.getRotation();
 }
 
 btQuaternion Camera::GetFlatRotation() const
@@ -72,13 +70,17 @@ btVector3 Camera::GetLocation() const
 	return parentTransformation.getOrigin() + pos;
 }
 
+void Camera::UpdateCameraView()
+{
+	sceneNode->setTarget( Math::GetIrrVec( ( GetLocation() * btVector3(-1,1,1) ) + ( btTransform(btQuaternion(btVector3(0,1,0),Math::PI)) * GetForwardVector() ) ) );
+	sceneNode->setUpVector( Math::GetIrrVec( ( btTransform(btQuaternion(btVector3(0,1,0),Math::PI)) * GetUpVector() ) ) );
+	sceneNode->setPosition( Math::GetIrrVec( GetLocation() * btVector3(-1,1,1) ) );
+}
+
 void Camera::SetPos( btVector3 src )
 {
 	pos = src;
-	sceneNode->setPosition( irr::core::vector3d<float>( GetLocation().x(), GetLocation().y(), GetLocation().z() ) );
-	btVector3 p = GetLocation() + ( GetForwardVector() );
-	irr::core::vector3d<float> vec( p.x(), p.y(), p.z() );
-	sceneNode->setTarget( vec );
+	UpdateCameraView();
 }
 
 void Camera::SetRotation( btVector3 src )
@@ -100,18 +102,14 @@ void Camera::SetRotation( btVector3 src )
 	else if( rot.z() < -Math::PI * 2.0 )
 		rot.m_floats[2] += Math::PI * 2.0;
 	
-	btVector3 p = GetLocation() + ( GetForwardVector() );
-	irr::core::vector3d<float> vec( p.x(), p.y(), p.z() );
-	sceneNode->setTarget( vec );
+	UpdateCameraView();
 }
 
 void Camera::Move( btVector3 src )
 {
 	pos += src;
-	sceneNode->setPosition( irr::core::vector3d<float>( GetLocation().x(), GetLocation().y(), GetLocation().z() ) );
-	btVector3 p = GetLocation() + ( GetForwardVector() );
-	irr::core::vector3d<float> vec( p.x(), p.y(), p.z() );
-	sceneNode->setTarget( vec );
+	
+	UpdateCameraView();
 }
 
 void Camera::Rotate( btVector3 src )
@@ -133,18 +131,14 @@ void Camera::Rotate( btVector3 src )
 	else if( rot.z() < -Math::PI * 2.0 )
 		rot.m_floats[2] += Math::PI * 2.0;
 	
-	btVector3 p = GetLocation() + ( GetForwardVector() );
-	irr::core::vector3d<float> vec( p.x(), p.y(), p.z() );
-	sceneNode->setTarget( vec );
+	UpdateCameraView();
 }
 
 void Camera::SetCameraTransform( btTransform transform )
 {
 	parentTransformation = transform;
-	sceneNode->setPosition( irr::core::vector3d<float>( GetLocation().x(), GetLocation().y(), GetLocation().z() ) );
-	btVector3 p = GetLocation() + ( GetForwardVector() );
-	irr::core::vector3d<float> vec( p.x(), p.y(), p.z() );
-	sceneNode->setTarget( vec );
+	
+	UpdateCameraView();
 }
 
 Camera::Camera()

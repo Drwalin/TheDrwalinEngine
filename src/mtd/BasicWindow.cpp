@@ -208,16 +208,11 @@ void BasicWindow::Draw()
 
 void BasicWindow::AlTick()
 {
-	//UpdateKeyboard();
-	
-	/*
 	if( lockMouse )
 	{
-		al_set_mouse_xy( display, al_get_bitmap_width(al_get_backbuffer(display)) / 2, al_get_bitmap_height(al_get_backbuffer(display)) / 2 );
-		mouseLastFrame.x = al_get_bitmap_width(al_get_backbuffer(display)) / 2;
-		mouseLastFrame.y = al_get_bitmap_height(al_get_backbuffer(display)) / 2;
+		eventIrrlichtReceiver->SetCursor( GetWidth() / 2, GetHeight() / 2 );
+		device->getCursorControl()->setPosition( 0.5f, 0.5f );//float(GetWidth())/2.0f, float(GetHeight())/2.0f );
 	}
-	*/
 	
 	GenerateEvents();
 	

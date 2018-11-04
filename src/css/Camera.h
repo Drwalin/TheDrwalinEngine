@@ -22,6 +22,8 @@ private:
 	
 	btVector3 currentLocation;
 	
+	void UpdateCameraView();
+	
 public:
 	
 	irr::scene::ICameraSceneNode * sceneNode;

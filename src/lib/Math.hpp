@@ -2,37 +2,47 @@
 #ifndef MATH_ENGINE_HPP
 #define MATH_ENGINE_HPP
 
+#include <irrlicht\irrlicht.h>
+
 #include <LinearMath/btVector3.h>
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btQuaternion.h>
 #include <btBulletDynamicsCommon.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <cmath>
 
 namespace Math
 {
 	const float PI = 3.14159265359f;
 	
-	inline glm::vec3 GetVec( const btVector3 & src )
+	inline irr::core::vector3d<float> GetIrrVec( const btVector3 & vec )
 	{
-		return glm::vec3( src.x(), src.y(), src.z() );
+		return irr::core::vector3d<float>( vec.x(), vec.y(), vec.z() );
 	}
 	
-	inline glm::mat4 GetMatrix( const btTransform & transform, const btVector3 & scale )
+	template < class T >
+	inline btVector3 GetBtVec( const irr::core::vector3d<T> & vec )
 	{
-		btVector3 origin = transform.getOrigin();
-		btQuaternion rotation = transform.getRotation();
-		btVector3 axis = rotation.getAxis().normalized();
-		btScalar angle = rotation.getAngle();
-		
-		glm::mat4 matrix(1.0f);
-		
-		matrix = glm::scale( matrix, glm::vec3( scale.x(), scale.y(), scale.z() ) );
-		matrix = glm::translate( matrix, glm::vec3( origin.x(), origin.y(), origin.z() ) );
-		matrix = glm::rotate( matrix, angle, glm::vec3( axis.x(), axis.y(), axis.z() ) );
-		
-		return matrix;
+		return btVector3( vec.X, vec.Y, vec.Z );
+	}
+	
+	inline irr::core::quaternion GetIrrQuaternion( const btQuaternion & quat )
+	{
+	    irr::core::quaternion q;
+	    q.fromAngleAxis( quat.getAngle(), Math::GetIrrVec( quat.getAxis() ) );
+		return q;
+	}
+	
+	inline irr::core::quaternion GetIrrQuaternion( const btTransform & trans )
+	{
+	    irr::core::quaternion q;
+	    q.fromAngleAxis( trans.getRotation().getAngle(), Math::GetIrrVec( trans.getRotation().getAxis() ) );
+		return q;
+	}
+	
+	inline irr::core::vector3d<float> GetIrrVec( const btTransform & trans )
+	{
+	    return Math::GetIrrVec( trans.getOrigin() );
 	}
 	
 };

@@ -46,11 +46,17 @@ protected:
 	
 	SmartPtr<Object> thisPtr;
 	
+	void UpdateTransformSceneNode();
+	
 public:
 	
 	virtual void NextOverlappingFrame();
 	void OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold );
 	
+	void SetPosition( const btVector3 & loc );
+	void SetRotation( const btQuaternion & quat );
+	void Move( const btVector3 & move );
+	void Rotate( const btQuaternion & quat );
 	
 	SmartPtr<Object> GetThis();
 	

@@ -7,6 +7,64 @@
 
 #include <Math.hpp>
 
+#include <cassert>
+
+void Object::UpdateTransformSceneNode()
+{
+	if( sceneNode )
+	{
+		sceneNode->setPosition( Math::GetIrrVec( currentTransform ) * irr::core::vector3d<float>(-1,1,1) );
+		
+		irr::core::vector3d<float> eulerRadians; 
+		Math::GetIrrQuaternion( currentTransform ).toEuler( eulerRadians ); 
+		sceneNode->setRotation( eulerRadians * irr::core::RADTODEG );
+	}
+}
+
+void Object::SetPosition( const btVector3 & loc )
+{
+	currentTransform = btTransform( currentTransform.getRotation(), loc );
+	previousTransform = currentTransform;
+	
+	if( body )
+	{
+		body->activate( true );
+		//body->setCenterOfMassTransform( currentTransform );
+		//body->getMotionState()->setWorldTransform( currentTransform );
+		engine->GetWorld()->UpdateColliderForObject( body );
+		body->activate( true );
+	}
+	
+//	UpdateTransformSceneNode();
+}
+
+void Object::SetRotation( const btQuaternion & quat )
+{
+	currentTransform = btTransform( quat, currentTransform.getOrigin() );
+	previousTransform = currentTransform;
+	
+	if( body )
+	{
+		body->activate( true );
+		//body->setCenterOfMassTransform( currentTransform );
+		//body->getMotionState()->setWorldTransform( currentTransform );
+		engine->GetWorld()->UpdateColliderForObject( body );
+		body->activate( true );
+	}
+	
+//	UpdateTransformSceneNode();
+}
+
+void Object::Move( const btVector3 & move )
+{
+	SetPosition( currentTransform.getOrigin() + move );
+}
+
+void Object::Rotate( const btQuaternion & quat )
+{
+	SetRotation( currentTransform.getRotation() * quat );
+}
+
 void Object::NextOverlappingFrame()
 {
 	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
@@ -84,21 +142,9 @@ void Object::Tick( const float deltaTime )
 	{
 		previousTransform = currentTransform;
 		body->getMotionState()->getWorldTransform( currentTransform );
-		
-		if( sceneNode )
-		{
-			{
-				btVector3 vec = currentTransform.getOrigin();
-				sceneNode->setPosition( irr::core::vector3d<float>( vec.x(), vec.y(), vec.z() ) );
-			}
-			
-			{
-				float a[3];
-				currentTransform.getRotation().getEulerZYX( a[0], a[1], a[2] );
-				sceneNode->setRotation( irr::core::vector3d<float>( a[0], a[1], a[2] ) );
-			}
-		}
 	}
+	
+	UpdateTransformSceneNode();
 	
 	if( currentTransform.getOrigin().y() < -1000.0 )
 	{
@@ -170,7 +216,7 @@ void Object::SetScale( btVector3 scale )
 	}
 	if( sceneNode )
 	{
-		sceneNode->setScale( irr::core::vector3d<float>( scale.x(), scale.y(), scale.z() ) );
+		sceneNode->setScale( Math::GetIrrVec( scale ) );
 	}
 }
 
@@ -240,9 +286,7 @@ void Object::SetModel( SmartPtr<Model> model )
 					sceneNode = engine->GetWindow()->sceneManager->addAnimatedMeshSceneNode( model->GetMesh() );
 					model->SetMaterialsToNode( sceneNode );
 					
-					
-					btVector3 vec = scale * model->GetScale();
-					sceneNode->setScale( irr::core::vector3d<float>( vec.x(), vec.y(), vec.z() ) );
+					sceneNode->setScale( Math::GetIrrVec( scale ) );
 				}
 			}
 		}

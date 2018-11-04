@@ -7,6 +7,18 @@
 
 #include <cstdio>
 
+void EventReceiverIrrlicht::SetCursor( int x, int y )
+{
+	mouseX = x;
+	mouseY = y;
+}
+
+void EventReceiverIrrlicht::GetCursor( int & x, int & y )
+{
+	x = mouseX;
+	y = mouseY;
+}
+
 bool EventReceiverIrrlicht::OnEvent( const irr::SEvent& event )
 {
 	queueMutex.lock();

@@ -253,7 +253,7 @@ SmartPtr<Model> Engine::GetModel( std::string name )
 	{
 		SmartPtr<Model> mdl;
 		mdl = new Model;
-		if( mdl->LoadFromFile( this, name ) == false )
+		if( mdl->LoadFromObj( this, name ) == false )
 		{
 			mdl.Delete();
 			return SmartPtr<Model>();

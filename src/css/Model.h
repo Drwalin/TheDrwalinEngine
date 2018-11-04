@@ -45,8 +45,6 @@ private:
 	
 public:
 	
-	btVector3 GetScale() const;
-	
 	void SetMaterialsToNode( irr::scene::ISceneNode * node );
 	
 	btVector3 GetInertia() const;

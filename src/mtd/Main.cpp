@@ -44,7 +44,8 @@ int main()
 	map->SetModel( mapModel );
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
-	
+//	map->SetPosition( btVector3( -20, -20, -20 ) );
+//	map->SetRotation( btQuaternion( btVector3(0,1,0), 0 ) );
 	
 	if( false )
 	{
@@ -57,12 +58,13 @@ int main()
 	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
 	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
 	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->CreateCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1"), CollisionShapeManager::SHAPE_TYPE_CONVEX ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10, engine->GetModel("m4a1")->GetInertia() )->SetModel( engine->GetModel("m4a1") );
-	engine->GetObject( "m4a1" )->SetScale( 1.4, 0.6, 0.15 );
+	engine->GetObject( "m4a1" )->SetScale( btVector3( 1, 1, 1 ) * 0.01f );
 	
+	engine->GetCollisionShapeManager()->CreateCustomShape( "crate01shape__1331_", crate01, CollisionShapeManager::SHAPE_TYPE_CONVEX );
 	
 	for( int i = 0; i < 0; ++i )
 	{
-		auto o = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) )/*engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape" )*/, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,10.3,0) + btVector3(0,(i%12)*0.3,((i/12))+(float(i%2)/2.0)) ), true, 50.0 );
+		auto o = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape__1331_" ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,10.3,0) + btVector3(0,(i%12)*0.3,((i/12))+(float(i%2)/2.0)) ), true, 50.0 );
 		o->SetModel( crate01 );
 		o->SetScale( btVector3( 0.6, 0.3, 1 ) );
 		o->GetBody()->setFriction( 0.9 );

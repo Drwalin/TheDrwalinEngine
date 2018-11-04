@@ -26,7 +26,7 @@ void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 		Character * character = dynamic_cast < Character* > ( (Object*)(player.GetPtr()) );
 		if( character )
 		{
-			character->EventRotateCameraBy( btVector3( float(dy)/80.0, float(dx)/80.0, 0.0 ) );
+			character->EventRotateCameraBy( btVector3( float(dy)/160.0, float(dx)/160.0, 0.0 ) );
 		}
 	}
 }
@@ -75,9 +75,10 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case irr::KEY_LBUTTON:
-		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetBox( btVector3(0.5,0.5,0.5) ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ ), true, 20.0 );
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape__1331_" ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ ), true, 20.0 );
 		temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 16.0 );
 		temp->SetModel( engine->GetModel( "Crate01" ) );
+		temp->SetScale( btVector3( 0.5, 0.5, 0.5 ) );
 		break;
 	case irr::KEY_RBUTTON:
 		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
@@ -226,6 +227,8 @@ void Event::KeyHoldedEvent( int keyCode )
 
 void Event::StringToEnterEvent( std::string str )
 {
+	fprintf( stderr, "\n Input string: \"%s\"", str.c_str() );
+	
 	SmartPtr<Object> player = engine->GetObject( std::string("Player") );
 	SmartPtr<Object> temp;
 	btVector3 begin, end, point, normal;

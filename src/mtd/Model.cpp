@@ -7,10 +7,7 @@
 
 void Model::SetMaterialsToNode( irr::scene::ISceneNode * node )
 {
-	for( auto it = materials.begin(); it != materials.end(); ++it )
-	{
-		node->getMaterial( it->first ) = it->second;
-	}
+	node->setMaterialFlag( irr::video::EMF_LIGHTING, false );
 }
 
 irr::scene::IAnimatedMesh * Model::GetMesh()
@@ -142,9 +139,6 @@ bool Model::LoadCustomCollisionShapeFromObj( std::string objFileName )
 	
 	// calculate all physics data
 	{
-		//std::vector < btVector3 > vertices;
-		//std::vector < Model::Face > faces;
-		
 		collisionShapeData = new CustomCollisionShapeData;
 		collisionShapeData->vertices = vertices;
 		collisionShapeData->indices.resize( faces.size() * 3 );
@@ -158,64 +152,6 @@ bool Model::LoadCustomCollisionShapeFromObj( std::string objFileName )
 	}
 	
 	return true;
-}
-
-bool Model::LoadMaterialsFromMTL( std::string mtlFileName )
-{
-	std::ifstream file( mtlFileName );
-	
-	std::string path = mtlFileName;
-	for( int i = path.size(); i > 0; --i )
-	{
-		if( path[i] == '/' )
-		{
-			path.resize( i+1 );
-			break;
-		}
-	}
-	
-	if( file.good() )
-	{
-		int currentMaterial = -1;
-		
-		materials.clear();
-		std::string line, text;
-		
-		while( !file.eof() )
-		{
-			std::stringstream sstream;
-			line = "";
-			std::getline( file, line );
-			text = "";
-			if( line.size() )
-			{
-				if( line[line.size()-1] == 13 )
-					line.resize( line.size()-1 );
-			}
-			sstream << line;
-			sstream.flush();
-			sstream >> text;
-			if( text == "newmtl" )
-			{
-				++currentMaterial;
-			}
-			else if( text == "map_Kd" )
-			{
-				text = "";
-				sstream >> text;
-				
-				irr::video::SMaterial material;
-			    material.setTexture( 0, engine->GetWindow()->videoDriver->getTexture( (path+text).c_str() ) );
-			    material.Lighting = false;
-			    material.NormalizeNormals = true;
-			    materials[currentMaterial] = material;
-			}
-		}
-		
-		return true;
-	}
-	
-	return false;
 }
 
 bool Model::LoadFromObj( Engine * engine, std::string objFileName )
@@ -235,8 +171,6 @@ bool Model::LoadFromObj( Engine * engine, std::string objFileName )
 	std::string mtlFileName = objFileName;
 	mtlFileName.resize( mtlFileName.size()-3 );
 	mtlFileName += "mtl";
-	
-	LoadMaterialsFromMTL( mtlFileName );
 	
 	LoadCustomCollisionShapeFromObj( objFileName );
 	

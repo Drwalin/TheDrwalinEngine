@@ -51,8 +51,6 @@ public:
 	
 	irr::scene::IAnimatedMesh * GetMesh();
 	
-	bool LoadMaterialsFromMTL( std::string mtlFileName );
-	
 	bool LoadCustomCollisionShapeFromObj( std::string objFileName );
 	
 	bool LoadFromObj( Engine * engine, std::string objFileName );

@@ -15,10 +15,24 @@
 
 class Model;
 class Object;
+class Engine;
 
 class CollisionShapeManager
 {
 private:
+	
+	Engine * engine;
+	
+	std::map < std::vector<btScalar>, std::shared_ptr<btCollisionShape> > shapesVecPtr;
+	std::map < std::shared_ptr<btCollisionShape>, std::vector<btScalar> > shapesPtrVec;
+	
+	std::map < std::string, std::shared_ptr<btCollisionShape> > shapesStrPtr;
+	std::map < std::shared_ptr<btCollisionShape>, std::shared_ptr<CustomCollisionShapeData> > shapesPtrPtr;
+	
+	
+	
+	
+	
 	
 	std::map < std::vector < btScalar >, std::shared_ptr<btCollisionShape> > collisionShape;
 	std::map < std::shared_ptr<btCollisionShape>, std::vector < btScalar > > collisionShapeRev;
@@ -29,7 +43,6 @@ private:
 	std::map < std::shared_ptr<btCollisionShape>, std::shared_ptr<CustomCollisionShapeData> > customCollisionShapeData;
 	std::map < std::string, std::shared_ptr<btCollisionShape> > customCollisionShape;
 	std::map < std::shared_ptr<btCollisionShape>, std::string > customCollisionShapeName;
-	
 	
 	std::shared_ptr<btCollisionShape> GetShape( std::vector < btScalar > constructionData, bool independent );
 	std::shared_ptr<btCollisionShape> AddShape( std::vector < btScalar > constructionData, std::string name );
@@ -57,7 +70,7 @@ public:
 	
 	void Destroy();
 	
-	CollisionShapeManager();
+	CollisionShapeManager( Engine * engine );
 	~CollisionShapeManager();
 };
 

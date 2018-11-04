@@ -5,6 +5,7 @@
 #include <CollisionShapeManager.h>
 #include <Model.h>
 #include <Object.h>
+#include <Engine.h>
 
 bool CollisionShapeManager::IsNameAvailable( std::string name )
 {
@@ -262,8 +263,9 @@ void CollisionShapeManager::Destroy()
 	customCollisionShapeName.clear();
 }
 
-CollisionShapeManager::CollisionShapeManager()
+CollisionShapeManager::CollisionShapeManager( Engine * engine )
 {
+	this->engine = engine;
 }
 
 CollisionShapeManager::~CollisionShapeManager()

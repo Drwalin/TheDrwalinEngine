@@ -213,9 +213,13 @@ std::shared_ptr<Model> Engine::LoadModel( std::string name )
 	if( it != model.end() )
 	{
 		if( it->second )
+		{
 			return it->second;
+		}
 		else
+		{
 			model.erase( it );
+		}
 	}
 	else
 	{
@@ -236,34 +240,7 @@ std::shared_ptr<Model> Engine::LoadModel( std::string name )
 
 std::shared_ptr<Model> Engine::GetModel( std::string name )
 {
-	auto it = model.find( name );
-	if( it != model.end() )
-	{
-		if( it->second )
-		{
-			return it->second;
-		}
-		else
-		{
-			model.erase( it );
-		}
-	}
-	else
-	{
-		std::shared_ptr<Model> mdl( new Model );
-		if( mdl->LoadFromObj( this, name ) == false )
-		{
-			mdl.reset();
-			return std::shared_ptr<Model>();
-		}
-		else
-		{
-			model[name] = mdl;
-			return mdl;
-		}
-	}
-	std::shared_ptr<Model> ret;
-	return ret;
+	return LoadModel( name );
 }
 
 std::shared_ptr<Object> Engine::GetObject( std::string name )
@@ -484,7 +461,7 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	window->HideMouse();
 	window->LockMouse();
 	
-	collisionShapeManager = new CollisionShapeManager;
+	collisionShapeManager = new CollisionShapeManager( this );
 	
 	DEBUG(8)
 	

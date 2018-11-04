@@ -16,7 +16,7 @@ void Object::UpdateTransformSceneNode()
 		sceneNode->setPosition( Math::GetIrrVec( currentTransform ) * irr::core::vector3d<float>(-1,1,1) );
 		
 		irr::core::vector3d<float> eulerRadians; 
-		Math::GetIrrQuaternion( currentTransform ).toEuler( eulerRadians ); 
+		Math::GetIrrQuaternion( btQuaternion( currentTransform.getRotation().getAxis() * btVector3(1,-1,-1), currentTransform.getRotation().getAngle() ) ).toEuler( eulerRadians );
 		sceneNode->setRotation( eulerRadians * irr::core::RADTODEG );
 	}
 }

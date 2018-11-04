@@ -216,7 +216,7 @@ std::shared_ptr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( fl
 
 btVector3 Model::GetInertia() const
 {
-	return minAABB + maxAABB;
+	return ( minAABB + maxAABB ) * 0.5f;
 }
 
 void Model::NullCustomCollisionShape()

@@ -25,13 +25,22 @@ std::shared_ptr<btCollisionShape> CustomCollisionShapeData::GetTriangleShape()
 
 std::shared_ptr<btCollisionShape> CustomCollisionShapeData::GetConvexShape()
 {
+	DEBUG(0)
 	if( !convexShape )
 	{
+	DEBUG(1)
 		convexShape = std::shared_ptr<btConvexHullShape>( new btConvexHullShape( vertices.front().m_floats, vertices.size(), sizeof(btVector3) ) );
+		if( !convexShape )
+		{
+			DEBUG(311)
+		}
+	DEBUG(2)
 	}
+	DEBUG(3)
 	return convexShape;
 }
 
+/*
 void CustomCollisionShapeData::DestroyTriangleShape()
 {
 	triangleShape.reset();
@@ -42,6 +51,7 @@ void CustomCollisionShapeData::DestroyConvexShape()
 {
 	convexShape.reset();
 }
+*/
 
 CustomCollisionShapeData::CustomCollisionShapeData()
 {

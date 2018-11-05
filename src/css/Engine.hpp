@@ -7,38 +7,47 @@
 template < class T >
 std::shared_ptr<Object> Engine::AddObject( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform, bool dynamic, btScalar mass, btVector3 inertia )
 {
+	DEBUG(0)
 	if( shape && object.find(name) == object.end() )
 	{
+	DEBUG(1)
 		if( dynamic && mass > 0 )
 			shape->calculateLocalInertia( mass, inertia );
 		else
 			mass = 0;
 		
+	DEBUG(2)
 		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
 		std::shared_ptr<btRigidBody> rigidBody( new btRigidBody( mass, motionState, (btCollisionShape*)shape.get(), inertia ) );
 		world->AddBody( name, rigidBody );
 		rigidBody->setDamping( 0.2, 0.1 );
 		rigidBody->setFriction( 0.2 );
 		
+	DEBUG(3)
 		std::shared_ptr<Object> obj( new T( this, name, rigidBody, shape, mass ) );
 		object[name] = obj;
 		
+	DEBUG(4)
 		rigidBody->setUserPointer( (void*)obj.get() );
 		
+	DEBUG(5)
 		return obj;
 	}
+	DEBUG(6)
 	
 	if( !shape )
 	{
-		DEBUG( "Shape = NULL" );
+		DEBUG( std::string("Shape = NULL : ") + name );
 	}
 	
+	DEBUG(7)
 	
 	if( object.find(name) != object.end() )
 	{
 		DEBUG( ( std::string( "Trying to spawn object whit name that exist: " ) + name ) );
 	}
 	
+	DEBUG(8)
 	return std::shared_ptr<Object>();
 }
 
@@ -60,7 +69,7 @@ std::shared_ptr<Object> Engine::AddCharacter( std::string name, btScalar width, 
 		}
 		else
 		{
-			collisionShapeManager->RemoveCustomShape( shapeName );
+			collisionShapeManager->RemoveShape( shape );
 		}
 		return obj;
 	}

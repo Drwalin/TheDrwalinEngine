@@ -75,7 +75,7 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case irr::KEY_LBUTTON:
-		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetCustomShape( "crate01shape__1331_" ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ ), true, 20.0, engine->GetModel( "Crate01" )->GetInertia() );
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetShape( "crate01shape__1331_" ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector() ), true, 20.0, engine->GetModel( "Crate01" )->GetInertia() );
 		if( temp )
 		{
 			temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 16.0 );
@@ -88,11 +88,13 @@ void Event::KeyPressedEvent( int keyCode )
 		}
 		break;
 	case irr::KEY_RBUTTON:
-		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 0.5 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + window->camera->GetForwardVector() ), true, 20.0 );
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Ball"), engine->GetCollisionShapeManager()->GetBall( 1.0 ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector() ), true, 20.0 );
 		if( temp )
 		{
-			temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
+			temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 16.0 );
+			//temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + window->camera->GetForwardVector() * 16.0 );
 			temp->SetModel( engine->GetModel( "Sphere" ) );
+			temp->SetScale( btVector3( 0.5, 0.5, 0.5 ) );
 		}
 		else
 		{
@@ -184,7 +186,7 @@ void Event::KeyHoldedEvent( int keyCode )
 		if( keyCode == irr::KEY_DELETE )
 		{
 			begin = engine->GetCamera()->GetLocation();
-			end = begin + ( engine->GetCamera()->GetForwardVector() * 100.0 );
+			end = begin + ( character->GetForwardVector() * 100.0 );
 		}
 		else
 		{

@@ -39,11 +39,23 @@ private:
 	
 	Engine * engine;
 	
+	std::string name;
+	std::string fileName;
+	
 	btVector3 minAABB, maxAABB;
 	
 	std::shared_ptr<CustomCollisionShapeData> collisionShapeData;
 	
 public:
+	
+	class SHAPE
+	{
+	public:
+		static const int TRIANGLE = 1;
+		static const int CONVEX = 2;
+	};
+	
+	void SetName( std::string name );
 	
 	void SetMaterialsToNode( irr::scene::ISceneNode * node );
 	
@@ -51,11 +63,11 @@ public:
 	
 	irr::scene::IAnimatedMesh * GetMesh();
 	
-	bool LoadCustomCollisionShapeFromObj( std::string objFileName );
+	bool LoadCustomCollisionShapeFromObj();
 	
-	bool LoadFromObj( Engine * engine, std::string objFileName );
+	bool LoadFromFile( Engine * engine, std::string objFileName );
 	
-	std::shared_ptr<CustomCollisionShapeData> GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices = 0.0311 );
+	std::shared_ptr<btCollisionShape> GetCollisionShape( const int shape );
 	void NullCustomCollisionShape();
 	
 	void Destroy();

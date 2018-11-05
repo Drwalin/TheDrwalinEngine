@@ -15,12 +15,30 @@ irr::scene::IAnimatedMesh * Model::GetMesh()
 	return mesh;
 }
 
-bool Model::LoadCustomCollisionShapeFromObj( std::string objFileName )
+void Model::SetName( std::string name )
 {
+	this->name = name;
+}
+
+bool Model::LoadCustomCollisionShapeFromObj()
+{
+	if( fileName.size() >= 3 )
+	{
+		std::string temp( fileName.c_str() + fileName.size() - 3 );
+		if( temp != "obj" )
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+	
 	std::vector < btVector3 > vertices;
 	std::vector < Model::Face > faces;
 	
-	std::ifstream file( objFileName );
+	std::ifstream file( fileName );
 	
 	if( file.good() )
 	{
@@ -140,78 +158,77 @@ bool Model::LoadCustomCollisionShapeFromObj( std::string objFileName )
 	// calculate all physics data
 	{
 		collisionShapeData = std::shared_ptr<CustomCollisionShapeData>( new CustomCollisionShapeData );
-		collisionShapeData->vertices = vertices;
-		collisionShapeData->indices.resize( faces.size() * 3 );
 		
-		for( int i = 0; i < faces.size(); ++i )
+		if( collisionShapeData )
 		{
-			collisionShapeData->indices[(i*3)+0] = faces[i].a;
-			collisionShapeData->indices[(i*3)+1] = faces[i].b;
-			collisionShapeData->indices[(i*3)+2] = faces[i].c;
+			collisionShapeData->vertices = vertices;
+			collisionShapeData->indices.resize( faces.size() * 3 );
+			
+			for( int i = 0; i < faces.size(); ++i )
+			{
+				collisionShapeData->indices[(i*3)+0] = faces[i].a;
+				collisionShapeData->indices[(i*3)+1] = faces[i].b;
+				collisionShapeData->indices[(i*3)+2] = faces[i].c;
+			}
+			return true;
 		}
 	}
 	
-	return true;
+	return false;
 }
 
-bool Model::LoadFromObj( Engine * engine, std::string objFileName )
+bool Model::LoadFromFile( Engine * engine, std::string fileName )
 {
 	Destroy();
 	
 	if( engine == NULL )
 		return false;
 	
-	mesh = engine->GetWindow()->sceneManager->getMesh( objFileName.c_str() );
+	mesh = engine->GetWindow()->sceneManager->getMesh( fileName.c_str() );
 	
-	if( objFileName.size() < 5 )
+	if( mesh == NULL )
 		return false;
 	
+	this->fileName = fileName;
 	this->engine = engine;
-	
-	std::string mtlFileName = objFileName;
-	mtlFileName.resize( mtlFileName.size()-3 );
-	mtlFileName += "mtl";
-	
-	LoadCustomCollisionShapeFromObj( objFileName );
 	
 	return true;
 }
 
-std::shared_ptr<CustomCollisionShapeData> Model::GetCustomCollisionShapeData( float acceptableDistanceToJoinVertices )
+std::shared_ptr<btCollisionShape> Model::GetCollisionShape( const int shape )
 {
-	/*
+	DEBUG( -1 )
 	if( !collisionShapeData )
 	{
-		float squareAcceptableDistance = acceptableDistanceToJoinVertices * acceptableDistanceToJoinVertices;
-		collisionShapeData = new CustomCollisionShapeData;
-		
-		int currentIndex = 0;
-		
-		for( int i = 0; i < vbo.size(); ++i )
-		{
-			for( int j = 0; j < vbo[i].vertices.size(); ++j, ++currentIndex )
-			{
-				int k;
-				for( k = 0; k < collisionShapeData->vertices.size(); ++k )
-				{
-					if( btVector3( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z ).distance2( collisionShapeData->vertices[k] ) < squareAcceptableDistance )
-					{
-						break;
-					}
-				}
-				
-				collisionShapeData->indices.resize( collisionShapeData->indices.size() + 1 );
-				collisionShapeData->indices.back() = k;
-				if( k >= collisionShapeData->vertices.size() )
-				{
-					collisionShapeData->vertices.resize( collisionShapeData->vertices.size() + 1 );
-					collisionShapeData->vertices.back() = btVector3( ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].x, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].y, ((ALLEGRO_VERTEX*)&(vbo[i].vertices.front()))[j].z );
-				}
-			}
-		}
+		DEBUG( 0 )
+		LoadCustomCollisionShapeFromObj();
 	}
-	*/
-	return collisionShapeData;
+	DEBUG( 1 )
+	
+	if( collisionShapeData )
+	{
+		std::shared_ptr<btCollisionShape> shape_;
+		
+		DEBUG( 2 )
+		switch( shape )
+		{
+		case Model::SHAPE::TRIANGLE:
+			DEBUG( 3 )
+			return collisionShapeData->GetTriangleShape();
+		case Model::SHAPE::CONVEX:
+			DEBUG( 4 )
+			shape_ = collisionShapeData->GetConvexShape();
+			DEBUG( ( shape_ ? "NOTNULL" : "NULL" ) );
+			return shape_;
+		}
+		DEBUG( 5 )
+	}
+	else
+	{
+		DEBUG( 6 )
+	}
+	
+	return std::shared_ptr<btCollisionShape>();
 }
 
 btVector3 Model::GetInertia() const

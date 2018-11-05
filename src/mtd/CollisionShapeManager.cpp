@@ -11,7 +11,7 @@ bool CollisionShapeManager::IsNameAvailable( std::string name )
 {
 	if( name == "" )
 		return false;
-	return bool( customCollisionShape.find( name ) == customCollisionShape.end() );
+	return bool( shapesStrPtr.find( name ) == shapesStrPtr.end() );
 }
 
 std::string CollisionShapeManager::GetFirstAvailableName( std::string name )
@@ -28,8 +28,8 @@ std::string CollisionShapeManager::GetFirstAvailableName( std::string name )
 
 std::shared_ptr<btCollisionShape> CollisionShapeManager::GetShape( std::vector < btScalar > constructionData, bool independent )
 {
-	auto it = collisionShape.find( constructionData );
-	if( !independent && it != collisionShape.end() )
+	auto it = shapesVecPtr.find( constructionData );
+	if( !independent && it != shapesVecPtr.end() )
 	{
 		return it->second;
 	}
@@ -54,8 +54,8 @@ std::shared_ptr<btCollisionShape> CollisionShapeManager::GetShape( std::vector <
 		
 		if( !independent && shape )
 		{
-			collisionShape[ constructionData ] = shape;
-			collisionShapeRev[ shape ] = constructionData;
+			shapesVecPtr[ constructionData ] = shape;
+			shapesPtrVec[ shape ] = constructionData;
 		}
 		return shape;
 	}
@@ -69,26 +69,14 @@ std::shared_ptr<btCollisionShape> CollisionShapeManager::AddShape( std::vector <
 	if( name == "" )
 	{
 		shape = GetShape( constructionData, false );
-		
-		if( shape )
-		{
-			if( numberOfReferencesToShape.find( shape ) == numberOfReferencesToShape.end() )
-			{
-				numberOfReferencesToShape[shape] = 1;
-			}
-			else
-			{
-				numberOfReferencesToShape[shape] += 1;
-			}
-		}
 	}
 	else if( IsNameAvailable( name ) )
 	{
 		shape = GetShape( constructionData, true );
 		if( shape )
 		{
-			customCollisionShape[ name ] = shape;
-			customCollisionShapeName[ shape ] = name;
+			shapesStrPtr[ name ] = shape;
+			shapesPtrStr[ shape ] = name;
 		}
 	}
 	return shape;
@@ -118,149 +106,77 @@ std::shared_ptr<btCollisionShape> CollisionShapeManager::GetCylinder( btScalar r
 	return AddShape( constructionData, name );
 }
 
-std::shared_ptr<btCollisionShape> CollisionShapeManager::CreateCustomShape( std::string name, std::shared_ptr<Model> model, int shapeType )
+std::shared_ptr<btCollisionShape> CollisionShapeManager::GetShape( std::string name )
 {
-	if( !model || IsNameAvailable( name ) == false )
+	auto it = shapesStrPtr.find( name );
+	if( it != shapesStrPtr.end() )
 	{
-		return std::shared_ptr<btCollisionShape>();
-	}
-	
-	std::shared_ptr<CustomCollisionShapeData> data = model->GetCustomCollisionShapeData();
-	
-	if( data )
-	{
-		modelPointerCustomCollisionData[ data ] = model;
-		
-		std::shared_ptr<btCollisionShape> shape;
-		
-		switch( shapeType )
-		{
-		case SHAPE_TYPE_CONVEX:
-			shape = data->GetConvexShape();
-			break;
-		case SHAPE_TYPE_TRIANGLE:
-			shape = data->GetTriangleShape();
-			break;
-		default:
-			return shape;
-		}
-		
-		if( shape )
-		{
-			modelCustomCollisionData[ data ] += 1;
-			customCollisionShape[ name ] = shape;
-			customCollisionShapeData[ shape ] = data;
-			customCollisionShapeName[ shape ] = name;
-		}
-		
-		return shape;
-	}
-	
-	return std::shared_ptr<btCollisionShape>();
-}
-
-std::shared_ptr<btCollisionShape> CollisionShapeManager::GetCustomShape( std::string name )
-{
-	auto it = customCollisionShape.find( name );
-	if( it != customCollisionShape.end() )
-	{
-		auto it2 = customCollisionShapeData.find( it->second );
-		DEBUG( modelCustomCollisionData[it2->second] += 1 );
 		return it->second;
 	}
 	return std::shared_ptr<btCollisionShape>();
 }
 
-void CollisionShapeManager::RemoveCustomShape( std::string name )
+std::shared_ptr<btCollisionShape> CollisionShapeManager::AddCustomShape( std::string name, std::shared_ptr<btCollisionShape> shape )
 {
-	auto it = customCollisionShape.find( name );
-	if( it != customCollisionShape.end() )
+	DEBUG(0)
+	if( shapesPtrVec.find( shape ) == shapesPtrVec.end() && shapesPtrStr.find( shape ) == shapesPtrStr.end() )
 	{
-		auto it2 = customCollisionShapeData.find( it->second );
-		auto it3 = modelCustomCollisionData.find( it2->second );
-		
-		if( it3 != modelCustomCollisionData.end() )
+	DEBUG(1)
+		if( IsNameAvailable( name ) )
 		{
-			//DEBUG( it3->second -= 1 );
-			DEBUG( modelCustomCollisionData[it2->second] -= 1 );
-			
-			if( it3->second <= 0 )
-			{
-				modelPointerCustomCollisionData[ it2->second ]->NullCustomCollisionShape();
-				modelPointerCustomCollisionData.erase( it2->second );
-				//it2->second.reset();
-				modelCustomCollisionData.erase( it3 );
-				customCollisionShapeName.erase( it->second );
-				customCollisionShapeData.erase( it2 );
-				customCollisionShape.erase( it );
-			}
+	DEBUG(2)
+			shapesStrPtr[ name ] = shape;
+			shapesPtrStr[ shape ] = name;
+	DEBUG(3)
+			return shape;
 		}
-		else
-		{
-			customCollisionShapeData.erase( it2 );
-			customCollisionShapeName.erase( it->second );
-			//it->second.reset();
-			customCollisionShape.erase( it );
-		}
+	DEBUG(4)
 	}
+	DEBUG(5)
+	return std::shared_ptr<btCollisionShape>();
 }
 
 void CollisionShapeManager::RemoveShape( std::shared_ptr<btCollisionShape> shape )
 {
 	{
-		auto it = collisionShapeRev.find( shape );
-		if( it != collisionShapeRev.end() )
+		auto it = shapesPtrVec.find( shape );
+		if( it != shapesPtrVec.end() )
 		{
-			numberOfReferencesToShape[ it->first ] -= 1;
-			
-			if( numberOfReferencesToShape[ it->first ] <= 0 )
+			DEBUG( std::string("Pointer use count: ") + std::to_string( shape.use_count() ) );
+			/*
+			if( shape.use_count() <= 1 )
 			{
-				collisionShape.erase( it->second );
-				numberOfReferencesToShape.erase( it->first );
-				//((std::shared_ptr<btCollisionShape>*)&(it->first))->reset();
-				collisionShapeRev.erase( it );
+				shapesVecPtr.erase( it->second );
+				shapesPtrVec.erase( it );
 			}
+			*/
 			return;
 		}
 	}
 	
-	auto it = customCollisionShapeName.find( shape );
-	if( it != customCollisionShapeName.end() )
 	{
-		RemoveCustomShape( it->second );
+		auto it = shapesPtrStr.find( shape );
+		if( it != shapesPtrStr.end() )
+		{
+			DEBUG( std::string("Pointer use count: ") + std::to_string( shape.use_count() ) );
+			/*
+			if( shape.use_count() <= 1 )
+			{
+				shapesStrPtr.erase( it->second );
+				shapesPtrStr.erase( it );
+			}
+			*/
+			return;
+		}
 	}
-}
-
-void DebugBreakPointFunc()
-{
-	return;
 }
 
 void CollisionShapeManager::Destroy()
 {
-	DebugBreakPointFunc();
-	
-	/*
-	for( auto it = numberOfReferencesToShape.begin(); it != numberOfReferencesToShape.end(); ++it )
-	{
-		((std::shared_ptr<btCollisionShape>*)&(it->first))->reset();
-	}
-	
-	for( auto it = modelPointerCustomCollisionData.begin(); it != modelPointerCustomCollisionData.end(); ++it )
-	{
-		((std::shared_ptr<CustomCollisionShapeData>*)&(it->first))->reset();
-	}
-	*/
-	
-	collisionShape.clear();
-	collisionShapeRev.clear();
-	numberOfReferencesToShape.clear();
-	
-	modelPointerCustomCollisionData.clear();
-	modelCustomCollisionData.clear();
-	customCollisionShapeData.clear();
-	customCollisionShape.clear();
-	customCollisionShapeName.clear();
+	shapesStrPtr.clear();
+	shapesPtrStr.clear();
+	shapesPtrVec.clear();
+	shapesVecPtr.clear();
 }
 
 CollisionShapeManager::CollisionShapeManager( Engine * engine )

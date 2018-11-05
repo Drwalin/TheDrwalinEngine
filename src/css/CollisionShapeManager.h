@@ -27,22 +27,8 @@ private:
 	std::map < std::shared_ptr<btCollisionShape>, std::vector<btScalar> > shapesPtrVec;
 	
 	std::map < std::string, std::shared_ptr<btCollisionShape> > shapesStrPtr;
-	std::map < std::shared_ptr<btCollisionShape>, std::shared_ptr<CustomCollisionShapeData> > shapesPtrPtr;
+	std::map < std::shared_ptr<btCollisionShape>, std::string > shapesPtrStr;
 	
-	
-	
-	
-	
-	
-	std::map < std::vector < btScalar >, std::shared_ptr<btCollisionShape> > collisionShape;
-	std::map < std::shared_ptr<btCollisionShape>, std::vector < btScalar > > collisionShapeRev;
-	std::map < std::shared_ptr<btCollisionShape>, int > numberOfReferencesToShape;
-	
-	std::map < std::shared_ptr<CustomCollisionShapeData>, std::shared_ptr<Model> > modelPointerCustomCollisionData;
-	std::map < std::shared_ptr<CustomCollisionShapeData>, int > modelCustomCollisionData;
-	std::map < std::shared_ptr<btCollisionShape>, std::shared_ptr<CustomCollisionShapeData> > customCollisionShapeData;
-	std::map < std::string, std::shared_ptr<btCollisionShape> > customCollisionShape;
-	std::map < std::shared_ptr<btCollisionShape>, std::string > customCollisionShapeName;
 	
 	std::shared_ptr<btCollisionShape> GetShape( std::vector < btScalar > constructionData, bool independent );
 	std::shared_ptr<btCollisionShape> AddShape( std::vector < btScalar > constructionData, std::string name );
@@ -50,9 +36,6 @@ private:
 	friend class Engine;
 	
 public:
-	
-	static const int SHAPE_TYPE_CONVEX = 0;
-	static const int SHAPE_TYPE_TRIANGLE = 1;
 	
 	std::string GetFirstAvailableName( std::string name );
 	bool IsNameAvailable( std::string name );
@@ -63,9 +46,9 @@ public:
 	std::shared_ptr<btCollisionShape> GetCapsule( btScalar radius, btScalar height, std::string name = "" );
 	std::shared_ptr<btCollisionShape> GetCylinder( btScalar radius, btScalar height, std::string name = "" );
 	
-	std::shared_ptr<btCollisionShape> CreateCustomShape( std::string name, std::shared_ptr<Model> model, int shapeType );
-	std::shared_ptr<btCollisionShape> GetCustomShape( std::string name );
-	void RemoveCustomShape( std::string name );
+	std::shared_ptr<btCollisionShape> GetShape( std::string name );
+	std::shared_ptr<btCollisionShape> AddCustomShape( std::string name, std::shared_ptr<btCollisionShape> shape );
+	
 	void RemoveShape( std::shared_ptr<btCollisionShape> shape );
 	
 	void Destroy();

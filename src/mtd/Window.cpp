@@ -52,8 +52,8 @@ void Window::Init( Engine * engine, const char * windowName, const char * iconFi
 
 void Window::Destroy()
 {
-	engine = NULL;
 	BasicWindow::Destroy();
+	engine = NULL;
 }
 
 Window::Window()

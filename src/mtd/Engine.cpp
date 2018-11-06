@@ -4,6 +4,8 @@
 
 #include <Engine.h>
 
+#include <Debug.h>
+
 #include <cassert>
 
 inline void Engine::UpdateObjectOverlaps()
@@ -38,18 +40,18 @@ inline void Engine::UpdateObjectOverlaps()
 				}
 				else
 				{
-					DEBUG( "btCollisionShape->getUserPointer() = NULL" );
+					MESSAGE( "btCollisionShape->getUserPointer() = NULL" );
 				}
 			}
 			else
 			{
-				DEBUG( std::string( "dispacher->getManifoldByIndexInternal(") + std::to_string(i) + ") = 0 " );
+				MESSAGE( std::string( "dispacher->getManifoldByIndexInternal(") + std::to_string(i) + ") = 0 " );
 			}
 		}
 	}
 	else
 	{
-		DEBUG( std::string( "world->GetDynamicsWorld()->getDispatcher() = 0 " ) );
+		MESSAGE( std::string( "world->GetDynamicsWorld()->getDispatcher() = 0 " ) );
 	}
 }
 
@@ -266,16 +268,24 @@ void Engine::DeleteObject( std::string name )
 	auto it = object.find( name );
 	if( it != object.end() )
 	{
-		if( it->second == cameraParent )
-			cameraParent = NULL;
-		
 		if( it->second )
 		{
+			DEBUG( std::string("Destroying object: ") + name )
+			
+			if( it->second == cameraParent )
+			{
+				cameraParent = NULL;
+			}
+			
 			world->RemoveBody( name );
 			it->second.reset();
 		}
 		
 		object.erase( it );
+	}
+	else
+	{
+		MESSAGE( std::string("Trying to destroy un-existing object: ") + name )
 	}
 }
 
@@ -482,8 +492,10 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 
 void Engine::Destroy()
 {
+	DEBUG(1)
 	cameraParent = NULL;
 	
+	DEBUG(2)
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
@@ -492,9 +504,14 @@ void Engine::Destroy()
 			world->RemoveBody( it->first );
 			it->second.reset();
 		}
+		else
+		{
+			MESSAGE("It shouldn't appear: ERR=3116661");
+		}
 	}
 	object.clear();
 	
+	DEBUG(3)
 	for( auto it = model.begin(); it != model.end(); ++it )
 	{
 		if( it->second )
@@ -503,9 +520,14 @@ void Engine::Destroy()
 			it->second->Destroy();
 			it->second.reset();
 		}
+		else
+		{
+			MESSAGE("It shouldn't appear: ERR=3116662");
+		}
 	}
 	model.clear();
 	
+	DEBUG(4)
 	if( window )
 	{
 		assert( window != NULL );
@@ -514,6 +536,7 @@ void Engine::Destroy()
 		window = NULL;
 	}
 	
+	DEBUG(5)
 	if( world )
 	{
 		assert( world != NULL );
@@ -521,6 +544,7 @@ void Engine::Destroy()
 		delete world;
 		world = NULL;
 	}
+	DEBUG(6)
 	
 	if( event )
 	{
@@ -528,6 +552,7 @@ void Engine::Destroy()
 		delete event;
 		event = NULL;
 	}
+	DEBUG(7)
 	
 	if( collisionShapeManager )
 	{
@@ -536,6 +561,7 @@ void Engine::Destroy()
 		delete collisionShapeManager;
 		collisionShapeManager = NULL;
 	}
+	DEBUG(8)
 	
 	pausePhysics = false;
 }
@@ -551,6 +577,7 @@ Engine::Engine()
 
 Engine::~Engine()
 {
+	DEBUG(0)
 	Destroy();
 }
 

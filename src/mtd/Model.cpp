@@ -245,7 +245,7 @@ void Model::Destroy()
 {
 	if( mesh )
 	{
-		mesh->drop();
+	//	mesh->drop();
 		mesh = NULL;
 	}
 	collisionShapeData = NULL;
@@ -273,6 +273,7 @@ Model::Model()
 
 Model::~Model()
 {
+	DEBUG(0)
 	Destroy();
 }
 

@@ -5,8 +5,12 @@
 #include <Event.h>
 #include <Window.h>
 #include <Engine.h>
+
 #include "../game/Character.h"
 #include <irrlicht\irrlicht.h>
+
+#include <Debug.h>
+#include <Math.hpp>
 
 void Event::SetEngine( class Engine * engine )
 {
@@ -33,7 +37,7 @@ void Event::MouseMoveEvent( int x, int y, int w, int dx, int dy, int dw )
 
 
 
-
+irr::scene::ISceneNode * lightSceneNode = 0;
 
 void Event::KeyPressedEvent( int keyCode )
 {
@@ -50,8 +54,25 @@ void Event::KeyPressedEvent( int keyCode )
 		window->QueueQuit();
 		break;
 		
+	case irr::KEY_KEY_F:
+		if( !lightSceneNode )
+		{
+			MESSAGE(1)
+			lightSceneNode = engine->GetWindow()->sceneManager->addLightSceneNode( 0, Math::GetIrrVec( window->camera->GetLocation() ), irr::video::SColorf(1.0f, 0.6f, 0.7f, 1.0f), 60.0f );
+		}
+		else
+		{
+			MESSAGE(2)
+			lightSceneNode->remove();
+			lightSceneNode = 0;
+		}
+		break;
+		
 	case irr::KEY_KEY_T:
 		fprintf( stderr, "\n Number of objects: %i ", int(engine->object.size()) );
+		break;
+	case irr::KEY_KEY_O:
+		Debug::SwitchDebugState();
 		break;
 		
 	case irr::KEY_KEY_P:
@@ -70,6 +91,7 @@ void Event::KeyPressedEvent( int keyCode )
 			character->EventCrouch();
 		break;
 	case irr::KEY_MENU:
+		DEBUG("Alt-Menu")
 		if( character )
 			character->EventBeginStravage();
 		break;
@@ -84,7 +106,7 @@ void Event::KeyPressedEvent( int keyCode )
 		}
 		else
 		{
-			DEBUG("Couldn't spawn new object");
+			MESSAGE("Couldn't spawn new object");
 		}
 		break;
 	case irr::KEY_RBUTTON:
@@ -98,7 +120,7 @@ void Event::KeyPressedEvent( int keyCode )
 		}
 		else
 		{
-			DEBUG("Couldn't spawn new object");
+			MESSAGE("Couldn't spawn new object");
 		}
 		break;
 	}
@@ -127,6 +149,7 @@ void Event::KeyReleasedEvent( int keyCode )
 			character->EventStandUp();
 		break;
 	case irr::KEY_MENU:
+		DEBUG("Alt-Menu")
 		if( character )
 			character->EventStopStravage();
 		break;

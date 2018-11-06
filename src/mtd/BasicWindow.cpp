@@ -115,11 +115,13 @@ bool BasicWindow::Init( const char * windowName, const char * iconFile, int widt
 	eventIrrlichtReceiver = new EventReceiverIrrlicht( eventResponser, this );
 	
 	screenResolution = irr::core::dimension2du( width, height );
-	device = irr::createDevice( irr::video::EDT_OPENGL, screenResolution, 16, fullscreen, false, false, eventIrrlichtReceiver );
+	device = irr::createDevice( irr::video::EDT_OPENGL, screenResolution, 16, fullscreen, true, false, eventIrrlichtReceiver );
 	
 	videoDriver = device->getVideoDriver();
 	sceneManager = device->getSceneManager();
 	gui = device->getGUIEnvironment();
+	
+	sceneManager->setShadowColor( irr::video::SColor(220,32,32,32) );
 	
 	stringToEnter->SetBasicWindow( this );
 	
@@ -128,18 +130,29 @@ bool BasicWindow::Init( const char * windowName, const char * iconFile, int widt
 
 void BasicWindow::Destroy()
 {
+	DEBUG(1)
 	ShutDownParallelThreadToDraw();
 	
+	DEBUG(2)
 	if( device )
+	{
+		device->closeDevice();
 		device->drop();
+		device = NULL;
+	}
 	
+	DEBUG(3)
 	quitWhenPossible = false;
 	
+	DEBUG(4)
 	deltaTime = 0.0;
 	
+	DEBUG(5)
 	lockMouse = false;
 	
+	DEBUG(6)
 	eventResponser = NULL;
+	DEBUG(7)
 }
 
 void BasicWindow::OneLoopFullTick()
@@ -170,7 +183,7 @@ void BasicWindow::BeginLoop()
 {
 	quitWhenPossible = false;
 	while( !quitWhenPossible && device->run() )
-		OneLoopFullTick();
+		OneLoopFullTick();	
 }
 
 void BasicWindow::QueueQuit()
@@ -226,45 +239,6 @@ void BasicWindow::GenerateEvents()
 	eventsTime.SubscribeStart();
 	
 	eventIrrlichtReceiver->GenerateEvents();
-	/*
-	for( int keyCode = 1; keyCode < MOUSE_AFTER_LAST_BUTTON; ++keyCode )
-	{
-		if( keyCode == ALLEGRO_KEY_MAX )
-			keyCode = MOUSE_FIRST_BUTTON;
-		
-		if( isKeyPressed( keyCode ) )
-		{
-			stringToEnter->Update( keyCode, ACTION_STRING_TO_ENTER_PRESSED );
-			if( eventResponser )
-			{
-				eventResponser->KeyPressedEvent( keyCode );
-			}
-		}
-		else if( isKeyReleased( keyCode ) )
-		{
-			if( eventResponser )
-			{
-				eventResponser->KeyReleasedEvent( keyCode );
-			}
-		}
-		else if( isKeyStillDown( keyCode ) )
-		{
-			stringToEnter->Update( keyCode, ACTION_STRING_TO_ENTER_HOLDED );
-			if( eventResponser )
-			{
-				eventResponser->KeyHoldedEvent( keyCode );
-			}
-		}
-	}
-	
-	if( GetMousedX() || GetMousedY() || GetMouseWheelDelta() )
-	{
-		if( eventResponser )
-		{
-			eventResponser->MouseMoveEvent( GetMouseX(), GetMouseY(), GetMouseWheelPos(), GetMousedX(), GetMousedY(), GetMouseWheelDelta() );
-		}
-	}
-	*/
 	
 	eventsTime.SubscribeEnd();
 }

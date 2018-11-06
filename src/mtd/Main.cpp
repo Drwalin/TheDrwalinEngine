@@ -12,6 +12,8 @@
 
 #include <cassert>
 
+#include <conio.h>
+
 int main()
 {
 	DEBUG(1)
@@ -27,7 +29,7 @@ int main()
 	LoadMeshes( "media/loadMeshes.list", engine );
 	
 	
-	
+	{
 	std::shared_ptr<Model> sphere = engine->GetModel( "Sphere" );
 	std::shared_ptr<Model> crate01 = engine->GetModel( "Crate01" );
 	std::shared_ptr<Model> mapModel = engine->GetModel( /*"Plane" );*/"as_oilrig" );
@@ -41,7 +43,7 @@ int main()
 	
 	
 	std::shared_ptr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,-10,0) ), false );
-	map->SetModel( mapModel );
+	map->SetModel( mapModel, false );
 	map->GetBody()->setFriction( 0.65 );
 	map->SetScale( btVector3(0.023,0.023,0.023) );
 //	map->SetPosition( btVector3( -20, -20, -20 ) );
@@ -77,7 +79,7 @@ int main()
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	((Character*)(player.get()))->SetCamera( engine->GetCamera() );
 	
-	
+	}
 	
 	
 	DEBUG( std::string("Loading cpu time: ") + std::to_string(float(clock())/float(CLOCKS_PER_SEC)) );
@@ -85,8 +87,12 @@ int main()
 	
 	engine->BeginLoop();
 	
+	DEBUG("End")
+	
 	engine->Destroy();
+	DEBUG("1")
 	delete engine;
+	DEBUG("2")
 	engine = NULL;
 	
 	return 0;

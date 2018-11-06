@@ -48,10 +48,10 @@ float Character::GetMovementVelocity() const
 	switch( walkMode )
 	{
 	case Character::WalkMode::CROUCH:
-		velocity *= 0.7f;
+		velocity *= 0.45f;
 		break;
 	case Character::WalkMode::STRAVAGE:
-		velocity *= 0.6f;
+		velocity *= 0.4f;
 		break;
 	case Character::WalkMode::WALK:
 		velocity *= 1.0f;
@@ -74,7 +74,7 @@ btVector3 Character::GetJumpVelocity() const
 		
 		return ( btVector3( 0, sqrt( ( ( /*((btRigidBody*)*/body/*.GetPtr())*/->getGravity().length() ) * jumpHeight * 0.5f ) + ( vel.length() * 0.311 ) ), 0 ) * 35.0 ) + ( vel * 0.1 );
 	}
-	DEBUG( "Shouldn't appear" );
+	MESSAGE( "Shouldn't appear" );
 	return btVector3(0,2.5f,0);
 }
 

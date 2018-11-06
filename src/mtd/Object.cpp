@@ -97,12 +97,12 @@ void Object::OverlapWithObject( Object * other, btPersistentManifold * perissten
 		}
 		else
 		{
-			DEBUG( "other = NULL" );
+			MESSAGE( "other = NULL" );
 		}
 	}
 	else
 	{
-		DEBUG( "perisstentManifold = NULL" );
+		MESSAGE( "perisstentManifold = NULL" );
 	}
 }
 
@@ -264,7 +264,7 @@ std::string Object::GetName() const
 	return name;
 }
 
-void Object::SetModel( std::shared_ptr<Model> model )
+void Object::SetModel( std::shared_ptr<Model> model, bool light )
 {
 	if( engine )
 	{
@@ -286,7 +286,11 @@ void Object::SetModel( std::shared_ptr<Model> model )
 					sceneNode = engine->GetWindow()->sceneManager->addAnimatedMeshSceneNode( model->GetMesh() );
 					model->SetMaterialsToNode( sceneNode );
 					
+					sceneNode->setMaterialFlag( irr::video::EMF_NORMALIZE_NORMALS, true );
 					sceneNode->setScale( Math::GetIrrVec( scale ) );
+					
+					if( light )
+						sceneNode->addShadowVolumeSceneNode();
 				}
 			}
 		}
@@ -317,6 +321,7 @@ Object::Object() :
 
 Object::~Object()
 {
+	DEBUG(0)
 	if( sceneNode )
 	{
 		if( engine )

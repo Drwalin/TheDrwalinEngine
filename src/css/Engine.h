@@ -12,8 +12,6 @@
 #include <vector>
 #include <string>
 #include <queue>
-
-#include <Debug.h>
 #include <memory>
 
 #include <Event.h>

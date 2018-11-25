@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef CUSTOM_COLLISION_SHAPE_DATA_CPP
 #define CUSTOM_COLLISION_SHAPE_DATA_CPP
 

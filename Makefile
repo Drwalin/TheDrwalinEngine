@@ -8,7 +8,7 @@ SOURCEPATH = ./src/mtd
 LIBRARYPATH = ./src/lib
 LIBPNGPATH = ./lib
 
-SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp Main.cpp World.cpp Object.cpp CustomCollisionData.cpp CollisionShapeManager.cpp TimeCounter.cpp EventReceiverIrrlicht.cpp
+SOURCES_ = Engine.cpp Model.cpp EngineRayTraceData.cpp BasicWindow.cpp Camera.cpp EventResponser.cpp StringToEnter.cpp TextPrinter.cpp Event.cpp Window.cpp World.cpp Object.cpp CustomCollisionData.cpp CollisionShapeManager.cpp TimeCounter.cpp EventReceiverIrrlicht.cpp
 OBJECTS_ = $(SOURCES_:.cpp=.o)
 SOURCES = $(addprefix $(SOURCEPATH)/,$(SOURCES_))
 OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))
@@ -16,7 +16,7 @@ OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))
 
 GAMESOURCEPATH = ./src/game
 
-GAMESOURCES_ = Converter.cpp MeshLoader.cpp Character.cpp CharacterEvent.cpp Player.cpp
+GAMESOURCES_ = Converter.cpp MeshLoader.cpp Character.cpp CharacterEvent.cpp Player.cpp Main.cpp
 GAMEOBJECTS_ = $(GAMESOURCES_:.cpp=.o)
 GAMESOURCES = $(addprefix $(GAMESOURCEPATH)/,$(GAMESOURCES_))
 GAMEOBJECTS = $(addprefix $(BINARYPATH)/,$(GAMEOBJECTS_))

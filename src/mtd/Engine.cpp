@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef ENGINE_CPP
 #define ENGINE_CPP
 
@@ -7,6 +10,11 @@
 #include <Debug.h>
 
 #include <cassert>
+
+int Engine::GetNumberOfObjects() const
+{
+	return object.size();
+}
 
 inline void Engine::UpdateObjectOverlaps()
 {
@@ -18,12 +26,14 @@ inline void Engine::UpdateObjectOverlaps()
 		}
 	}
 	
+	//dwadawdadawd
+	
 	btDispatcher * dispacher = world->GetDynamicsWorld()->getDispatcher();
 	if( dispacher )
 	{
 		int numberOfManifolds = dispacher->getNumManifolds();
 		for( int i = 0; i < numberOfManifolds; ++i )
-		{
+		{ 	
 			btPersistentManifold * contactManifold =  dispacher->getManifoldByIndexInternal(i);
 			if( contactManifold )
 			{
@@ -451,10 +461,10 @@ void Engine::BeginLoop()
 	window->BeginLoop();
 }
 
-void Engine::Init( const char * windowName, const char * iconFile, int width, int height, bool fullscreen )
+void Engine::Init( EventResponser * eventResponser, const char * windowName, const char * iconFile, int width, int height, bool fullscreen )
 {
 	Destroy();
-	event = new Event;
+	event = eventResponser;
 	world = new World;
 	DEBUG(312)
 	window = new Window;
@@ -481,10 +491,9 @@ void Engine::Init( const char * windowName, const char * iconFile, int width, in
 	
 	if( GetCamera() == NULL )
 	{
-		window->camera = std::shared_ptr<Camera>( new Camera );
+		DEBUG( "Creating camera" );
+		window->camera = std::shared_ptr<Camera>( new Camera( this, false, width, height, window->sceneManager->addCameraSceneNode() ) );
 	}
-	
-	window->camera->sceneNode = window->sceneManager->addCameraSceneNode();
 	
 	
 	//window->UseParallelThreadToDraw();

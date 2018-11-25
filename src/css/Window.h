@@ -1,6 +1,9 @@
 
-#ifndef MAIN_H
-#define MAIN_H
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
+#ifndef WINDOW_H
+#define WINDOW_H
 
 #include <Camera.h>
 #include <TextPrinter.h>
@@ -23,6 +26,8 @@ private:
 	class Engine * engine;
 	
 public:
+	
+	virtual std::shared_ptr<Camera> GetCameraPointer() override;
 	
 	std::shared_ptr<Camera> camera;
 	TextPrinter * output;

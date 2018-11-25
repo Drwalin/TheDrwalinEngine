@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef BASIC_WINDOW_CPP
 #define BASIC_WINDOW_CPP
 
@@ -125,6 +128,11 @@ bool BasicWindow::Init( const char * windowName, const char * iconFile, int widt
 	
 	stringToEnter->SetBasicWindow( this );
 	
+	if( !videoDriver->queryFeature( irr::video::EVDF_RENDER_TO_TARGET ) )
+	{
+		return false;
+	}
+	
 	return true;
 }
 
@@ -202,6 +210,7 @@ void BasicWindow::Draw()
 	}
 	
 	videoDriver->beginScene( true, true, irr::video::SColor(255,16,32,64) );
+	GetCameraPointer()->UseTarget();
 	sceneManager->drawAll();
 	gui->drawAll();
 	videoDriver->endScene();

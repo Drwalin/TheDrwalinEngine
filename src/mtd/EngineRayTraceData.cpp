@@ -1,6 +1,9 @@
 
-#ifndef ENGINE__RAY_TRACE_DATA_CPP
-#define ENGINE__RAY_TRACE_DATA_CPP
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
+#ifndef ENGINE_RAY_TRACE_DATA_CPP
+#define ENGINE_RAY_TRACE_DATA_CPP
 
 #include <Engine.h>
 

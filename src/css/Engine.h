@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -14,7 +17,7 @@
 #include <queue>
 #include <memory>
 
-#include <Event.h>
+#include <EventResponser.h>
 #include <World.h>
 #include <Window.h>
 #include <Model.h>
@@ -28,7 +31,7 @@ private:
 	
 	World * world;
 	Window * window;
-	Event * event;
+	EventResponser * event;
 	CollisionShapeManager * collisionShapeManager;
 	
 	std::map < std::string, std::shared_ptr<Model> > model;
@@ -48,7 +51,11 @@ private:
 	inline void UpdateObjectOverlaps();
 	inline void UpdateObjects( const float deltaTime );
 	
-	friend class Event;
+	friend class EventResponser;
+	
+public:
+	
+	int GetNumberOfObjects() const;
 	
 public:
 	
@@ -115,7 +122,7 @@ public:
 	void Tick( const float deltaTime );
 	void ParallelToDrawTick( const float deltaTime );
 	
-	void Init( const char * windowName, const char * iconFile, int width, int height, bool fullscreen = false );
+	void Init( EventResponser * eventResponser, const char * windowName, const char * iconFile, int width, int height, bool fullscreen = false );
 	
 	void BeginLoop();
 	

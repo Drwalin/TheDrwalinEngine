@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef EVENT_RECEIVER_IRRLICHT_CPP
 #define EVENT_RECEIVER_IRRLICHT_CPP
 

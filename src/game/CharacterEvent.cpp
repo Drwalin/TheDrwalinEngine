@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Game project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef CHARACTER_EVENT_CPP
 #define CHARACTER_EVENT_CPP
 

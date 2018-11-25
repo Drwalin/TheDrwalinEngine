@@ -1,10 +1,43 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef CAMERA_CPP
 #define CAMERA_CPP
 
 #include <Camera.h>
+#include <Engine.h>
 
 #include <Math.hpp>
+
+void Camera::UseTarget()
+{
+	if( target )
+	{
+		engine->GetWindow()->videoDriver->setRenderTarget( target, true, true, 0 );
+	}
+	else
+	{
+		engine->GetWindow()->videoDriver->setRenderTarget( 0, true, true, 0 );
+	}
+}
+
+irr::video::ITexture * Camera::GetTexture()
+{
+	return target;
+}
+
+bool Camera::IsMainTarget()
+{
+	if( target )
+		return false;
+	return true;
+}
+
+irr::scene::ICameraSceneNode * Camera::GetCameraNode()
+{
+	return sceneNode;
+}
 
 btTransform Camera::GetTransform() const
 {
@@ -141,8 +174,16 @@ void Camera::SetCameraTransform( btTransform transform )
 	UpdateCameraView();
 }
 
-Camera::Camera()
+Camera::Camera( Engine * engine, bool textured, unsigned w, unsigned h, irr::scene::ICameraSceneNode * cameraNode )
 {
+	this->engine = engine;
+	
+	sceneNode = cameraNode;
+	if( textured )
+		target = engine->GetWindow()->videoDriver->addRenderTargetTexture( irr::core::dimension2d<unsigned>( w, h ), "RTT1" );
+	else
+		target = NULL;
+	
 	pos = btVector3(0,0,0);
 	rot = btVector3(0,0,0);
 	locationScale = btVector3(1,1,1);

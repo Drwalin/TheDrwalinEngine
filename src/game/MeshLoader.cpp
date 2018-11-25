@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Game project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef MESH_LOADER_CPP
 #define MESH_LOADER_CPP
 

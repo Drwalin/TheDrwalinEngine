@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef COLLISION_SHAPE_MANAGER_CPP
 #define COLLISION_SHAPE_MANAGER_CPP
 
@@ -118,21 +121,15 @@ std::shared_ptr<btCollisionShape> CollisionShapeManager::GetShape( std::string n
 
 std::shared_ptr<btCollisionShape> CollisionShapeManager::AddCustomShape( std::string name, std::shared_ptr<btCollisionShape> shape )
 {
-	DEBUG(0)
 	if( shapesPtrVec.find( shape ) == shapesPtrVec.end() && shapesPtrStr.find( shape ) == shapesPtrStr.end() )
 	{
-	DEBUG(1)
 		if( IsNameAvailable( name ) )
 		{
-	DEBUG(2)
 			shapesStrPtr[ name ] = shape;
 			shapesPtrStr[ shape ] = name;
-	DEBUG(3)
 			return shape;
 		}
-	DEBUG(4)
 	}
-	DEBUG(5)
 	return std::shared_ptr<btCollisionShape>();
 }
 

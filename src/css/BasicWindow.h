@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef BASIC_WINDOW_H
 #define BASIC_WINDOW_H
 
@@ -6,12 +9,15 @@
 
 #include <atomic>
 #include <thread>
+#include <memory>
 
 #include <EventResponser.h>
 #include <Camera.h>
 #include <TextPrinter.h>
 
 #include <TimeCounter.h>
+
+#include <Camera.h>
 
 void ParallelThreadFunctionToDraw( class BasicWindow * window );
 
@@ -27,6 +33,8 @@ public:
 	irr::core::dimension2du screenResolution;
 	
 private:
+	
+	virtual std::shared_ptr<Camera> GetCameraPointer() = 0;
 	
 	bool quitWhenPossible;
 	

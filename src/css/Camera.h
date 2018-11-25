@@ -1,4 +1,7 @@
 
+//	This file is part of The Drwalin Engine project
+// Copyright (C) 2018 Marek Zalewski aka Drwalin aka DrwalinPCF
+
 #ifndef CAMERA_H
 #define CAMERA_H
 
@@ -15,6 +18,9 @@ class Camera
 {
 private:
 	
+	irr::video::ITexture * target;
+	irr::scene::ICameraSceneNode * sceneNode;
+	
 	btVector3 pos;
 	btVector3 rot;
 	btTransform parentTransformation;
@@ -22,11 +28,19 @@ private:
 	
 	btVector3 currentLocation;
 	
+	class Engine * engine;
+	
 	void UpdateCameraView();
 	
 public:
 	
-	irr::scene::ICameraSceneNode * sceneNode;
+	void UseTarget();
+	irr::video::ITexture * GetTexture();
+	void RenderToThis();
+	bool IsMainTarget();
+	
+	irr::scene::ICameraSceneNode * GetCameraNode();
+	
 	
 	btTransform GetTransform() const;
 	btQuaternion GetRotation() const;
@@ -49,7 +63,7 @@ public:
 	void Rotate( btVector3 src );
 	void SetCameraTransform( btTransform transform );
 	
-	Camera();
+	Camera( Engine * engine, bool textured, unsigned w, unsigned h, irr::scene::ICameraSceneNode * cameraNode );
 	~Camera();
 };
 

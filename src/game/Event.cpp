@@ -10,6 +10,8 @@
 
 #include "Event.h"
 #include "Character.h"
+#include "Player.h"
+
 #include <irrlicht/irrlicht.h>
 
 #include <Debug.h>
@@ -38,8 +40,12 @@ void Event::KeyPressedEvent( int keyCode )
 	std::shared_ptr<Object> temp;
 	btVector3 begin, end, point, normal;
 	Character * character = NULL;
+	Player * playerPtr = NULL;
 	if( player )
+	{
 		character = dynamic_cast < Character* > ( ((Object*)(player.get())) );
+		playerPtr = dynamic_cast < Player* > ( ((Object*)(player.get())) );
+	}
 	
 	switch( keyCode )
 	{
@@ -91,10 +97,10 @@ void Event::KeyPressedEvent( int keyCode )
 		break;
 		
 	case irr::KEY_LBUTTON:
-		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetShape( "crate01shape__1331_" ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector() ), true, 20.0, engine->GetModel( "Crate01" )->GetInertia() );
+		temp = engine->AddObject<Object>( engine->GetAvailableObjectName("Box"), engine->GetCollisionShapeManager()->GetShape( "crate01shape__1331_" ), btTransform( btQuaternion(btVector3(1,1,1),0), window->camera->GetLocation() + character->GetForwardVector() ), true, 200.0, engine->GetModel( "Crate01" )->GetInertia() );
 		if( temp )
 		{
-			temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 16.0 );
+			temp->GetBody()->setLinearVelocity( player->GetBody()->getLinearVelocity() + character->GetForwardVector()/*window->camera->GetForwardVector()*/ * 8.0 );
 			temp->SetModel( engine->GetModel( "Crate01" ) );
 			temp->SetScale( btVector3( 0.5, 0.5, 0.5 ) );
 		}

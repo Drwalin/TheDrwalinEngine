@@ -8,6 +8,14 @@
 #include "Player.h"
 
 #include <Debug.h>
+#include <Math.h>
+
+
+#include <ctime>
+
+void Player::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+{
+}
 
 void Player::Tick( const float deltaTime )
 {

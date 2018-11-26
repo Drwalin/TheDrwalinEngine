@@ -75,7 +75,7 @@ btVector3 Character::GetJumpVelocity() const
 		vel.m_floats[1] = 0;
 		
 		
-		return ( btVector3( 0, sqrt( ( ( /*((btRigidBody*)*/body/*.GetPtr())*/->getGravity().length() ) * jumpHeight * 0.5f ) + ( vel.length() * 0.311 ) ), 0 ) * 35.0 ) + ( vel * 0.1 );
+		return ( btVector3( 0, sqrt( ( ( /*((btRigidBody*)*/body/*.GetPtr())*/->getGravity().length() ) * jumpHeight * 0.5f ) + ( vel.length() * 0.07 ) ), 0 ) * 35.0 ) + ( vel * 0.04 );
 	}
 	MESSAGE( "Shouldn't appear" );
 	return btVector3(0,2.5f,0);
@@ -173,7 +173,7 @@ void Character::ApplyImpactDamage( const float damage, const float impetus, btVe
 Character::Character( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ ) :
 	Object( engine, name, body, collisionShape, mass_ ),
 	cameraRotation(0,0,0), cameraLocation(0,0,0),
-	defaultVelocity(4.5), jumpHeight(1.1), height(1.75),
+	defaultVelocity(3.7), jumpHeight(1.0), height(1.75),
 	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
 	isInAir(false),
 	lastTimeInAir(0.0)
@@ -183,7 +183,7 @@ Character::Character( Engine * engine, std::string name, std::shared_ptr<btRigid
 
 Character::Character() :
 	Object(), cameraRotation(0,0,0), cameraLocation(0,0,0),
-	defaultVelocity(4.5), jumpHeight(1.1), height(1.75),
+	defaultVelocity(3.7), jumpHeight(1.0), height(1.75),
 	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
 	isInAir(false),
 	lastTimeInAir(0.0)

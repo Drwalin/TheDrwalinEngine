@@ -32,13 +32,10 @@ void Object::SetPosition( const btVector3 & loc )
 	if( body )
 	{
 		body->activate( true );
-		//body->setCenterOfMassTransform( currentTransform );
-		//body->getMotionState()->setWorldTransform( currentTransform );
+		body->setCenterOfMassTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}
-	
-//	UpdateTransformSceneNode();
 }
 
 void Object::SetRotation( const btQuaternion & quat )
@@ -49,13 +46,11 @@ void Object::SetRotation( const btQuaternion & quat )
 	if( body )
 	{
 		body->activate( true );
-		//body->setCenterOfMassTransform( currentTransform );
+		body->setCenterOfMassTransform( currentTransform );
 		//body->getMotionState()->setWorldTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}
-	
-//	UpdateTransformSceneNode();
 }
 
 void Object::Move( const btVector3 & move )

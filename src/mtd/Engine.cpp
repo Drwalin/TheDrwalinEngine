@@ -8,6 +8,7 @@
 #include <Engine.h>
 
 #include <Debug.h>
+#include <Math.hpp>
 
 #include <cassert>
 
@@ -493,6 +494,7 @@ void Engine::Init( EventResponser * eventResponser, const char * windowName, con
 	{
 		DEBUG( "Creating camera" );
 		window->camera = std::shared_ptr<Camera>( new Camera( this, false, width, height, window->sceneManager->addCameraSceneNode() ) );
+		window->camera->GetCameraNode()->setFOV( 60.0f * Math::PI / 180.0f );
 	}
 	
 	

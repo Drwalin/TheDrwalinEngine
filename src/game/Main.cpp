@@ -35,7 +35,7 @@ int main()
 	{
 	std::shared_ptr<Model> sphere = engine->GetModel( "Sphere" );
 	std::shared_ptr<Model> crate01 = engine->GetModel( "Crate01" );
-	std::shared_ptr<Model> mapModel = engine->GetModel( /*"Plane" );*/"as_oilrig" );
+	std::shared_ptr<Model> mapModel = engine->GetModel( /*"Plane" );*/"TestMap" );
 	assert( mapModel );
 	
 	
@@ -61,10 +61,10 @@ int main()
 	}
 	
 	
-	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
-	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
-	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10, engine->GetModel("m4a1")->GetInertia() /* btVector3( 1, 1, 1 ) * 0.023f*/ )->SetModel( engine->GetModel("m4a1") );
-	engine->GetObject( "m4a1" )->SetScale( btVector3( 1, 1, 1 ) * 0.023f );
+//	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
+//	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
+//	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10, engine->GetModel("m4a1")->GetInertia() /* btVector3( 1, 1, 1 ) * 0.023f*/ )->SetModel( engine->GetModel("m4a1") );
+//	engine->GetObject( "m4a1" )->SetScale( btVector3( 1, 1, 1 ) * 0.023f );
 	
 	
 	engine->GetCollisionShapeManager()->AddCustomShape( "crate01shape__1331_", crate01->GetCollisionShape( Model::SHAPE::CONVEX ) );

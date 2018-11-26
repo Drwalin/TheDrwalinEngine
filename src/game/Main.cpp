@@ -48,7 +48,8 @@ int main()
 	std::shared_ptr<Object> map = engine->AddObject<Object>( "TestMap", mapShape, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,-10,0) ), false );
 	map->SetModel( mapModel, false );
 	map->GetBody()->setFriction( 0.65 );
-	map->SetScale( btVector3(0.023,0.023,0.023) );
+//	map->SetScale( btVector3(5,-5,5) );
+//	map->SetScale( btVector3(0.023,0.023,0.023) );
 //	map->SetPosition( btVector3( -20, -20, -20 ) );
 //	map->SetRotation( btQuaternion( btVector3(0,1,0), 0 ) );
 	
@@ -62,7 +63,7 @@ int main()
 	
 	engine->AddObject<Object>( engine->GetAvailableObjectName("Brick"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("Brick"), engine->GetModel("Brick")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,30,0) ), true, 10 )->SetModel( engine->GetModel("Brick") );
 	engine->AddObject<Object>( engine->GetAvailableObjectName("ConcreetBrick"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("ConcreetBrick"), engine->GetModel("ConcreetBrick")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,15,0) ), true, 20 )->SetModel( engine->GetModel("ConcreetBrick") );
-	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10, engine->GetModel("m4a1")->GetInertia() * btVector3( 1, 1, 1 ) * 0.023f )->SetModel( engine->GetModel("m4a1") );
+	engine->AddObject<Object>( engine->GetAvailableObjectName("m4a1"), engine->GetCollisionShapeManager()->AddCustomShape( engine->GetCollisionShapeManager()->GetFirstAvailableName("m4a1"), engine->GetModel("m4a1")->GetCollisionShape( Model::SHAPE::CONVEX ) ), btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,40,0) ), true, 10, engine->GetModel("m4a1")->GetInertia() /* btVector3( 1, 1, 1 ) * 0.023f*/ )->SetModel( engine->GetModel("m4a1") );
 	engine->GetObject( "m4a1" )->SetScale( btVector3( 1, 1, 1 ) * 0.023f );
 	
 	
@@ -78,7 +79,7 @@ int main()
 	
 	
 	
-	std::shared_ptr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(-22,10,0) ), 15.0 );
+	std::shared_ptr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(0,10,0) ), 15.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	((Character*)(player.get()))->SetCamera( engine->GetCamera() );
 	

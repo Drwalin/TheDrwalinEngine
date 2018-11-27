@@ -9,6 +9,7 @@
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btQuaternion.h>
 #include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 #include <cstdio>
 
@@ -28,6 +29,7 @@ private:
 	btDiscreteDynamicsWorld * dynamicsWorld;
 	
 	std::map < std::string, std::shared_ptr<btRigidBody> > object;
+	std::map < std::string, std::shared_ptr<btPairCachingGhostObject> > trigger;
 	
 	std::string currentActivator;
 	int activateAll;
@@ -41,13 +43,16 @@ public:
 	btDiscreteDynamicsWorld * GetDynamicsWorld();
 	
 	void UpdateColliderForObject( std::shared_ptr<btRigidBody> body );
+	void UpdateColliderForTrigger( std::shared_ptr<btPairCachingGhostObject> body );
 	
 	btVector3 GetGravity();
 	
 	void Tick( btScalar deltaTime, int count = 0 );
 	
 	bool AddBody( std::string name, std::shared_ptr<btRigidBody> body );
+	bool AddTrigger( std::string name, std::shared_ptr<btPairCachingGhostObject> body );
 	
+	void RemoveTrigger( std::string name );
 	void RemoveBody( std::string name );
 	void RemoveBodys();
 	

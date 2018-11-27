@@ -64,6 +64,11 @@ void World::UpdateColliderForObject( std::shared_ptr<btRigidBody> body )
 	dynamicsWorld->getCollisionWorld()->updateSingleAabb( (btCollisionObject*)body.get() );
 }
 
+void World::UpdateColliderForTrigger( std::shared_ptr<btPairCachingGhostObject> body )
+{
+	dynamicsWorld->getCollisionWorld()->updateSingleAabb( (btCollisionObject*)body.get() );
+}
+
 btVector3 World::GetGravity()
 {
 	return dynamicsWorld->getGravity();
@@ -99,6 +104,25 @@ bool World::AddBody( std::string name, std::shared_ptr<btRigidBody> body )
 	return false;
 }
 
+bool World::AddTrigger( std::string name, std::shared_ptr<btPairCachingGhostObject> body )
+{
+	if( body )
+	{
+		if( trigger.find(name) != trigger.end() )
+		{
+			return false;
+			//DeleteTrigger( name );			////////////////////////////////////////////////////////////////////////
+		}
+		else
+		{
+			dynamicsWorld->addCollisionObject( (btCollisionObject*)body.get() );
+			trigger[name] = body;
+			return true;
+		}
+	}
+	return false;
+}
+
 void World::RemoveBody( std::string name )
 {
 	auto it = object.find(name);
@@ -114,6 +138,19 @@ void World::RemoveBody( std::string name )
 	}
 }
 
+void World::RemoveTrigger( std::string name )
+{
+	auto it = trigger.find(name);
+	if( it != trigger.end() )
+	{
+		if( it->second )
+		{
+			dynamicsWorld->removeCollisionObject( (btCollisionObject*)(it->second.get()) );
+		}
+		trigger.erase( it );
+	}
+}
+
 void World::RemoveBodys()
 {
 	for( auto it = object.begin(); it != object.end(); ++it )
@@ -124,6 +161,15 @@ void World::RemoveBodys()
 		}
 	}
 	object.clear();
+	
+	for( auto it = trigger.begin(); it != trigger.end(); ++it )
+	{
+		if( it->second )
+		{
+			dynamicsWorld->removeCollisionObject( (btCollisionObject*)(it->second.get()) );
+		}
+	}
+	trigger.clear();
 }
 
 void World::Destroy()

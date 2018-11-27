@@ -17,6 +17,11 @@ int Engine::GetNumberOfObjects() const
 	return object.size();
 }
 
+int Engine::GetNumberOfTriggers() const
+{
+	return trigger.size();
+}
+
 inline void Engine::UpdateObjectOverlaps()
 {
 	for( auto it = object.begin(); it != object.end(); ++it )
@@ -26,8 +31,6 @@ inline void Engine::UpdateObjectOverlaps()
 			it->second->NextOverlappingFrame();
 		}
 	}
-	
-	//dwadawdadawd
 	
 	btDispatcher * dispacher = world->GetDynamicsWorld()->getDispatcher();
 	if( dispacher )
@@ -41,17 +44,27 @@ inline void Engine::UpdateObjectOverlaps()
 				Object * a = ((Object*)(contactManifold->getBody0()->getUserPointer()));
 				Object * b = ((Object*)(contactManifold->getBody1()->getUserPointer()));
 				
-				if( a && b )
+				
+				
+				DEBUG( "Testing ray trace for tracing triggers:" );
+				if( trigger.find( a->GetName() ) != trigger.end() || trigger.find( b->GetName() ) != trigger.end() )
 				{
-					if( a->IsDynamic() )
-						a->OverlapWithObject( b, contactManifold );
-					
-					if( b->IsDynamic() )
-						b->OverlapWithObject( a, contactManifold );
+					MESSAGE( "       Should not ray trace for triggers" );
 				}
 				else
 				{
-					MESSAGE( "btCollisionShape->getUserPointer() = NULL" );
+					if( a && b )
+					{
+						if( a->IsDynamic() )
+							a->OverlapWithObject( b, contactManifold );
+						
+						if( b->IsDynamic() )
+							b->OverlapWithObject( a, contactManifold );
+					}
+					else
+					{
+						MESSAGE( "btCollisionShape->getUserPointer() = NULL" );
+					}
 				}
 			}
 			else
@@ -97,6 +110,17 @@ void Engine::QueueObjectToDestroy( std::shared_ptr<Object> ptr )
 void Engine::QueueObjectToDestroy( const std::string & name )
 {
 	objectsQueuedToDestroy.push( name );
+}
+
+void Engine::QueueTriggerToDestroy( std::shared_ptr<Trigger> ptr )
+{
+	if( ptr )
+		triggersQueuedToDestroy.push( ptr->GetName() );
+}
+
+void Engine::QueueTriggerToDestroy( const std::string & name )
+{
+	triggersQueuedToDestroy.push( name );
 }
 
 float Engine::GetDeltaTime()
@@ -195,6 +219,22 @@ std::string Engine::GetAvailableObjectName( std::string name )
 	return name;
 }
 
+std::string Engine::GetAvailableTriggerName( std::string name )
+{
+	if( trigger.find( name ) == trigger.end() )
+	{
+		return name;
+	}
+	for( int i = 0;; ++i )
+	{
+		if( trigger.find( name+std::to_string(i) ) == trigger.end() )
+		{
+			return name+std::to_string(i);
+		}
+	}
+	return name;
+}
+
 void Engine::AttachCameraToObject( std::string name, btVector3 location )
 {
 	auto it = object.find( name );
@@ -274,6 +314,23 @@ std::shared_ptr<Object> Engine::GetObject( std::string name )
 	return ret;
 }
 
+std::shared_ptr<Trigger> Engine::GetTrigger( std::string name )
+{
+	auto it = trigger.find( name );
+	if( it != trigger.end() )
+	{
+		if( it->second )
+		{
+			return it->second;
+		}
+		else
+		{
+			trigger.erase( it );
+		}
+	}
+	return std::shared_ptr<Trigger>();
+}
+
 void Engine::DeleteObject( std::string name )
 {
 	auto it = object.find( name );
@@ -300,6 +357,26 @@ void Engine::DeleteObject( std::string name )
 	}
 }
 
+void Engine::DeleteTrigger( std::string name )
+{
+	auto it = trigger.find( name );
+	if( it != trigger.end() )
+	{
+		if( it->second )
+		{
+			DEBUG( std::string("Destroying trigger: ") + name )
+			
+			world->RemoveTrigger( name );
+			it->second.reset();
+		}
+		
+		trigger.erase( it );
+	}
+	else
+	{
+		MESSAGE( std::string("Trying to destroy un-existing trigger: ") + name )
+	}
+}
 
 
 /*
@@ -467,28 +544,18 @@ void Engine::Init( EventResponser * eventResponser, const char * windowName, con
 	Destroy();
 	event = eventResponser;
 	world = new World;
-	DEBUG(312)
 	window = new Window;
-	DEBUG(2)
 	world->Init();
-	DEBUG(3)
 	window->Init( this, windowName, iconFile, width, height, event, fullscreen );
-	DEBUG(5)
 	event->Init();
-	DEBUG(6)
 	event->SetEngine( this );
 	
-	DEBUG(7)
 	window->HideMouse();
 	window->LockMouse();
 	
 	collisionShapeManager = new CollisionShapeManager( this );
 	
-	DEBUG(8)
-	
 	window->output->Init();
-	
-	DEBUG(9)
 	
 	if( GetCamera() == NULL )
 	{
@@ -497,16 +564,13 @@ void Engine::Init( EventResponser * eventResponser, const char * windowName, con
 		window->camera->GetCameraNode()->setFOV( 60.0f * Math::PI / 180.0f );
 	}
 	
-	
 	//window->UseParallelThreadToDraw();
 }
 
 void Engine::Destroy()
 {
-	DEBUG(1)
 	cameraParent = NULL;
 	
-	DEBUG(2)
 	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
@@ -522,7 +586,21 @@ void Engine::Destroy()
 	}
 	object.clear();
 	
-	DEBUG(3)
+	for( auto it = trigger.begin(); it != trigger.end(); ++it )
+	{
+		if( it->second )
+		{
+			assert( it->second );
+			world->RemoveTrigger( it->first );
+			it->second.reset();
+		}
+		else
+		{
+			MESSAGE("It shouldn't appear: ERR=3116661");
+		}
+	}
+	trigger.clear();
+	
 	for( auto it = model.begin(); it != model.end(); ++it )
 	{
 		if( it->second )
@@ -538,7 +616,6 @@ void Engine::Destroy()
 	}
 	model.clear();
 	
-	DEBUG(4)
 	if( window )
 	{
 		assert( window != NULL );
@@ -547,7 +624,6 @@ void Engine::Destroy()
 		window = NULL;
 	}
 	
-	DEBUG(5)
 	if( world )
 	{
 		assert( world != NULL );
@@ -555,7 +631,6 @@ void Engine::Destroy()
 		delete world;
 		world = NULL;
 	}
-	DEBUG(6)
 	
 	if( event )
 	{
@@ -563,7 +638,6 @@ void Engine::Destroy()
 		delete event;
 		event = NULL;
 	}
-	DEBUG(7)
 	
 	if( collisionShapeManager )
 	{
@@ -572,7 +646,6 @@ void Engine::Destroy()
 		delete collisionShapeManager;
 		collisionShapeManager = NULL;
 	}
-	DEBUG(8)
 	
 	pausePhysics = false;
 }
@@ -588,7 +661,6 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-	DEBUG(0)
 	Destroy();
 }
 

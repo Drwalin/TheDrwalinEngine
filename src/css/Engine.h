@@ -22,6 +22,7 @@
 #include <Window.h>
 #include <Model.h>
 #include <Object.h>
+#include <Trigger.h>
 
 #include <CollisionShapeManager.h>
 
@@ -36,8 +37,10 @@ private:
 	
 	std::map < std::string, std::shared_ptr<Model> > model;
 	std::map < std::string, std::shared_ptr<Object> > object;
+	std::map < std::string, std::shared_ptr<Trigger> > trigger;
 	
 	std::queue < std::string > objectsQueuedToDestroy;
+	std::queue < std::string > triggersQueuedToDestroy;
 	
 	TimeCounter guiDrawTime;
 	TimeCounter sceneDrawTime;
@@ -56,6 +59,7 @@ private:
 public:
 	
 	int GetNumberOfObjects() const;
+	int GetNumberOfTriggers() const;
 	
 public:
 	
@@ -72,6 +76,7 @@ public:
 		RayTraceData( btCollisionWorld::AllHitsRayResultCallback & hitData, unsigned id );
 		RayTraceData();
 	};
+	friend RayTraceData;
 	
 	enum RayTraceChannel
 	{
@@ -86,6 +91,8 @@ public:
 	
 	void QueueObjectToDestroy( std::shared_ptr<Object> ptr );
 	void QueueObjectToDestroy( const std::string & name );
+	void QueueTriggerToDestroy( std::shared_ptr<Trigger> ptr );
+	void QueueTriggerToDestroy( const std::string & name );
 	
 	std::shared_ptr<Object> RayTrace( btVector3 begin, btVector3 end, int channel, btVector3 & point, btVector3 & normal, const std::vector < std::shared_ptr<Object> > & ignoreObjects );
 	
@@ -106,6 +113,8 @@ public:
 	std::shared_ptr<Object> AddObject( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform, bool dynamic = false, btScalar mass = 1.0f, btVector3 inertia = btVector3(0,0,0) );
 	template < class T >
 	std::shared_ptr<Object> AddCharacter( std::string name, btScalar width, btScalar height, btTransform transform, btScalar mass );
+	template < class T >
+	std::shared_ptr<Trigger> AddTrigger( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform );
 	
 	void AttachCameraToObject( std::string name, btVector3 location );
 	bool SetCustomModelName( std::string name, std::shared_ptr<Model> mdl );
@@ -113,10 +122,13 @@ public:
 	std::shared_ptr<Model> LoadModel( std::string name );
 	std::shared_ptr<Model> GetModel( std::string name );
 	std::shared_ptr<Object> GetObject( std::string name );
+	std::shared_ptr<Trigger> GetTrigger( std::string name );
 	
 	std::string GetAvailableObjectName( std::string name );
+	std::string GetAvailableTriggerName( std::string name );
 	
 	void DeleteObject( std::string name );
+	void DeleteTrigger( std::string name );
 	
 	int CalculateNumberOfSimulationsPerFrame( const float deltaTime );
 	void Tick( const float deltaTime );

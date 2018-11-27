@@ -143,11 +143,6 @@ void Object::Tick( const float deltaTime )
 	}
 	
 	UpdateTransformSceneNode();
-	
-	if( currentTransform.getOrigin().y() < -1000.0 )
-	{
-		engine->QueueObjectToDestroy( name );
-	}
 }
 
 void Object::ApplyDamage( const float damage, btVector3 point, btVector3 normal )

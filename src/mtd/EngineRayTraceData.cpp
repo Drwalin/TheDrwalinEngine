@@ -23,12 +23,19 @@ Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback &
 			Object * objectT = (Object*)(temp->getUserPointer());
 			if( objectT )
 			{
-				object = objectT->GetEngine()->GetObject( std::string(objectT->GetName()) );
-				begin = hitData.m_rayFromWorld;
-				end = hitData.m_rayToWorld;
-				point = hitData.m_hitPointWorld.at( id );
-				normal = hitData.m_hitNormalWorld.at( id );
-				distance = begin.distance2( point );
+				if( objectT->GetEngine()->trigger.find( objectT->GetName() ) != objectT->GetEngine()->trigger.end() )
+				{
+					MESSAGE( "Should not ray trace for triggers" );
+				}
+				else
+				{
+					object = objectT->GetEngine()->GetObject( std::string(objectT->GetName()) );
+					begin = hitData.m_rayFromWorld;
+					end = hitData.m_rayToWorld;
+					point = hitData.m_hitPointWorld.at( id );
+					normal = hitData.m_hitNormalWorld.at( id );
+					distance = begin.distance2( point );
+				}
 			}
 			else
 			{

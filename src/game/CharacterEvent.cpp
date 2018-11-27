@@ -77,7 +77,7 @@ void Character::EventCrouch()
 		previousWalkMode = walkMode;
 		walkMode = Character::WalkMode::CROUCH;
 		SetScale( btVector3( 1.0, 0.5, 1.0 ) );
-		SetCameraLocation( btVector3( 0.0, height * 0.5 * 0.5 * 0.9, 0.0 ) );
+		SetCameraLocation( btVector3( 0.0, GetCurrentHeight() * 0.5 * 0.9, 0.0 ) );
 	}
 }
 

@@ -16,7 +16,7 @@ OBJECTS = $(addprefix $(BINARYPATH)/,$(OBJECTS_))
 
 GAMESOURCEPATH = ./src/game
 
-GAMESOURCES_ = Converter.cpp MeshLoader.cpp Character.cpp CharacterEvent.cpp Player.cpp Main.cpp
+GAMESOURCES_ = Converter.cpp MeshLoader.cpp Character.cpp CharacterEvent.cpp Player.cpp Main.cpp CharacterWalkTrigger.cpp
 GAMEOBJECTS_ = $(GAMESOURCES_:.cpp=.o)
 GAMESOURCES = $(addprefix $(GAMESOURCEPATH)/,$(GAMESOURCES_))
 GAMEOBJECTS = $(addprefix $(BINARYPATH)/,$(GAMEOBJECTS_))

@@ -32,7 +32,7 @@ int main()
 	LoadMeshes( "media/loadMeshes.list", engine );
 	
 	
-	{
+{
 	std::shared_ptr<Model> sphere = engine->GetModel( "Sphere" );
 	std::shared_ptr<Model> crate01 = engine->GetModel( "Crate01" );
 	std::shared_ptr<Model> mapModel = engine->GetModel( /*"Plane" );*/"TestMap" );
@@ -83,7 +83,7 @@ int main()
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	((Character*)(player.get()))->SetCamera( engine->GetCamera() );
 	
-	}
+}
 	
 	
 	DEBUG( std::string("Loading cpu time: ") + std::to_string(float(clock())/float(CLOCKS_PER_SEC)) );

@@ -70,8 +70,8 @@ public:
 	
 	std::shared_ptr<btPairCachingGhostObject> GetBody();
 	
-	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold );
-	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold );
+	virtual void EventOnObjectBeginOverlapp( Object * other );
+	virtual void EventOnObjectTickOverlapp( Object * other );
 	virtual void EventOnObjectEndOverlapp( Object * other );
 	
 	virtual void Tick( const float deltaTime );

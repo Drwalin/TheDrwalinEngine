@@ -44,12 +44,10 @@ inline void Engine::UpdateObjectOverlaps()
 				Object * a = ((Object*)(contactManifold->getBody0()->getUserPointer()));
 				Object * b = ((Object*)(contactManifold->getBody1()->getUserPointer()));
 				
-				
-				
-				DEBUG( "Testing ray trace for tracing triggers:" );
+				DEBUG( "Testing overlapp triggers:" );
 				if( trigger.find( a->GetName() ) != trigger.end() || trigger.find( b->GetName() ) != trigger.end() )
 				{
-					MESSAGE( "       Should not ray trace for triggers" );
+					MESSAGE( "       Should not overlapp with triggers" );
 				}
 				else
 				{
@@ -90,6 +88,14 @@ inline void Engine::UpdateObjects( const float deltaTime )
 	UpdateObjectOverlaps();
 	
 	for( auto it = object.begin(); it != object.end(); ++it )
+	{
+		if( it->second )
+		{
+			it->second->Tick( deltaTime );
+		}
+	}
+	
+	for( auto it = trigger.begin(); it != trigger.end(); ++it )
 	{
 		if( it->second )
 		{

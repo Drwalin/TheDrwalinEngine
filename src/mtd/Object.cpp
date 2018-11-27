@@ -14,6 +14,7 @@
 
 void Object::UpdateTransformSceneNode()
 {
+	DEBUG( "Debug does objects updates sceneNode transform" );
 	if( sceneNode )
 	{
 		sceneNode->setPosition( Math::GetIrrVec( currentTransform ) * irr::core::vector3d<float>(-1,1,1) );

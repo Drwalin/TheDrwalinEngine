@@ -46,50 +46,47 @@ void Trigger::Rotate( const btQuaternion & quat )
 
 void Trigger::NextOverlappingFrame()
 {
-	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
+	overlappingInPreviousFrame = overlappingInCurrentFrame;
+	overlappingInCurrentFrame.clear();
+	
+	if( body )
 	{
-		if( overlappingInCurrentFrame.find( *it ) == overlappingInCurrentFrame.end() )
+		for( int i = 0; i < body->getNumOverlappingObjects(); i++ )
 		{
-			EventOnObjectEndOverlapp( *it );
+			btCollisionObject * otherCollisionObject = body->getOverlappingObject( i );
+			if( otherCollisionObject )
+			{
+				Object * temp = (Object*)(otherCollisionObject->getUserPointer());
+				if( temp )
+				{
+					overlappingInCurrentFrame.insert( temp );
+					if( overlappingInPreviousFrame.find( temp ) == overlappingInPreviousFrame.end() )
+					{
+						this->EventOnObjectBeginOverlapp( temp );
+					}
+				}
+			}
 		}
 	}
 	
-	overlappingInPreviousFrame = overlappingInCurrentFrame;
-	overlappingInCurrentFrame.clear();
-}
-
-void Trigger::OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold )
-{
-	if( perisstentManifold )
+	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
 	{
-		if( other )
+		if( overlappingInCurrentFrame.find( *it ) != overlappingInCurrentFrame.end() )
 		{
-			if( overlappingInPreviousFrame.find( other ) != overlappingInPreviousFrame.end() )
-			{
-				EventOnObjectTickOverlapp( other, perisstentManifold );
-			}
-			else
-			{
-				EventOnObjectBeginOverlapp( other, perisstentManifold );
-			}
-			overlappingInCurrentFrame.insert( other );
+			this->EventOnObjectTickOverlapp( *it );
 		}
 		else
 		{
-			MESSAGE( "other = NULL" );
+			this->EventOnObjectEndOverlapp( *it );
 		}
-	}
-	else
-	{
-		MESSAGE( "perisstentManifold = NULL" );
 	}
 }
 
-void Trigger::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+void Trigger::EventOnObjectBeginOverlapp( Object * other )
 {
 }
 
-void Trigger::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+void Trigger::EventOnObjectTickOverlapp( Object * other )
 {
 }
 
@@ -117,8 +114,7 @@ std::shared_ptr<Trigger> Trigger::GetThis()
 
 void Trigger::Tick( const float deltaTime )
 {
-	// proceed overlaps
-	
+	NextOverlappingFrame();
 }
 
 Engine * Trigger::GetEngine()
@@ -205,4 +201,5 @@ Trigger::~Trigger()
 }
 
 #endif
+
 

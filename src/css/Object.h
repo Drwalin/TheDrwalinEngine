@@ -75,7 +75,7 @@ public:
 	void SetRayTraceChannel( int src );
 	int GetRayTraceChannel();
 	
-	void SetScale( btVector3 scale );
+	virtual void SetScale( btVector3 scale );
 	btVector3 GetScale();
 	
 	btTransform GetTransform();

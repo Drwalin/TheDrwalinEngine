@@ -6,6 +6,7 @@
 #define CHARACTER_H
 
 #include <Object.h>
+#include <Trigger.h>
 #include <Camera.h>
 #include <cmath>
 
@@ -42,7 +43,21 @@ protected:
 	
 	void CorrectCameraRotation();
 	
+	
+	std::shared_ptr<Trigger> walkTriggerBottom;		// directly under feets ; this->height = 0.2
+	std::shared_ptr<Trigger> walkTriggerBody;		// a little bit in front of face, not including feets ; this->height = parent->height * 0.915
+	std::shared_ptr<Trigger> walkTriggerStep;		// a little bit in front of faec, only feets ; this->height = parent->height * 0.085
+	
+	void SpawnWalkTriggers();
+	void UpdateStepUp();
+	void UpdateIsInAir();
+	void UpdateWalkTriggersLocation( const float deltaTime );
+	
 public:
+	
+	virtual void SetScale( btVector3 scale ) override;
+	
+	float GetCurrentHeight() const;
 	
 	virtual void NextOverlappingFrame() override;
 	

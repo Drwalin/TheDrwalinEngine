@@ -60,7 +60,7 @@ std::shared_ptr<Object> Engine::AddCharacter( std::string name, btScalar width, 
 	if( object.find(name) == object.end() )
 	{
 		std::string shapeName = collisionShapeManager->GetFirstAvailableName( name );
-		std::shared_ptr<btCollisionShape> shape = collisionShapeManager->GetCapsule( width/2.0, height, shapeName );
+		std::shared_ptr<btCollisionShape> shape = collisionShapeManager->GetCylinder( width/2.0, height, shapeName );
 		std::shared_ptr<Object> obj = AddObject<T>( name, shape, transform, true, mass, btVector3(0,0,0) );
 		if( obj )
 		{

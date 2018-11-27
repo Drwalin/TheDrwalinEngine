@@ -24,7 +24,7 @@ GAMEOBJECTS = $(addprefix $(BINARYPATH)/,$(GAMEOBJECTS_))
 OBJECTS += $(GAMEOBJECTS)
 
 
-CFLAGS += -m64 -s -Ofast -std=c++11 -I$(HEADERPATH) -I$(LIBRARYPATH) -w
+CFLAGS += -m64 -ggdb -std=c++11 -I$(HEADERPATH) -I$(LIBRARYPATH) -w
 LIBS += -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -lIrrlicht
 CC = g++
 

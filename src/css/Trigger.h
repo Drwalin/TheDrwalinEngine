@@ -46,7 +46,7 @@ protected:
 public:
 	
 	virtual void NextOverlappingFrame();
-	void OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold );
+	void OverlapWithObject( Object * other );
 	
 	void SetPosition( const btVector3 & loc );
 	void SetRotation( const btQuaternion & quat );

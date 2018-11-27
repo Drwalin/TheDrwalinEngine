@@ -44,43 +44,96 @@ void Trigger::Rotate( const btQuaternion & quat )
 	SetRotation( currentTransform.getRotation() * quat );
 }
 
+/*
 void Trigger::NextOverlappingFrame()
 {
 	overlappingInPreviousFrame = overlappingInCurrentFrame;
 	overlappingInCurrentFrame.clear();
 	
+	MESSAGE( "A" );
+	
 	if( body )
 	{
+	MESSAGE( "B" );
 		for( int i = 0; i < body->getNumOverlappingObjects(); i++ )
 		{
 			btCollisionObject * otherCollisionObject = body->getOverlappingObject( i );
 			if( otherCollisionObject )
 			{
+	MESSAGE( "C" );
 				Object * temp = (Object*)(otherCollisionObject->getUserPointer());
 				if( temp )
 				{
+	MESSAGE( "D" );
 					overlappingInCurrentFrame.insert( temp );
 					if( overlappingInPreviousFrame.find( temp ) == overlappingInPreviousFrame.end() )
 					{
+	MESSAGE( "E" );
 						this->EventOnObjectBeginOverlapp( temp );
 					}
 				}
 			}
+			else
+			{
+				MESSAGE( "Null object" );
+			}
 		}
 	}
 	
+	MESSAGE( "F" );
 	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
 	{
+	MESSAGE( "G" );
 		if( overlappingInCurrentFrame.find( *it ) != overlappingInCurrentFrame.end() )
 		{
+	MESSAGE( "H" );
 			this->EventOnObjectTickOverlapp( *it );
 		}
 		else
 		{
+	MESSAGE( "I" );
 			this->EventOnObjectEndOverlapp( *it );
 		}
 	}
 }
+*/
+
+
+
+void Trigger::NextOverlappingFrame()
+{
+	for( auto it = overlappingInPreviousFrame.begin(); it != overlappingInPreviousFrame.end(); ++it )
+	{
+		if( overlappingInCurrentFrame.find( *it ) == overlappingInCurrentFrame.end() )
+		{
+			EventOnObjectEndOverlapp( *it );
+		}
+	}
+	
+	overlappingInPreviousFrame = overlappingInCurrentFrame;
+	overlappingInCurrentFrame.clear();
+}
+
+void Trigger::OverlapWithObject( Object * other )
+{
+	if( other )
+	{
+		if( overlappingInPreviousFrame.find( other ) != overlappingInPreviousFrame.end() )
+		{
+			EventOnObjectTickOverlapp( other );
+		}
+		else
+		{
+			EventOnObjectBeginOverlapp( other );
+		}
+		overlappingInCurrentFrame.insert( other );
+	}
+	else
+	{
+		MESSAGE( "other = NULL" );
+	}
+}
+
 
 void Trigger::EventOnObjectBeginOverlapp( Object * other )
 {
@@ -114,7 +167,6 @@ std::shared_ptr<Trigger> Trigger::GetThis()
 
 void Trigger::Tick( const float deltaTime )
 {
-	NextOverlappingFrame();
 }
 
 Engine * Trigger::GetEngine()

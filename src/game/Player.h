@@ -16,6 +16,8 @@ protected:
 public:
 	
 	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
+	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
+	virtual void EventOnObjectEndOverlapp( Object * other ) override;
 	
 	virtual void Tick( const float deltaTime ) override;
 	//virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal ) override;

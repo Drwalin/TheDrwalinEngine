@@ -16,10 +16,13 @@
 
 void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
 {
+	Object::EventOnObjectBeginOverlapp( other, perisstentManifold );
 }
 
 void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
 {
+	Object::EventOnObjectTickOverlapp( other, perisstentManifold );
+	/*
 	int numberOfContacts = perisstentManifold->getNumContacts();
     for( int i = 0; i < numberOfContacts; i++ )
     {
@@ -48,10 +51,12 @@ void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold 
         	}
         }
     }
+    */
 }
 
 void Character::EventOnObjectEndOverlapp( Object * other )
 {
+	Object::EventOnObjectEndOverlapp( other );
 }
 
 void Character::EventJump()

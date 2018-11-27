@@ -76,11 +76,13 @@ std::shared_ptr<Trigger> Engine::AddTrigger( std::string name, std::shared_ptr<b
 		std::shared_ptr<btPairCachingGhostObject> body( new btPairCachingGhostObject() );
 		body->setCollisionShape( (btCollisionShape*)shape.get() );
 		body->setWorldTransform( transform );
+		body->setCollisionFlags( body->getCollisionFlags() | btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE | btCollisionObject::CollisionFlags::CF_KINEMATIC_OBJECT );
+		body->setCollisionFlags( body->getCollisionFlags() & (~(int(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT))) );
 		
 		world->AddTrigger( name, body );
 		
 		std::shared_ptr<Trigger> obj( new T( this, name, body, shape ) );
-		object[name] = obj;
+		trigger[name] = obj;
 		
 		body->setUserPointer( (void*)obj.get() );
 		

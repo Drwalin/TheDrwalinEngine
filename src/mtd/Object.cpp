@@ -48,7 +48,6 @@ void Object::SetRotation( const btQuaternion & quat )
 	{
 		body->activate( true );
 		body->setCenterOfMassTransform( currentTransform );
-		//body->getMotionState()->setWorldTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}
@@ -80,28 +79,35 @@ void Object::NextOverlappingFrame()
 
 void Object::OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold )
 {
-	if( perisstentManifold )
+	if( other != this )
 	{
-		if( other )
+		if( perisstentManifold )
 		{
-			if( overlappingInPreviousFrame.find( other ) != overlappingInPreviousFrame.end() )
+			if( other )
 			{
-				EventOnObjectTickOverlapp( other, perisstentManifold );
+				if( overlappingInPreviousFrame.find( other ) != overlappingInPreviousFrame.end() )
+				{
+					EventOnObjectTickOverlapp( other, perisstentManifold );
+				}
+				else
+				{
+					EventOnObjectBeginOverlapp( other, perisstentManifold );
+				}
+				overlappingInCurrentFrame.insert( other );
 			}
 			else
 			{
-				EventOnObjectBeginOverlapp( other, perisstentManifold );
+				MESSAGE( "other = NULL" );
 			}
-			overlappingInCurrentFrame.insert( other );
 		}
 		else
 		{
-			MESSAGE( "other = NULL" );
+			MESSAGE( "perisstentManifold = NULL" );
 		}
 	}
 	else
 	{
-		MESSAGE( "perisstentManifold = NULL" );
+		MESSAGE( std::string("Trying to collide with my self: ") + GetName() );
 	}
 }
 

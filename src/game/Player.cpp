@@ -15,6 +15,17 @@
 
 void Player::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
 {
+	Character::EventOnObjectBeginOverlapp( other, perisstentManifold );
+}
+
+void Player::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+{
+	Character::EventOnObjectTickOverlapp( other, perisstentManifold );
+}
+
+void Player::EventOnObjectEndOverlapp( Object * other )
+{
+	Character::EventOnObjectEndOverlapp( other );
 }
 
 void Player::Tick( const float deltaTime )

@@ -21,6 +21,7 @@ void CharacterWalkTrigger::EventOverlapp( Object * other )
 {
 	if( other != parent.get() )
 	{
+		MESSAGE( std::string("Me: ") + GetName() + " still overlapp with: " + other->GetName() );
 		isAnyInside = true;
 	}
 }

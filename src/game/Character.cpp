@@ -8,6 +8,8 @@
 #include "Character.h"
 #include "CharacterWalkTrigger.h"
 
+#include <Engine.h>
+
 #include <Debug.h>
 #include <Math.hpp>
 
@@ -20,11 +22,23 @@ void Character::UpdateStepUp()
 
 void Character::UpdateIsInAir()
 {
-	
-	
-	
-	
-	
+	isInAir = true;
+	if( walkTriggerBottom )
+	{
+		CharacterWalkTrigger * trigger = dynamic_cast<CharacterWalkTrigger*>( walkTriggerBottom.get() );
+		if( trigger )
+		{
+			isInAir = !trigger->IsAnyInside();
+		}
+		else
+		{
+			MESSAGE( "Unable to convert trigger" );
+		}
+	}
+	else
+	{
+		MESSAGE( "walkTriggerBottom not exist" );
+	}
 }
 
 void Character::UpdateWalkTriggersLocation( const float deltaTime )
@@ -50,37 +64,70 @@ void Character::UpdateWalkTriggersLocation( const float deltaTime )
 		
 		if( walkTriggerStep )
 		{
-			walkTriggerStep->SetPosition( bottomLocation + step3D + btVector3( 0.0f, height * 0.085, 0.0f ) );
+			walkTriggerStep->SetPosition( bottomLocation + step3D + btVector3( 0.0f, height * 0.085f * 0.5f, 0.0f ) );
 		}
 		
 		if( walkTriggerBody )
 		{
-			walkTriggerBody->SetPosition( location + step3D + btVector3( 0.0f, height * 0.915, 0.0f ) );
+			walkTriggerBody->SetPosition( location + step3D + btVector3( 0.0f, height * 0.915f * 0.5f, 0.0f ) );
 		}
 	}
 }
 
 void Character::SpawnWalkTriggers()
 {
-	if( body )
+	if( body && engine && collisionShape )
 	{
-		float height = GetCurrentHeight();
-		/*
-		if( walkTriggerBottom )
+		float height = -1.0, radius;
+		
 		{
-			walkTriggerBottom->SetPosition( bottomLocation );
+			btCylinderShape * cylinder = dynamic_cast<btCylinderShape*>( collisionShape.get() );
+			if( cylinder )
+			{
+				height = cylinder->getHalfExtentsWithMargin().y() * 2.0f;
+				radius = cylinder->getHalfExtentsWithMargin().x();
+			}
 		}
 		
-		if( walkTriggerStep )
+		if( height > 0.0f )
 		{
-			walkTriggerStep->SetPosition( bottomLocation + step3D + btVector3( 0.0f, height * 0.085, 0.0f ) );
+			if( !walkTriggerBottom )
+			{
+				walkTriggerBottom = engine->AddTrigger<CharacterWalkTrigger>( engine->GetAvailableTriggerName("CharacterWalkTriggerBottom"), engine->GetCollisionShapeManager()->GetCylinder( radius, height, engine->GetCollisionShapeManager()->GetFirstAvailableName("CharacterWalkTriggerBottom") ), btTransform() );
+				if( walkTriggerBottom )
+				{
+					((CharacterWalkTrigger*)walkTriggerBottom.get())->SetParent( GetThis() );
+				}
+			}
+			
+			if( !walkTriggerStep )
+			{
+				walkTriggerStep = engine->AddTrigger<CharacterWalkTrigger>( engine->GetAvailableTriggerName("CharacterWalkTriggerStep"), engine->GetCollisionShapeManager()->GetCylinder( radius, height, engine->GetCollisionShapeManager()->GetFirstAvailableName("CharacterWalkTriggerStep") ), btTransform() );
+				if( walkTriggerStep )
+				{
+					((CharacterWalkTrigger*)walkTriggerStep.get())->SetParent( GetThis() );
+				}
+			}
+			
+			if( !walkTriggerBody )
+			{
+				walkTriggerBody = engine->AddTrigger<CharacterWalkTrigger>( engine->GetAvailableTriggerName("CharacterWalkTriggerBody"), engine->GetCollisionShapeManager()->GetCylinder( radius, height, engine->GetCollisionShapeManager()->GetFirstAvailableName("CharacterWalkTriggerBody") ), btTransform() );
+				if( walkTriggerBody )
+				{
+					((CharacterWalkTrigger*)walkTriggerBody.get())->SetParent( GetThis() );
+				}
+			}
+			
+			UpdateWalkTriggersLocation( 0.01f );
 		}
-		
-		if( walkTriggerBody )
+		else
 		{
-			walkTriggerBody->SetPosition( location + step3D + btVector3( 0.0f, height * 0.915, 0.0f ) );
+			MESSAGE( std::string("Unable to get cylinder from collisionShape in Character: ") + name );
 		}
-		*/
+	}
+	else
+	{
+		MESSAGE( std::string("body or engine or collisionShape is nullptr in Character: ") + name );
 	}
 }
 
@@ -95,8 +142,6 @@ float Character::GetCurrentHeight() const
 			height = cylinder->getHalfExtentsWithMargin().y() * 2.0f;
 		}
 	}
-	
-	MESSAGE( std::string("Height: ") + std::to_string(height) );
 	
 	if( walkMode == Character::WalkMode::CROUCH )
 		height *= 0.5f;
@@ -255,9 +300,13 @@ btVector3 Character::GetFlatLeftVector() const
 
 void Character::Tick( const float deltaTime )
 {
-	UpdateWalkTriggersLocation( deltaTime );
+	if( !( walkTriggerBottom && walkTriggerBody && walkTriggerStep ) )
+		SpawnWalkTriggers();
+	
 	UpdateIsInAir();
+	UpdateWalkTriggersLocation( deltaTime );
 	UpdateStepUp();
+	
 	Object::Tick( deltaTime );
 }
 
@@ -282,18 +331,18 @@ Character::Character( Engine * engine, std::string name, std::shared_ptr<btRigid
 	cameraRotation(0,0,0), cameraLocation(0,0,0),
 	defaultVelocity(3.7), jumpHeight(1.0), height(1.75),
 	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
-	isInAir(false),
+	isInAir(true),
 	lastTimeInAir(0.0)
 {
-	SetCameraLocation( btVector3( 0.0, GetCurrentHeight() * 0.5 * 0.9, 0.0 ) );
 	height = GetCurrentHeight();
+	SetCameraLocation( btVector3( 0.0, height * 0.5 * 0.9, 0.0 ) );
 }
 
 Character::Character() :
 	Object(), cameraRotation(0,0,0), cameraLocation(0,0,0),
 	defaultVelocity(3.7), jumpHeight(1.0), height(1.75),
 	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
-	isInAir(false),
+	isInAir(true),
 	lastTimeInAir(0.0)
 {
 	SetCameraLocation( btVector3( 0.0, GetCurrentHeight() * 0.5 * 0.9, 0.0 ) );

@@ -21,7 +21,7 @@ protected:
 public:
 	
 	bool IsAnyInside() const;
-	void SetParent( std::shared_ptr< Object >parent );
+	void SetParent( std::shared_ptr<Object> parent );
 	
 	virtual void EventOnObjectBeginOverlapp( Object * other ) override;
 	virtual void EventOnObjectTickOverlapp( Object * other ) override;

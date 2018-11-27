@@ -32,37 +32,61 @@ inline void Engine::UpdateObjectOverlaps()
 		}
 	}
 	
+	for( auto it = trigger.begin(); it != trigger.end(); ++it )
+	{
+		if( it->second )
+		{
+			it->second->NextOverlappingFrame();
+		}
+	}
+	
 	btDispatcher * dispacher = world->GetDynamicsWorld()->getDispatcher();
 	if( dispacher )
 	{
 		int numberOfManifolds = dispacher->getNumManifolds();
 		for( int i = 0; i < numberOfManifolds; ++i )
-		{ 	
-			btPersistentManifold * contactManifold =  dispacher->getManifoldByIndexInternal(i);
+		{
+			btPersistentManifold * contactManifold = dispacher->getManifoldByIndexInternal(i);
 			if( contactManifold )
 			{
-				Object * a = ((Object*)(contactManifold->getBody0()->getUserPointer()));
-				Object * b = ((Object*)(contactManifold->getBody1()->getUserPointer()));
-				
-				DEBUG( "Testing overlapp triggers:" );
-				if( trigger.find( a->GetName() ) != trigger.end() || trigger.find( b->GetName() ) != trigger.end() )
+				if( contactManifold->getNumContacts() > 0 )
 				{
-					MESSAGE( "       Should not overlapp with triggers" );
-				}
-				else
-				{
+					Object * a = ((Object*)(contactManifold->getBody0()->getUserPointer()));
+					Object * b = ((Object*)(contactManifold->getBody1()->getUserPointer()));
+					
 					if( a && b )
 					{
-						if( a->IsDynamic() )
-							a->OverlapWithObject( b, contactManifold );
-						
-						if( b->IsDynamic() )
-							b->OverlapWithObject( a, contactManifold );
+						bool aIsTrigger = trigger.find( a->GetName() ) != trigger.end();
+						bool bIsTrigger = trigger.find( b->GetName() ) != trigger.end();
+						if( aIsTrigger && bIsTrigger )
+						{
+							DEBUG( "Colliding Trigger with Trigger" );
+						}
+						else if( aIsTrigger )
+						{
+							((Trigger*)a)->OverlapWithObject( b );
+						}
+						else if( bIsTrigger )
+						{
+							((Trigger*)b)->OverlapWithObject( a );
+						}
+						else
+						{
+							if( a->IsDynamic() )
+								a->OverlapWithObject( b, contactManifold );
+							
+							if( b->IsDynamic() )
+								b->OverlapWithObject( a, contactManifold );
+						}
 					}
 					else
 					{
 						MESSAGE( "btCollisionShape->getUserPointer() = NULL" );
 					}
+				}
+				else
+				{
+					DEBUG( "No contact manifold points" );
 				}
 			}
 			else
@@ -87,7 +111,7 @@ inline void Engine::UpdateObjects( const float deltaTime )
 	
 	UpdateObjectOverlaps();
 	
-	for( auto it = object.begin(); it != object.end(); ++it )
+	for( auto it = trigger.begin(); it != trigger.end(); ++it )
 	{
 		if( it->second )
 		{
@@ -95,7 +119,7 @@ inline void Engine::UpdateObjects( const float deltaTime )
 		}
 	}
 	
-	for( auto it = trigger.begin(); it != trigger.end(); ++it )
+	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
 		{

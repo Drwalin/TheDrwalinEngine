@@ -33,7 +33,7 @@ void Object::SetPosition( const btVector3 & loc )
 	if( body )
 	{
 		body->activate( true );
-		body->setCenterOfMassTransform( currentTransform );
+		body->setWorldTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}
@@ -47,7 +47,7 @@ void Object::SetRotation( const btQuaternion & quat )
 	if( body )
 	{
 		body->activate( true );
-		body->setCenterOfMassTransform( currentTransform );
+		body->setWorldTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}

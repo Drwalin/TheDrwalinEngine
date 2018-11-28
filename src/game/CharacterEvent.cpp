@@ -22,8 +22,12 @@ void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold
 void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
 {
 	Object::EventOnObjectTickOverlapp( other, perisstentManifold );
-	/*
+	
 	int numberOfContacts = perisstentManifold->getNumContacts();
+	
+	float highestBottom = GetBottomY()-1.0f;
+	float height = GetCurrentHeight();
+	
     for( int i = 0; i < numberOfContacts; i++ )
     {
         btManifoldPoint & pt = perisstentManifold->getContactPoint( i );
@@ -38,6 +42,11 @@ void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold 
         if( normal.y() < 0.0 )
         	normal.m_floats[1] = -(normal.m_floats[1]);
         
+    	if( point.y() > highestBottom )		// check if it's on bottom not on top
+    	{
+    		highestBottom = point.y();
+    	}
+    	
         if( acos( normal.dot( btVector3(0,1,0) ) ) < Math::PI * 40.0f / 180.0f )
         {
         	if( point.y() < GetBottomY() )
@@ -51,7 +60,12 @@ void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold 
         	}
         }
     }
-    */
+    
+    // move by step:
+    if( highestBottom < GetBottomY() + ( height * ( 0.3f / 1.75f ) ) && highestBottom > GetBottomY() )
+    {
+    	QueueMove( ( highestBottom - GetBottomY() ) * 1.0f + 0.16f );
+    }
 }
 
 void Character::EventOnObjectEndOverlapp( Object * other )

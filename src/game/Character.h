@@ -25,6 +25,8 @@ protected:
 	btVector3 cameraRotation;
 	btVector3 cameraLocation;
 	
+	btVector3 previousVelocity;
+	
 	float height;
 	
 	float defaultVelocity;
@@ -43,7 +45,7 @@ protected:
 	
 	void CorrectCameraRotation();
 	
-	
+	/*
 	std::shared_ptr<Trigger> walkTriggerBottom;		// directly under feets ; this->height = 0.2
 	std::shared_ptr<Trigger> walkTriggerBody;		// a little bit in front of face, not including feets ; this->height = parent->height * 0.915
 	std::shared_ptr<Trigger> walkTriggerStep;		// a little bit in front of faec, only feets ; this->height = parent->height * 0.085
@@ -52,6 +54,10 @@ protected:
 	void UpdateStepUp();
 	void UpdateIsInAir();
 	void UpdateWalkTriggersLocation( const float deltaTime );
+	*/
+	
+	float queueStep;
+	void QueueMove( float val );
 	
 public:
 	

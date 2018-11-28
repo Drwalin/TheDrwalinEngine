@@ -15,6 +15,8 @@
 
 #include <ctime>
 
+/*
+
 void Character::UpdateStepUp()
 {
 	
@@ -131,6 +133,14 @@ void Character::SpawnWalkTriggers()
 	}
 }
 
+*/
+
+void Character::QueueMove( float val )
+{
+	if( queueStep < val )
+		queueStep = val;
+}
+
 float Character::GetCurrentHeight() const
 {
 	float height = this->height;
@@ -152,13 +162,14 @@ float Character::GetCurrentHeight() const
 void Character::SetScale( btVector3 scale )
 {
 	Object::SetScale( scale );
-	
+	/*
 	if( walkTriggerBottom )
 		walkTriggerBottom->SetScale( scale );
 	if( walkTriggerBody )
 		walkTriggerBody->SetScale( scale );
 	if( walkTriggerStep )
 		walkTriggerStep->SetScale( scale );
+	*/
 }
 
 void Character::NextOverlappingFrame()
@@ -300,14 +311,39 @@ btVector3 Character::GetFlatLeftVector() const
 
 void Character::Tick( const float deltaTime )
 {
+	/*
 	if( !( walkTriggerBottom && walkTriggerBody && walkTriggerStep ) )
 		SpawnWalkTriggers();
 	
 	UpdateIsInAir();
 	UpdateWalkTriggersLocation( deltaTime );
 	UpdateStepUp();
-	
+	*/
 	Object::Tick( deltaTime );
+	
+	if( queueStep >= 0.001f )
+	{
+		MESSAGE( std::string("queuedMove.y() = ") + std::to_string(queueStep) );
+		Move( btVector3( 0.0f, queueStep, 0.0f ) );
+		if( body )
+		{
+			body->setLinearVelocity( /*body->getLinearVelocity() +*/ previousVelocity + btVector3( 0.0, queueStep / ( deltaTime * 103.0f ), 0.0 ) );
+		}
+		else
+		{
+			DEBUG( "No body" );
+		}
+		queueStep = 0.0f;
+	}
+	/*else*/ if( body )
+	{
+		previousVelocity = body->getLinearVelocity();
+		previousVelocity.setY( 0.0f );
+	}
+	else
+	{
+		DEBUG( "No body" );
+	}
 }
 
 void Character::ApplyDamage( const float damage, btVector3 point, btVector3 normal )
@@ -332,7 +368,8 @@ Character::Character( Engine * engine, std::string name, std::shared_ptr<btRigid
 	defaultVelocity(3.7), jumpHeight(1.0), height(1.75),
 	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
 	isInAir(true),
-	lastTimeInAir(0.0)
+	lastTimeInAir(0.0),
+	queueStep(0.0)
 {
 	height = GetCurrentHeight();
 	SetCameraLocation( btVector3( 0.0, height * 0.5 * 0.9, 0.0 ) );
@@ -343,7 +380,8 @@ Character::Character() :
 	defaultVelocity(3.7), jumpHeight(1.0), height(1.75),
 	walkMode(Character::WalkMode::WALK), previousWalkMode(Character::WalkMode::WALK),
 	isInAir(true),
-	lastTimeInAir(0.0)
+	lastTimeInAir(0.0),
+	queueStep(0.0)
 {
 	SetCameraLocation( btVector3( 0.0, GetCurrentHeight() * 0.5 * 0.9, 0.0 ) );
 }

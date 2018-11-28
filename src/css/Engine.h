@@ -89,6 +89,8 @@ public:
 	
 public:
 	
+	void GetDynamicObjectsWithinTheCollisionShape( std::shared_ptr<btCollisionShape> shape, btTransform transform, std::vector < std::shared_ptr<Object> > retObjects ) const;
+	
 	void QueueObjectToDestroy( std::shared_ptr<Object> ptr );
 	void QueueObjectToDestroy( const std::string & name );
 	void QueueTriggerToDestroy( std::shared_ptr<Trigger> ptr );

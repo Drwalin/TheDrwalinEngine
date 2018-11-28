@@ -79,7 +79,7 @@ int main()
 	
 	
 	
-	std::shared_ptr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(30,10,0) ), 15.0 );
+	std::shared_ptr<Object> player = engine->AddCharacter<Player>( "Player", 0.6, 1.75, btTransform( btQuaternion(btVector3(1,1,1),0), btVector3(35,10,-25) ), 15.0 );
 	engine->AttachCameraToObject( "Player", btVector3( 0, 0.8, 0 ) );
 	((Character*)(player.get()))->SetCamera( engine->GetCamera() );
 	

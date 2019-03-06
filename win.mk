@@ -1,9 +1,10 @@
 
 BINARYPATH = ./bin-win
-BULLETINCLUDEPATH = C:/mingw-w64/mingw64/include/bullet
-BULLETLIBPATH = C:\mingw-w64\mingw64\lib\bullet
-STANDARDINCLUDEPATH = C:\mingw-w64\mingw64\include
-STANDARDLIBPATH = C:\mingw-w64\mingw64\lib
+BULLETINCLUDEPATH = C:\mingw-w64\include\bullet
+BULLETLIBPATH = C:\mingw-w64\lib\bullet
+STANDARDINCLUDEPATH = C:\mingw-w64\include
+STANDARDLIBPATH = C:\mingw-w64\lib
+
 
 CFLAGS += -L$(BULLETLIBPATH) -I$(BULLETINCLUDEPATH) -I$(STANDARDINCLUDEPATH) -L$(STANDARDLIBPATH)
 

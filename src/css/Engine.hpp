@@ -69,22 +69,28 @@ std::shared_ptr<Object> Engine::AddCharacter( std::string name, btScalar width, 
 }
 
 template < class T >
-std::shared_ptr<Trigger> Engine::AddTrigger( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform )
+std::shared_ptr<Object> Engine::AddTrigger( std::string name, std::shared_ptr<btCollisionShape> shape, btTransform transform )
 {
-	if( shape && trigger.find(name) == trigger.end() )
+	if( shape && object.find(name) == object.end() )
 	{
-		std::shared_ptr<btPairCachingGhostObject> body( new btPairCachingGhostObject() );
-		body->setCollisionShape( (btCollisionShape*)shape.get() );
-		body->setWorldTransform( transform );
-		body->setCollisionFlags( body->getCollisionFlags() | btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE | btCollisionObject::CollisionFlags::CF_KINEMATIC_OBJECT );
-		body->setCollisionFlags( body->getCollisionFlags() & (~(int(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT))) );
+		float mass = 1.0f;
+		btVector3 inertia(0.0f,0.0f,0.0f);
 		
-		world->AddTrigger( name, body );
+		btDefaultMotionState* motionState = new btDefaultMotionState( transform );
+		std::shared_ptr<btRigidBody> rigidBody( new btRigidBody( mass, motionState, (btCollisionShape*)shape.get(), inertia ) );
+		world->AddBody( name, rigidBody );
+		rigidBody->setDamping( 1.0, 1.0 );
+		rigidBody->setFriction( 0.0 );
+		rigidBody->setAngularFactor( 0.0 );
+		rigidBody->setLinearFactor( btVector3( 0.0, 0.0, 0.0 ) );
+		rigidBody->setCollisionFlags( rigidBody->getCollisionFlags() | btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE | btCollisionObject::CollisionFlags::CF_KINEMATIC_OBJECT );
+		//body->setCollisionFlags( body->getCollisionFlags() & (~(int(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT))) );
+		rigidBody->setGravity( btVector3(0.0f,0.0f,0.0f) );
 		
-		std::shared_ptr<Trigger> obj( new T( this, name, body, shape ) );
-		trigger[name] = obj;
+		std::shared_ptr<Object> obj( new T( this, name, rigidBody, shape, mass ) );
+		object[name] = obj;
 		
-		body->setUserPointer( (void*)obj.get() );
+		rigidBody->setUserPointer( (void*)obj.get() );
 		
 		return obj;
 	}
@@ -94,12 +100,12 @@ std::shared_ptr<Trigger> Engine::AddTrigger( std::string name, std::shared_ptr<b
 		DEBUG( std::string("Shape = NULL : ") + name );
 	}
 	
-	if( trigger.find(name) != trigger.end() )
+	if( object.find(name) != object.end() )
 	{
-		DEBUG( ( std::string( "Trying to spawn object whit name that exist: " ) + name ) );
+		DEBUG( ( std::string( "Trying to spawn trigger whit name that exist: " ) + name ) );
 	}
 	
-	return std::shared_ptr<Trigger>();
+	return std::shared_ptr<Object>();
 }
 
 #endif

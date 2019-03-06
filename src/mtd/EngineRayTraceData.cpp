@@ -23,11 +23,7 @@ Engine::RayTraceData::RayTraceData( btCollisionWorld::AllHitsRayResultCallback &
 			Object * objectT = (Object*)(temp->getUserPointer());
 			if( objectT )
 			{
-				if( objectT->GetEngine()->trigger.find( objectT->GetName() ) != objectT->GetEngine()->trigger.end() )
-				{
-					MESSAGE( "Should not ray trace for triggers" );
-				}
-				else
+				if( !objectT->IsTrigger() )
 				{
 					object = objectT->GetEngine()->GetObject( std::string(objectT->GetName()) );
 					begin = hitData.m_rayFromWorld;

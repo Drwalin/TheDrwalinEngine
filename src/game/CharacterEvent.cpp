@@ -14,15 +14,15 @@
 
 #include <ctime>
 
-void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+void Character::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
-	Object::EventOnObjectBeginOverlapp( other, perisstentManifold );
+	Object::EventOnObjectBeginOverlapp( other, persisstentManifold );
 }
 
-void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
-	Object::EventOnObjectTickOverlapp( other, perisstentManifold );
-	
+	Object::EventOnObjectTickOverlapp( other, persisstentManifold );
+	/*
 	int numberOfContacts = perisstentManifold->getNumContacts();
 	
 	float highestBottom = GetBottomY()-1.0f;
@@ -66,6 +66,7 @@ void Character::EventOnObjectTickOverlapp( Object * other, btPersistentManifold 
     {
     	QueueMove( ( highestBottom - GetBottomY() ) * 1.0f + 0.16f );
     }
+    */
 }
 
 void Character::EventOnObjectEndOverlapp( Object * other )

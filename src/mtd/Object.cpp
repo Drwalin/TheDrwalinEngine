@@ -12,6 +12,11 @@
 
 #include <cassert>
 
+bool Object::IsTrigger() const
+{
+	return false;
+}
+
 void Object::UpdateTransformSceneNode()
 {
 	DEBUG( "Debug does objects updates sceneNode transform" );
@@ -33,7 +38,9 @@ void Object::SetPosition( const btVector3 & loc )
 	if( body )
 	{
 		body->activate( true );
-		body->setWorldTransform( currentTransform );
+		//body->setCenterOfMassTransform( currentTransform );
+		body->getMotionState()->setWorldTransform( currentTransform );
+		//body->setWorldTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}
@@ -47,7 +54,9 @@ void Object::SetRotation( const btQuaternion & quat )
 	if( body )
 	{
 		body->activate( true );
-		body->setWorldTransform( currentTransform );
+		//body->setCenterOfMassTransform( currentTransform );
+		body->getMotionState()->setWorldTransform( currentTransform );
+		//body->setWorldTransform( currentTransform );
 		engine->GetWorld()->UpdateColliderForObject( body );
 		body->activate( true );
 	}
@@ -77,21 +86,21 @@ void Object::NextOverlappingFrame()
 	overlappingInCurrentFrame.clear();
 }
 
-void Object::OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold )
+void Object::OverlapWithObject( Object * other, btPersistentManifold * persisstentManifold )
 {
 	if( other != this )
 	{
-		if( perisstentManifold )
+		if( persisstentManifold )
 		{
 			if( other )
 			{
 				if( overlappingInPreviousFrame.find( other ) != overlappingInPreviousFrame.end() )
 				{
-					EventOnObjectTickOverlapp( other, perisstentManifold );
+					EventOnObjectTickOverlapp( other, persisstentManifold );
 				}
 				else
 				{
-					EventOnObjectBeginOverlapp( other, perisstentManifold );
+					EventOnObjectBeginOverlapp( other, persisstentManifold );
 				}
 				overlappingInCurrentFrame.insert( other );
 			}
@@ -111,11 +120,11 @@ void Object::OverlapWithObject( Object * other, btPersistentManifold * perissten
 	}
 }
 
-void Object::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+void Object::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
 }
 
-void Object::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold )
+void Object::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
 }
 

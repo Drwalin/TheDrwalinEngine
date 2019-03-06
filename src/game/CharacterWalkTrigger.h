@@ -16,20 +16,22 @@ protected:
 	std::shared_ptr<Object> parent;
 	bool isAnyInside;
 	
-	void EventOverlapp( Object * other );
+	void EventOverlapp( Object * other, btPersistentManifold * persisstentManifold );
 	
 public:
+	
+	virtual void NextOverlappingFrame() override;
 	
 	bool IsAnyInside() const;
 	void SetParent( std::shared_ptr<Object> parent );
 	
-	virtual void EventOnObjectBeginOverlapp( Object * other ) override;
-	virtual void EventOnObjectTickOverlapp( Object * other ) override;
+	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * persisstentManifold ) override;
+	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * persisstentManifold ) override;
 	virtual void EventOnObjectEndOverlapp( Object * other ) override;
 	
 	virtual void Tick( const float deltaTime ) override;
 	
-	CharacterWalkTrigger( Engine * engine, std::string name, std::shared_ptr<btPairCachingGhostObject> body, std::shared_ptr<btCollisionShape> collisionShape );
+	CharacterWalkTrigger( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ );
 	CharacterWalkTrigger();
 	~CharacterWalkTrigger();
 };

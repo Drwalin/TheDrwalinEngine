@@ -53,8 +53,10 @@ protected:
 	
 public:
 	
+	virtual bool IsTrigger() const;
+	
 	virtual void NextOverlappingFrame();
-	void OverlapWithObject( Object * other, btPersistentManifold * perisstentManifold );
+	void OverlapWithObject( Object * other, btPersistentManifold * persisstentManifold );
 	
 	void SetPosition( const btVector3 & loc );
 	void SetRotation( const btQuaternion & quat );
@@ -64,9 +66,9 @@ public:
 	std::shared_ptr<Object> GetThis();
 	
 	
-	void SetMass( float mass );
+	virtual void SetMass( float mass );
 	
-	bool IsDynamic() const;
+	virtual bool IsDynamic() const;
 	
 	Engine * GetEngine();
 	
@@ -83,15 +85,15 @@ public:
 	
 	std::shared_ptr<btRigidBody> GetBody();
 	
-	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold );
-	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold );
+	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * persisstentManifold );
+	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * persisstentManifold );
 	virtual void EventOnObjectEndOverlapp( Object * other );
 	
 	virtual void Tick( const float deltaTime );
 	virtual void ApplyDamage( const float damage, btVector3 point, btVector3 normal );
 	virtual void ApplyImpactDamage( const float damage, const float impetus, btVector3 direction, btVector3 point, btVector3 normal );
 	
-	void SetModel( std::shared_ptr<Model> model, bool light = true );
+	virtual void SetModel( std::shared_ptr<Model> model, bool light = true );
 	
 	Object( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ );
 	Object();

@@ -17,22 +17,9 @@ int Engine::GetNumberOfObjects() const
 	return object.size();
 }
 
-int Engine::GetNumberOfTriggers() const
-{
-	return trigger.size();
-}
-
 inline void Engine::UpdateObjectOverlaps()
 {
 	for( auto it = object.begin(); it != object.end(); ++it )
-	{
-		if( it->second )
-		{
-			it->second->NextOverlappingFrame();
-		}
-	}
-	
-	for( auto it = trigger.begin(); it != trigger.end(); ++it )
 	{
 		if( it->second )
 		{
@@ -56,19 +43,17 @@ inline void Engine::UpdateObjectOverlaps()
 					
 					if( a && b )
 					{
-						bool aIsTrigger = trigger.find( a->GetName() ) != trigger.end();
-						bool bIsTrigger = trigger.find( b->GetName() ) != trigger.end();
-						if( aIsTrigger && bIsTrigger )
+						if( a->IsTrigger() && b->IsTrigger() )
 						{
 							DEBUG( "Colliding Trigger with Trigger" );
 						}
-						else if( aIsTrigger )
+						else if( a->IsTrigger() )
 						{
-							((Trigger*)a)->OverlapWithObject( b );
+							a->OverlapWithObject( b, contactManifold );
 						}
-						else if( bIsTrigger )
+						else if( b->IsTrigger() )
 						{
-							((Trigger*)b)->OverlapWithObject( a );
+							b->OverlapWithObject( a, contactManifold );
 						}
 						else
 						{
@@ -111,11 +96,14 @@ inline void Engine::UpdateObjects( const float deltaTime )
 	
 	UpdateObjectOverlaps();
 	
-	for( auto it = trigger.begin(); it != trigger.end(); ++it )
+	for( auto it = object.begin(); it != object.end(); ++it )
 	{
 		if( it->second )
 		{
-			it->second->Tick( deltaTime );
+			if( it->second->IsTrigger() )
+			{
+				it->second->Tick( deltaTime );
+			}
 		}
 	}
 	
@@ -123,7 +111,10 @@ inline void Engine::UpdateObjects( const float deltaTime )
 	{
 		if( it->second )
 		{
-			it->second->Tick( deltaTime );
+			if( !it->second->IsTrigger() )
+			{
+				it->second->Tick( deltaTime );
+			}
 		}
 	}
 	
@@ -140,17 +131,6 @@ void Engine::QueueObjectToDestroy( std::shared_ptr<Object> ptr )
 void Engine::QueueObjectToDestroy( const std::string & name )
 {
 	objectsQueuedToDestroy.push( name );
-}
-
-void Engine::QueueTriggerToDestroy( std::shared_ptr<Trigger> ptr )
-{
-	if( ptr )
-		triggersQueuedToDestroy.push( ptr->GetName() );
-}
-
-void Engine::QueueTriggerToDestroy( const std::string & name )
-{
-	triggersQueuedToDestroy.push( name );
 }
 
 float Engine::GetDeltaTime()
@@ -249,22 +229,6 @@ std::string Engine::GetAvailableObjectName( std::string name )
 	return name;
 }
 
-std::string Engine::GetAvailableTriggerName( std::string name )
-{
-	if( trigger.find( name ) == trigger.end() )
-	{
-		return name;
-	}
-	for( int i = 0;; ++i )
-	{
-		if( trigger.find( name+std::to_string(i) ) == trigger.end() )
-		{
-			return name+std::to_string(i);
-		}
-	}
-	return name;
-}
-
 void Engine::AttachCameraToObject( std::string name, btVector3 location )
 {
 	auto it = object.find( name );
@@ -344,23 +308,6 @@ std::shared_ptr<Object> Engine::GetObject( std::string name )
 	return ret;
 }
 
-std::shared_ptr<Trigger> Engine::GetTrigger( std::string name )
-{
-	auto it = trigger.find( name );
-	if( it != trigger.end() )
-	{
-		if( it->second )
-		{
-			return it->second;
-		}
-		else
-		{
-			trigger.erase( it );
-		}
-	}
-	return std::shared_ptr<Trigger>();
-}
-
 void Engine::DeleteObject( std::string name )
 {
 	auto it = object.find( name );
@@ -384,27 +331,6 @@ void Engine::DeleteObject( std::string name )
 	else
 	{
 		MESSAGE( std::string("Trying to destroy un-existing object: ") + name )
-	}
-}
-
-void Engine::DeleteTrigger( std::string name )
-{
-	auto it = trigger.find( name );
-	if( it != trigger.end() )
-	{
-		if( it->second )
-		{
-			DEBUG( std::string("Destroying trigger: ") + name )
-			
-			world->RemoveTrigger( name );
-			it->second.reset();
-		}
-		
-		trigger.erase( it );
-	}
-	else
-	{
-		MESSAGE( std::string("Trying to destroy un-existing trigger: ") + name )
 	}
 }
 
@@ -615,21 +541,6 @@ void Engine::Destroy()
 		}
 	}
 	object.clear();
-	
-	for( auto it = trigger.begin(); it != trigger.end(); ++it )
-	{
-		if( it->second )
-		{
-			assert( it->second );
-			world->RemoveTrigger( it->first );
-			it->second.reset();
-		}
-		else
-		{
-			MESSAGE("It shouldn't appear: ERR=3116661");
-		}
-	}
-	trigger.clear();
 	
 	for( auto it = model.begin(); it != model.end(); ++it )
 	{

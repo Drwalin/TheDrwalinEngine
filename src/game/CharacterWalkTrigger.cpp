@@ -17,42 +17,47 @@ void CharacterWalkTrigger::SetParent( std::shared_ptr<Object> parent )
 	this->parent = parent;
 }
 
-void CharacterWalkTrigger::EventOverlapp( Object * other )
+void CharacterWalkTrigger::NextOverlappingFrame()
+{
+	Trigger::NextOverlappingFrame();
+	isAnyInside = false;
+}
+
+void CharacterWalkTrigger::EventOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
 	if( other != parent.get() )
 	{
-		MESSAGE( std::string("Me: ") + GetName() + " still overlapp with: " + other->GetName() );
-		isAnyInside = true;
+		if( persisstentManifold->getNumContacts() > 0 )
+		{
+			isAnyInside = true;
+		}
 	}
 }
 
-void CharacterWalkTrigger::EventOnObjectBeginOverlapp( Object * other )
+void CharacterWalkTrigger::EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
-	Trigger::EventOnObjectBeginOverlapp( other );
-	this->EventOverlapp( other );
+	Trigger::EventOnObjectBeginOverlapp( other, persisstentManifold );
+	this->EventOverlapp( other, persisstentManifold );
 }
 
-void CharacterWalkTrigger::EventOnObjectTickOverlapp( Object * other )
+void CharacterWalkTrigger::EventOnObjectTickOverlapp( Object * other, btPersistentManifold * persisstentManifold )
 {
-	Trigger::EventOnObjectTickOverlapp( other );
-	this->EventOverlapp( other );
+	Trigger::EventOnObjectTickOverlapp( other, persisstentManifold );
+	this->EventOverlapp( other, persisstentManifold );
 }
 
 void CharacterWalkTrigger::EventOnObjectEndOverlapp( Object * other )
 {
 	Trigger::EventOnObjectEndOverlapp( other );
-	this->EventOverlapp( other );
 }
 
 void CharacterWalkTrigger::Tick( const float deltaTime )
 {
-	isAnyInside = false;
-	
 	Trigger::Tick( deltaTime );
 }
 
-CharacterWalkTrigger::CharacterWalkTrigger( Engine * engine, std::string name, std::shared_ptr<btPairCachingGhostObject> body, std::shared_ptr<btCollisionShape> collisionShape ) :
-	Trigger( engine, name, body, collisionShape )
+CharacterWalkTrigger::CharacterWalkTrigger( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ ) :
+	Trigger( engine, name, body, collisionShape, mass_ )
 {
 	isAnyInside = false;
 }

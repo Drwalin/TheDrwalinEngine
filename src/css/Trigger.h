@@ -21,62 +21,28 @@
 
 class Engine;
 
-class Trigger
+class Trigger : public Object
 {
 protected:
 	
-	Engine * engine;
 	
-	std::string name;
-	
-	btTransform currentTransform;
-	
-	std::shared_ptr<btCollisionShape> collisionShape;
-	std::shared_ptr<btPairCachingGhostObject> body;
-	
-	btVector3 scale;
-	
-	float mass;
-	
-	std::set< Object* > overlappingInPreviousFrame;
-	std::set< Object* > overlappingInCurrentFrame;
-	
-	std::shared_ptr<Trigger> thisPtr;
 	
 public:
 	
-	virtual void NextOverlappingFrame();
-	void OverlapWithObject( Object * other );
+	virtual bool IsTrigger() const final;
 	
-	void SetPosition( const btVector3 & loc );
-	void SetRotation( const btQuaternion & quat );
-	void Move( const btVector3 & move );
-	void Rotate( const btQuaternion & quat );
-	
-	std::shared_ptr<Trigger> GetThis();
+	virtual void SetModel( std::shared_ptr<Model> model, bool light = true ) final;
+	virtual void SetMass( float mass ) final;
+	virtual bool IsDynamic() const final;
 	
 	
-	void SetMass( float mass );
+	virtual void EventOnObjectBeginOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
+	virtual void EventOnObjectTickOverlapp( Object * other, btPersistentManifold * perisstentManifold ) override;
+	virtual void EventOnObjectEndOverlapp( Object * other ) override;
 	
-	Engine * GetEngine();
+	virtual void Tick( const float deltaTime ) override;
 	
-	std::string GetName() const;
-	
-	void SetScale( btVector3 scale );
-	btVector3 GetScale();
-	
-	btTransform GetTransform();
-	btVector3 GetLocation() const;
-	
-	std::shared_ptr<btPairCachingGhostObject> GetBody();
-	
-	virtual void EventOnObjectBeginOverlapp( Object * other );
-	virtual void EventOnObjectTickOverlapp( Object * other );
-	virtual void EventOnObjectEndOverlapp( Object * other );
-	
-	virtual void Tick( const float deltaTime );
-	
-	Trigger( Engine * engine, std::string name, std::shared_ptr<btPairCachingGhostObject> body, std::shared_ptr<btCollisionShape> collisionShape );
+	Trigger( Engine * engine, std::string name, std::shared_ptr<btRigidBody> body, std::shared_ptr<btCollisionShape> collisionShape, float mass_ );
 	Trigger();
 	~Trigger();
 };
